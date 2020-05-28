@@ -1,6 +1,7 @@
 package sobject
 
 import (
+	"bytes"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -494,9 +495,10 @@ func Test_dml_Upsert(t *testing.T) {
 					client: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `
 						{
-							"id" : "001D000000IqhSLIAZ",
-							"errors" : [ ],
-							"success" : true
+							"created":true,
+							"id":"001D000000IqhSLIAZ",
+							"errors":[],
+							"success":true
 						}`
 
 						return &http.Response{
@@ -519,7 +521,7 @@ func Test_dml_Upsert(t *testing.T) {
 				},
 			},
 			want: UpsertValue{
-				Inserted: true,
+				Created: true,
 				InsertValue: InsertValue{
 					Success: true,
 					Errors:  make([]sfdc.Error, 0),
@@ -529,14 +531,21 @@ func Test_dml_Upsert(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Upsert Response Passing",
+			name: "Upsert Response Updated Passing",
 			fields: fields{
 				session: &mockSessionFormatter{
 					url: "https://test.salesforce.com",
 					client: mockHTTPClient(func(req *http.Request) *http.Response {
+						resp := `
+						{
+							"id" : "001D000000IqhSLIAZ",
+							"errors" : [ ],
+							"success" : true
+						}`
 
 						return &http.Response{
-							StatusCode: http.StatusNoContent,
+							StatusCode: http.StatusOK,
+							Body:       ioutil.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -554,7 +563,42 @@ func Test_dml_Upsert(t *testing.T) {
 				},
 			},
 			want: UpsertValue{
-				Inserted: false,
+				Created: false,
+				InsertValue: InsertValue{
+					Success: true,
+					Errors:  make([]sfdc.Error, 0),
+					ID:      "001D000000IqhSLIAZ",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Upsert Response Passing",
+			fields: fields{
+				session: &mockSessionFormatter{
+					url: "https://test.salesforce.com",
+					client: mockHTTPClient(func(req *http.Request) *http.Response {
+						return &http.Response{
+							StatusCode: http.StatusNoContent,
+							Header:     make(http.Header),
+							Body:       ioutil.NopCloser(&bytes.Buffer{}),
+						}
+					}),
+				},
+			},
+			args: args{
+				upserter: &mockUpsert{
+					sobject:  "Account",
+					id:       "12345",
+					external: "external__c",
+					fields: map[string]interface{}{
+						"Name":   "Some Test Name",
+						"Active": false,
+					},
+				},
+			},
+			want: UpsertValue{
+				Created: false,
 			},
 			wantErr: false,
 		},
