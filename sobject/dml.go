@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/g8rswimmer/go-sfdc"
-	"github.com/g8rswimmer/go-sfdc/session"
+	"github.com/namely/go-sfdc"
+	"github.com/namely/go-sfdc/session"
 )
 
 // InsertValue is the value that is returned when a
@@ -278,7 +278,7 @@ func (d *dml) upsertResponse(request *http.Request) (UpsertValue, error) {
 		errMsg := fmt.Errorf("upsert response err: %d %s", response.StatusCode, response.Status)
 		if err == nil {
 			for _, updateErr := range upsetErrs {
-				// TODO: why errMsg is overwritten in the loop?
+				// TODO(vtopc): why errMsg is overwritten in the loop?
 				errMsg = fmt.Errorf("upsert response err: %s: %s", updateErr.ErrorCode, updateErr.Message)
 			}
 		}
