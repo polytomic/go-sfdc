@@ -1,6 +1,7 @@
 package sobject
 
 import (
+	"bytes"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -494,9 +495,10 @@ func Test_dml_Upsert(t *testing.T) {
 					client: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `
 						{
-							"id" : "001D000000IqhSLIAZ",
-							"errors" : [ ],
-							"success" : true
+							"created":true,
+							"id":"001D000000IqhSLIAZ",
+							"errors":[],
+							"success":true
 						}`
 
 						return &http.Response{
@@ -519,7 +521,7 @@ func Test_dml_Upsert(t *testing.T) {
 				},
 			},
 			want: UpsertValue{
-				Inserted: true,
+				Created: true,
 				InsertValue: InsertValue{
 					Success: true,
 					Errors:  make([]sfdc.Error, 0),
@@ -561,7 +563,7 @@ func Test_dml_Upsert(t *testing.T) {
 				},
 			},
 			want: UpsertValue{
-				Inserted: false,
+				Created: false,
 				InsertValue: InsertValue{
 					Success: true,
 					Errors:  make([]sfdc.Error, 0),
@@ -576,10 +578,10 @@ func Test_dml_Upsert(t *testing.T) {
 				session: &mockSessionFormatter{
 					url: "https://test.salesforce.com",
 					client: mockHTTPClient(func(req *http.Request) *http.Response {
-
 						return &http.Response{
 							StatusCode: http.StatusNoContent,
 							Header:     make(http.Header),
+							Body:       ioutil.NopCloser(&bytes.Buffer{}),
 						}
 					}),
 				},
@@ -596,7 +598,7 @@ func Test_dml_Upsert(t *testing.T) {
 				},
 			},
 			want: UpsertValue{
-				Inserted: false,
+				Created: false,
 			},
 			wantErr: false,
 		},

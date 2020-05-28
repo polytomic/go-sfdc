@@ -22,10 +22,10 @@ type InsertValue struct {
 // record as been upserted into Salesforce.
 //
 // Upsert will return two types of values, which
-// are indicated by Inserted.  If Inserted is true,
-// then the InsertValue is popluted.
+// are indicated by Inserted.  If Created is true,
+// then the InsertValue is populated.
 type UpsertValue struct {
-	Inserted bool
+	Created bool `json:"created"`
 	InsertValue
 }
 
@@ -34,7 +34,7 @@ type UpsertValue struct {
 // SObject is the Salesforce table name.  An example would be Account or Custom__c.
 //
 // Fields are the fields of the record that are to be inserted.  It is the
-// callers responsbility to provide value fields and values.
+// callers responsibility to provide value fields and values.
 type Inserter interface {
 	SObject() string
 	Fields() map[string]interface{}
@@ -47,7 +47,7 @@ type Inserter interface {
 // ID is the Salesforce ID that will be updated.
 //
 // Fields are the fields of the record that are to be inserted.  It is the
-// callers responsbility to provide value fields and values.
+// callers responsibility to provide value fields and values.
 type Updater interface {
 	Inserter
 	ID() string
@@ -62,7 +62,7 @@ type Updater interface {
 // ExternalField is the external ID field.
 //
 // Fields are the fields of the record that are to be inserted.  It is the
-// callers responsbility to provide value fields and values.
+// callers responsibility to provide value fields and values.
 type Upserter interface {
 	Updater
 	ExternalField() string
@@ -232,12 +232,13 @@ func (d *dml) upsertRequest(upserter Upserter) (*http.Request, error) {
 
 	url := d.session.ServiceURL() + objectEndpoint + upserter.SObject() + "/" + upserter.ExternalField() + "/" + upserter.ID()
 
+	// TODO: switch to json.NewEncoder():
 	body, err := json.Marshal(upserter.Fields())
 	if err != nil {
 		return nil, err
 	}
-	request, err := http.NewRequest(http.MethodPatch, url, bytes.NewReader(body))
 
+	request, err := http.NewRequest(http.MethodPatch, url, bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
@@ -257,37 +258,37 @@ func (d *dml) upsertResponse(request *http.Request) (UpsertValue, error) {
 	}
 
 	decoder := json.NewDecoder(response.Body)
+	defer response.Body.Close()
 
 	var value UpsertValue
 
 	switch response.StatusCode {
 	case http.StatusCreated, http.StatusOK:
-		defer response.Body.Close()
 		err = decoder.Decode(&value)
 		if err != nil {
 			return UpsertValue{}, err
 		}
+
 	case http.StatusNoContent:
 		break // out of the switch
+
 	default:
-		defer response.Body.Close()
 		var upsetErrs []sfdc.Error
 		err = decoder.Decode(&upsetErrs)
 		errMsg := fmt.Errorf("upsert response err: %d %s", response.StatusCode, response.Status)
 		if err == nil {
 			for _, updateErr := range upsetErrs {
+				// TODO: why errMsg is overwritten in the loop?
 				errMsg = fmt.Errorf("upsert response err: %s: %s", updateErr.ErrorCode, updateErr.Message)
 			}
 		}
-		return UpsertValue{}, errMsg
-	}
 
-	if response.StatusCode == http.StatusCreated {
-		value.Inserted = true
+		return UpsertValue{}, errMsg
 	}
 
 	return value, nil
 }
+
 func (d *dml) deleteCallout(deleter Deleter) error {
 
 	request, err := d.deleteRequest(deleter)
@@ -298,6 +299,7 @@ func (d *dml) deleteCallout(deleter Deleter) error {
 
 	return d.deleteResponse(request)
 }
+
 func (d *dml) deleteRequest(deleter Deleter) (*http.Request, error) {
 
 	url := d.session.ServiceURL() + objectEndpoint + deleter.SObject() + "/" + deleter.ID()
