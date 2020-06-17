@@ -8,13 +8,15 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/namely/go-sfdc/v3"
 	"github.com/namely/go-sfdc/v3/credentials"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestPasswordSessionRequest(t *testing.T) {
-
+func Test_passwordSessionRequest(t *testing.T) {
 	scenarios := []struct {
 		desc  string
 		creds credentials.PasswordCredentials
@@ -93,7 +95,7 @@ func TestPasswordSessionRequest(t *testing.T) {
 
 }
 
-func TestPasswordSessionResponse(t *testing.T) {
+func Test_passwordSessionResponse(t *testing.T) {
 	scenarios := []struct {
 		desc     string
 		url      string
@@ -171,7 +173,6 @@ func TestPasswordSessionResponse(t *testing.T) {
 	}
 
 	for _, scenario := range scenarios {
-
 		request, err := http.NewRequest(http.MethodPost, scenario.url, nil)
 
 		if err != nil {
@@ -213,20 +214,20 @@ func TestPasswordSessionResponse(t *testing.T) {
 				if response.Signature != scenario.response.Signature {
 					t.Errorf("%s Signature %s %s", scenario.desc, scenario.response.Signature, response.Signature)
 				}
-
 			}
 		}
-
 	}
 }
 
-func testNewPasswordCredentials(cred credentials.PasswordCredentials) *credentials.Credentials {
+func testNewPasswordCredentials(t *testing.T, cred credentials.PasswordCredentials) *credentials.Credentials {
 	creds, err := credentials.NewPasswordCredentials(cred)
 	if err != nil {
+		t.Error(err)
 		return nil
 	}
 	return creds
 }
+
 func TestNewPasswordSession(t *testing.T) {
 	scenarios := []struct {
 		desc    string
@@ -237,7 +238,7 @@ func TestNewPasswordSession(t *testing.T) {
 		{
 			desc: "Passing",
 			config: sfdc.Configuration{
-				Credentials: testNewPasswordCredentials(credentials.PasswordCredentials{
+				Credentials: testNewPasswordCredentials(t, credentials.PasswordCredentials{
 					URL:          "http://test.password.session",
 					Username:     "myusername",
 					Password:     "12345",
@@ -279,7 +280,7 @@ func TestNewPasswordSession(t *testing.T) {
 		{
 			desc: "Error Request",
 			config: sfdc.Configuration{
-				Credentials: testNewPasswordCredentials(credentials.PasswordCredentials{
+				Credentials: testNewPasswordCredentials(t, credentials.PasswordCredentials{
 					URL:          "123://test.password.session",
 					Username:     "myusername",
 					Password:     "12345",
@@ -300,7 +301,7 @@ func TestNewPasswordSession(t *testing.T) {
 		{
 			desc: "Error Response",
 			config: sfdc.Configuration{
-				Credentials: testNewPasswordCredentials(credentials.PasswordCredentials{
+				Credentials: testNewPasswordCredentials(t, credentials.PasswordCredentials{
 					URL:          "http://test.password.session",
 					Username:     "myusername",
 					Password:     "12345",
@@ -308,7 +309,6 @@ func TestNewPasswordSession(t *testing.T) {
 					ClientSecret: "shhhh its a secret",
 				}),
 				Client: mockHTTPClient(func(req *http.Request) *http.Response {
-
 					return &http.Response{
 						StatusCode: http.StatusInternalServerError,
 						Status:     "Some status",
@@ -324,7 +324,6 @@ func TestNewPasswordSession(t *testing.T) {
 	}
 
 	for _, scenario := range scenarios {
-
 		session, err := Open(scenario.config)
 
 		if err != nil && scenario.err == nil {
@@ -518,4 +517,84 @@ func TestSession_InstanceURL(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestSession_isExpired(t *testing.T) {
+	tests := map[string]struct {
+		expiresAt time.Time
+		want      bool
+	}{
+		"expired": {
+			expiresAt: time.Now().Add(-1 * time.Hour).UTC(),
+			want:      true,
+		},
+		"not_expired": {
+			expiresAt: time.Now().Add(1 * time.Hour).UTC(),
+			want:      false,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			s := &Session{
+				expiresAt: tt.expiresAt,
+			}
+
+			got := s.isExpired()
+
+			assert.Equal(t, got, tt.want)
+		})
+	}
+}
+
+func TestSession_Refresh(t *testing.T) {
+	const (
+		oldToken = "oLd:ToKeN"
+		newToken = "nEw:ToKeN"
+	)
+
+	creds := testNewPasswordCredentials(t, credentials.PasswordCredentials{
+		URL:          "http://test.password.session",
+		Username:     "myusername",
+		Password:     "12345",
+		ClientID:     "some client id",
+		ClientSecret: "shhhh its a secret",
+	})
+	client := mockHTTPClient(func(req *http.Request) *http.Response {
+		resp := `{"access_token":"nEw:ToKeN"}`
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(strings.NewReader(resp)),
+		}
+	})
+	config := sfdc.Configuration{
+		SessionDuration: defaultSessionDuration,
+		Client:          client,
+		Credentials:     creds,
+	}
+	response := &sessionPasswordResponse{AccessToken: oldToken}
+
+	t.Run("expired", func(t *testing.T) {
+		s := &Session{
+			response:  response,
+			expiresAt: time.Now().Add(-2 * defaultSessionDuration).UTC(),
+			config:    config,
+		}
+
+		err := s.Refresh()
+		require.NoError(t, err)
+		assert.Equal(t, newToken, s.response.AccessToken)
+	})
+
+	t.Run("not_expired", func(t *testing.T) {
+		s := &Session{
+			response:  response,
+			expiresAt: time.Now().Add(2 * defaultSessionDuration).UTC(),
+			config:    config,
+		}
+
+		err := s.Refresh()
+		require.NoError(t, err)
+		assert.Equal(t, oldToken, s.response.AccessToken)
+	})
 }
