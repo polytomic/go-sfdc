@@ -212,6 +212,7 @@ func (d *dml) updateResponse(request *http.Request) error {
 
 	return nil
 }
+
 func (d *dml) upsertCallout(upserter Upserter) (UpsertValue, error) {
 	request, err := d.upsertRequest(upserter)
 
@@ -226,10 +227,9 @@ func (d *dml) upsertCallout(upserter Upserter) (UpsertValue, error) {
 	}
 
 	return value, nil
-
 }
-func (d *dml) upsertRequest(upserter Upserter) (*http.Request, error) {
 
+func (d *dml) upsertRequest(upserter Upserter) (*http.Request, error) {
 	url := d.session.ServiceURL() + objectEndpoint + upserter.SObject() + "/" + upserter.ExternalField() + "/" + upserter.ID()
 
 	// TODO: switch to json.NewEncoder():
@@ -247,21 +247,18 @@ func (d *dml) upsertRequest(upserter Upserter) (*http.Request, error) {
 	request.Header.Add("Content-Type", "application/json")
 	d.session.AuthorizationHeader(request)
 	return request, nil
-
 }
 
 func (d *dml) upsertResponse(request *http.Request) (UpsertValue, error) {
 	response, err := d.session.Client().Do(request)
-
 	if err != nil {
 		return UpsertValue{}, err
 	}
 
-	decoder := json.NewDecoder(response.Body)
 	defer response.Body.Close()
+	decoder := json.NewDecoder(response.Body)
 
 	var value UpsertValue
-
 	switch response.StatusCode {
 	case http.StatusCreated, http.StatusOK:
 		err = decoder.Decode(&value)
@@ -273,17 +270,7 @@ func (d *dml) upsertResponse(request *http.Request) (UpsertValue, error) {
 		break // out of the switch
 
 	default:
-		var upsetErrs []sfdc.Error
-		err = decoder.Decode(&upsetErrs)
-		errMsg := fmt.Errorf("upsert response err: %d %s", response.StatusCode, response.Status)
-		if err == nil {
-			for _, updateErr := range upsetErrs {
-				// TODO(vtopc): why errMsg is overwritten in the loop?
-				errMsg = fmt.Errorf("upsert response err: %s: %s", updateErr.ErrorCode, updateErr.Message)
-			}
-		}
-
-		return UpsertValue{}, errMsg
+		return UpsertValue{}, sfdc.HandleError(response)
 	}
 
 	return value, nil

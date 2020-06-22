@@ -1,6 +1,14 @@
 package sfdc
 
-import "testing"
+import (
+	"io"
+	"io/ioutil"
+	"net/http"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
 
 func TestError_UnmarshalJSON(t *testing.T) {
 	type fields struct {
@@ -67,6 +75,41 @@ func TestError_UnmarshalJSON(t *testing.T) {
 			if err := e.UnmarshalJSON(tt.args.data); (err != nil) != tt.wantErr {
 				t.Errorf("Error.UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
 			}
+		})
+	}
+}
+
+type alwaysError struct{}
+
+func (alwaysError) Read(p []byte) (int, error) {
+	return 0, io.ErrUnexpectedEOF
+}
+
+func TestHandleError(t *testing.T) {
+	tests := map[string]struct {
+		resp    *http.Response
+		wantErr string
+	}{
+		"400": {
+			resp: &http.Response{
+				Status: "400 " + http.StatusText(400),
+				Body:   ioutil.NopCloser(strings.NewReader(`{"message":"invalid"}`)),
+			},
+			wantErr: `400 Bad Request: {"message":"invalid"}`,
+		},
+		"read_body_error": {
+			resp: &http.Response{
+				Status: "500 " + http.StatusText(500),
+				Body:   ioutil.NopCloser(alwaysError{}),
+			},
+			wantErr: `500 Internal Server Error: could not read the body with error: unexpected EOF`,
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			err := HandleError(tt.resp)
+			require.EqualError(t, err, tt.wantErr)
 		})
 	}
 }
