@@ -1,6 +1,7 @@
 package session
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -517,7 +518,7 @@ func TestSession_Refresh(t *testing.T) {
 	t.Run("expired", func(t *testing.T) {
 		s := &Session{
 			response:  response,
-			expiresAt: time.Now().Add(-2 * defaultSessionDuration).UTC(),
+			expiresAt: time.Now().Add(-1 * time.Minute).UTC(),
 			config:    config,
 		}
 
@@ -529,12 +530,36 @@ func TestSession_Refresh(t *testing.T) {
 	t.Run("not_expired", func(t *testing.T) {
 		s := &Session{
 			response:  response,
-			expiresAt: time.Now().Add(2 * defaultSessionDuration).UTC(),
+			expiresAt: time.Now().Add(time.Minute).UTC(),
 			config:    config,
 		}
 
 		err := s.Refresh()
 		require.NoError(t, err)
 		assert.Equal(t, oldToken, s.response.AccessToken)
+	})
+
+	t.Run("failed_to_refresh_expired", func(t *testing.T) {
+		const wantErr = "session response error: 504 Gateway Timeout"
+		const statusCode = http.StatusGatewayTimeout
+		client := mockHTTPClient(func(req *http.Request) *http.Response {
+			return &http.Response{
+				StatusCode: statusCode,
+				Status:     http.StatusText(statusCode),
+				Body:       ioutil.NopCloser(new(bytes.Buffer)),
+			}
+		})
+		s := &Session{
+			response:  response,
+			expiresAt: time.Now().Add(-1 * time.Minute).UTC(),
+			config: sfdc.Configuration{
+				SessionDuration: defaultSessionDuration,
+				Client:          client,
+				Credentials:     creds,
+			},
+		}
+
+		err := s.Refresh()
+		assert.EqualError(t, err, wantErr)
 	})
 }
