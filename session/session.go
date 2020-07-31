@@ -13,14 +13,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
-	_ ServiceFormatter = &Session{}
-)
-
 // Session is the authentication response.  This is used to generate the
 // authorization header for the Salesforce API calls.
 type Session struct {
-	// tread safe:
+	// thread safe:
 	config sfdc.Configuration
 
 	// thread unsafe:
