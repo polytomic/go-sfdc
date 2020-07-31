@@ -2,7 +2,7 @@
 [back](../../README.md)
 
 The `batch` package is an implementation of `Salesforce APIs` centered on `Composite Batch` operations.  These operations include:
-* Limits Resources
+* [Limits Resources](./limits/README.md)
 * SObject Resources
 * Query All
 * Query
