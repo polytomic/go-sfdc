@@ -5,24 +5,29 @@ package limits
 import (
 	"fmt"
 	"net/http"
+	"strings"
+
+	"github.com/namely/go-sfdc/v3/session"
 )
 
 // LimitRequest provides an batch subrequester that will fetch the current
 // account limits
 type LimitRequest struct {
-	version int
+	sess session.ServiceFormatter
 }
 
 // NewSubrequester returns a new limit subrequester
-func NewSubrequester(version int) *LimitRequest {
-	return &LimitRequest{
-		version: version,
-	}
+func NewSubrequester(sess session.ServiceFormatter) *LimitRequest {
+	return &LimitRequest{sess: sess}
 }
 
 // URL returns the URL for the limits request
 func (l *LimitRequest) URL() string {
-	return fmt.Sprintf("/v%d.0/limits", l.version)
+	if urlPieces := strings.Split(l.sess.ServiceURL(), "services/data"); len(urlPieces) > 1 {
+		return fmt.Sprintf("%s/limits", urlPieces[1])
+	}
+
+	return fmt.Sprintf("%s/limits", l.sess.ServiceURL())
 }
 
 // Method returns the HTTP method for the limits request
