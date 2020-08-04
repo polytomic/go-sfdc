@@ -42,6 +42,20 @@ func (r *Resource) CreateJob(options Options) (*Job, error) {
 	return job, nil
 }
 
+// GetJob will retrieve an existing bulk 2.0 job using the provided ID.
+func (r *Resource) GetJob(id string) (*Job, error) {
+	job := &Job{
+		session: r.session,
+	}
+	info, err := job.fetchInfo(id)
+	if err != nil {
+		return nil, err
+	}
+	job.info = info.Response
+
+	return job, nil
+}
+
 // AllJobs will retrieve all of the bulk 2.0 jobs.
 func (r *Resource) AllJobs(parameters Parameters) (*Jobs, error) {
 	jobs, err := newJobs(r.session, parameters)

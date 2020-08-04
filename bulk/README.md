@@ -12,7 +12,7 @@ The `bulk` package is an implementation of `Salesforce APIs` centered on `Bulk 2
 * Get job failed records
 * Get job unprocessed records
 
-As a reference, see `Salesforce API` [documentation](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_what_is_rest_api.htm)
+As a reference, see `Salesforce API` [documentation](https://developer.salesforce.com/docs/atlas.en-us.api_bulk_v2.meta/api_bulk_v2/introduction_bulk_api_2.htm)
 
 ## Examples
 The following are examples to access the `APIs`.  It is assumed that a `sfdc` [session](../session/README.md) has been created.
