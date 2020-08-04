@@ -139,21 +139,21 @@ type Options struct {
 
 // Response is the response to job APIs.
 type Response struct {
-	APIVersion          float32 `json:"apiVersion"`
-	ColumnDelimiter     string  `json:"columnDelimiter"`
-	ConcurrencyMode     string  `json:"concurrencyMode"`
-	ContentType         string  `json:"contentType"`
-	ContentURL          string  `json:"contentUrl"`
-	CreatedByID         string  `json:"createdById"`
-	CreatedDate         string  `json:"createdDate"`
-	ExternalIDFieldName string  `json:"externalIdFieldName"`
-	ID                  string  `json:"id"`
-	JobType             string  `json:"jobType"`
-	LineEnding          string  `json:"lineEnding"`
-	Object              string  `json:"object"`
-	Operation           string  `json:"operation"`
-	State               string  `json:"state"`
-	SystemModstamp      string  `json:"systemModstamp"`
+	APIVersion          float32         `json:"apiVersion"`
+	ColumnDelimiter     ColumnDelimiter `json:"columnDelimiter"`
+	ConcurrencyMode     string          `json:"concurrencyMode"`
+	ContentType         string          `json:"contentType"`
+	ContentURL          string          `json:"contentUrl"`
+	CreatedByID         string          `json:"createdById"`
+	CreatedDate         string          `json:"createdDate"`
+	ExternalIDFieldName string          `json:"externalIdFieldName"`
+	ID                  string          `json:"id"`
+	JobType             JobType         `json:"jobType"`
+	LineEnding          LineEnding      `json:"lineEnding"`
+	Object              string          `json:"object"`
+	Operation           Operation       `json:"operation"`
+	State               State           `json:"state"`
+	SystemModstamp      string          `json:"systemModstamp"`
 }
 
 // Info is the response to the job information API.
