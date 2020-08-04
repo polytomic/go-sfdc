@@ -132,7 +132,74 @@ func TestResource_CreateJob(t *testing.T) {
 		})
 	}
 }
+func TestResource_GetJob(t *testing.T) {
+	type fields struct {
+		session session.ServiceFormatter
+	}
 
+	tests := []struct {
+		name    string
+		fields  fields
+		wantErr bool
+	}{
+		{
+			name: "Passing",
+			fields: fields{
+				session: &mockSessionFormatter{
+					url: "https://test.salesforce.com",
+					client: mockHTTPClient(func(req *http.Request) *http.Response {
+						if req.URL.String() != "https://test.salesforce.com/jobs/ingest/123" {
+							return &http.Response{
+								StatusCode: 500,
+								Status:     "Invalid URL",
+								Body:       ioutil.NopCloser(strings.NewReader(req.URL.String())),
+								Header:     make(http.Header),
+							}
+						}
+
+						resp := `{
+							"apiVersion": 44.0,
+							"columnDelimiter": "COMMA",
+							"concurrencyMode": "Parallel",
+							"contentType": "CSV",
+							"contentUrl": "services/v44.0/jobs",
+							"createdById": "1234",
+							"createdDate": "1/1/1970",
+							"externalIdFieldName": "namename",
+							"id": "9876",
+							"jobType": "V2Ingest",
+							"lineEnding": "LF",
+							"object": "Account",
+							"operation": "Insert",
+							"state": "Open",
+							"systemModstamp": "1/1/1980"
+						}`
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Status:     "Good",
+							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Header:     make(http.Header),
+						}
+
+					}),
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &Resource{
+				session: tt.fields.session,
+			}
+			_, err := r.GetJob("123")
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Resource.GetJob() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+		})
+	}
+}
 func TestResource_AllJobs(t *testing.T) {
 	mockSession := &mockSessionFormatter{
 		url: "https://test.salesforce.com",
