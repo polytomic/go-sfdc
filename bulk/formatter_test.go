@@ -22,8 +22,8 @@ func TestNewFormatter(t *testing.T) {
 			args: args{
 				job: &Job{
 					info: Response{
-						ColumnDelimiter: string(Pipe),
-						LineEnding:      string(Linefeed),
+						ColumnDelimiter: Pipe,
+						LineEnding:      Linefeed,
 					},
 				},
 				fields: []string{
@@ -34,8 +34,8 @@ func TestNewFormatter(t *testing.T) {
 			want: &Formatter{
 				job: &Job{
 					info: Response{
-						ColumnDelimiter: string(Pipe),
-						LineEnding:      string(Linefeed),
+						ColumnDelimiter: Pipe,
+						LineEnding:      Linefeed,
 					},
 				},
 				fields: []string{
@@ -63,8 +63,8 @@ func TestNewFormatter(t *testing.T) {
 			args: args{
 				job: &Job{
 					info: Response{
-						ColumnDelimiter: string(Pipe),
-						LineEnding:      string(Linefeed),
+						ColumnDelimiter: Pipe,
+						LineEnding:      Linefeed,
 					},
 				},
 				fields: nil,
@@ -126,8 +126,8 @@ func TestFormatter_Add(t *testing.T) {
 			fields: fields{
 				job: &Job{
 					info: Response{
-						ColumnDelimiter: string(Pipe),
-						LineEnding:      string(Linefeed),
+						ColumnDelimiter: Pipe,
+						LineEnding:      Linefeed,
 					},
 				},
 				fields: []string{
@@ -161,8 +161,8 @@ func TestFormatter_Add(t *testing.T) {
 			fields: fields{
 				job: &Job{
 					info: Response{
-						ColumnDelimiter: string(Pipe),
-						LineEnding:      string(Linefeed),
+						ColumnDelimiter: Pipe,
+						LineEnding:      Linefeed,
 					},
 				},
 				fields: []string{
