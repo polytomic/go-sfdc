@@ -1238,8 +1238,8 @@ func TestJob_SuccessfulRecords(t *testing.T) {
 			fields: fields{
 				info: Response{
 					ID:              "1234",
-					ColumnDelimiter: string(Pipe),
-					LineEnding:      string(Linefeed),
+					ColumnDelimiter: Pipe,
+					LineEnding:      Linefeed,
 				},
 				session: &mockSessionFormatter{
 					url: "https://test.salesforce.com",
@@ -1338,8 +1338,8 @@ func TestJob_FailedRecords(t *testing.T) {
 			fields: fields{
 				info: Response{
 					ID:              "1234",
-					ColumnDelimiter: string(Pipe),
-					LineEnding:      string(Linefeed),
+					ColumnDelimiter: Pipe,
+					LineEnding:      Linefeed,
 				},
 				session: &mockSessionFormatter{
 					url: "https://test.salesforce.com",
@@ -1436,8 +1436,8 @@ func TestJob_UnprocessedRecords(t *testing.T) {
 			fields: fields{
 				info: Response{
 					ID:              "1234",
-					ColumnDelimiter: string(Pipe),
-					LineEnding:      string(Linefeed),
+					ColumnDelimiter: Pipe,
+					LineEnding:      Linefeed,
 				},
 				session: &mockSessionFormatter{
 					url: "https://test.salesforce.com",
