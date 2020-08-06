@@ -262,7 +262,11 @@ func (j *Job) response(request *http.Request) (Response, error) {
 
 // Info returns the current job information.
 func (j *Job) Info() (Info, error) {
-	url := j.session.ServiceURL() + bulk2Endpoint + "/" + j.info.ID
+	return j.fetchInfo(j.info.ID)
+}
+
+func (j *Job) fetchInfo(id string) (Info, error) {
+	url := j.session.ServiceURL() + bulk2Endpoint + "/" + id
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return Info{}, err
