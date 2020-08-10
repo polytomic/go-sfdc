@@ -13,6 +13,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+var (
+	_ ServiceFormatter = &Session{}
+)
+
 // Session is the authentication response.  This is used to generate the
 // authorization header for the Salesforce API calls.
 type Session struct {
@@ -53,6 +57,9 @@ type InstanceFormatter interface {
 // user.
 type ServiceFormatter interface {
 	InstanceFormatter
+	// Version will return the Salesforce API version for this session.
+	Version() int
+	// ServiceURL will return the Salesforce instance for the service URL.
 	ServiceURL() string
 }
 
@@ -143,6 +150,11 @@ func (s *Session) InstanceURL() string {
 	defer s.mu.RUnlock()
 
 	return s.response.InstanceURL
+}
+
+// Version will return the Salesforce API version for this session.
+func (s *Session) Version() int {
+	return s.config.Version
 }
 
 // ServiceURL will return the Salesforce instance for the

@@ -17,6 +17,10 @@ func (mock *mockSessionFormatter) ServiceURL() string {
 	return mock.url
 }
 
+func (mock *mockSessionFormatter) Version() int {
+	return 44
+}
+
 func (mock *mockSessionFormatter) AuthorizationHeader(*http.Request) {}
 
 func (mock *mockSessionFormatter) Client() *http.Client {
@@ -41,11 +45,6 @@ func TestLimitSubRequestURL(t *testing.T) {
 			name:    "success",
 			session: &mockSessionFormatter{url: "https://test.salesforce.com/services/data/v44.0"},
 			expect:  "/v44.0/limits",
-		},
-		{
-			name:    "fallback",
-			session: &mockSessionFormatter{},
-			expect:  "/limits",
 		},
 	}
 

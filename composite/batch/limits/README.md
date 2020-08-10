@@ -15,7 +15,7 @@ if err != nil {
 }
 
 value, err := resource.Retrieve(false, []batch.Subrequester{
-    limits.NewSubrequester(48),
+    limits.NewSubrequester(),
 })
 if err != nil {
     fmt.Printf("Batch Composite Error %s\n", err.Error())
