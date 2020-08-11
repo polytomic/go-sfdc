@@ -124,48 +124,6 @@ func TestJob_formatOptions(t *testing.T) {
 	}
 }
 
-func TestJob_newline(t *testing.T) {
-	type fields struct {
-		session session.ServiceFormatter
-		info    Response
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   string
-	}{
-		{
-			name: "Carrage return",
-			fields: fields{
-				info: Response{
-					LineEnding: "CRLF",
-				},
-			},
-			want: "\r\n",
-		},
-		{
-			name: "Line feed",
-			fields: fields{
-				info: Response{
-					LineEnding: "LF",
-				},
-			},
-			want: "\n",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			j := &Job{
-				session: tt.fields.session,
-				info:    tt.fields.info,
-			}
-			if got := j.newline(); got != tt.want {
-				t.Errorf("Job.newline() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestJob_delimiter(t *testing.T) {
 	type fields struct {
 		session session.ServiceFormatter

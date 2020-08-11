@@ -1,7 +1,6 @@
 package bulk
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/csv"
 	"encoding/json"
@@ -10,7 +9,6 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/namely/go-sfdc/v3"
 	"github.com/namely/go-sfdc/v3/session"
@@ -432,12 +430,12 @@ func (j *Job) SuccessfulRecords() ([]SuccessfulRecord, error) {
 			return nil, err
 		}
 		var record SuccessfulRecord
-		created, err := strconv.ParseBool(values[0])
+		created, err := strconv.ParseBool(values[j.headerPosition("sf__Created", fields)])
 		if err != nil {
 			return nil, err
 		}
 		record.Created = created
-		record.ID = values[1]
+		record.ID = values[j.headerPosition("sf__Id", fields)]
 		record.Fields = j.record(fields[2:], values[2:])
 		records = append(records, record)
 	}
@@ -493,8 +491,8 @@ func (j *Job) FailedRecords() ([]FailedRecord, error) {
 			return nil, err
 		}
 		var record FailedRecord
-		record.Error = values[0]
-		record.ID = values[1]
+		record.Error = values[j.headerPosition("sf__Error", fields)]
+		record.ID = values[j.headerPosition("sf__Id", fields)]
 		record.Fields = j.record(fields[2:], values[2:])
 		records = append(records, record)
 	}
@@ -557,26 +555,21 @@ func (j *Job) UnprocessedRecords() ([]UnprocessedRecord, error) {
 	return records, nil
 }
 
-func (j *Job) recordResultHeader(scanner *bufio.Scanner, delimiter string) ([]string, error) {
-	if scanner.Scan() == false {
-		return nil, errors.New("job: response needs to have header")
-	}
-	text := strings.Replace(scanner.Text(), "\"", "", -1)
-	return strings.Split(text, delimiter), nil
-}
-func (j *Job) headerPosition(column string, header []string) (int, error) {
+func (j *Job) headerPosition(column string, header []string) int {
 	for idx, col := range header {
 		if col == column {
-			return idx, nil
+			return idx
 		}
 	}
-	return -1, fmt.Errorf("job header: %s column is not in header", column)
+	return -1
 }
+
 func (j *Job) fields(header []string, offset int) []string {
 	fields := make([]string, len(header)-offset)
 	copy(fields[:], header[offset:])
 	return fields
 }
+
 func (j *Job) record(fields, values []string) map[string]string {
 	record := make(map[string]string)
 	for idx, field := range fields {
@@ -599,14 +592,5 @@ func (j *Job) delimiter() rune {
 		return '`'
 	default:
 		return ','
-	}
-}
-
-func (j *Job) newline() string {
-	switch LineEnding(j.info.LineEnding) {
-	case CarriageReturnLinefeed:
-		return "\r\n"
-	default:
-		return "\n"
 	}
 }

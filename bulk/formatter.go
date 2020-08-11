@@ -33,6 +33,8 @@ func NewFormatter(job *Job, fields []string) (*Formatter, error) {
 	builder := &strings.Builder{}
 	writer := csv.NewWriter(builder)
 	writer.Comma = job.delimiter()
+	writer.UseCRLF = job.info.LineEnding == CarriageReturnLinefeed
+
 	f := &Formatter{
 		job:    job,
 		fields: fields,
