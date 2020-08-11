@@ -174,7 +174,7 @@ func TestJob_delimiter(t *testing.T) {
 	tests := []struct {
 		name   string
 		fields fields
-		want   string
+		want   rune
 	}{
 		{
 			name: "tab",
@@ -183,7 +183,7 @@ func TestJob_delimiter(t *testing.T) {
 					ColumnDelimiter: "TAB",
 				},
 			},
-			want: "\t",
+			want: '\t',
 		},
 		{
 			name: "back quote",
@@ -192,7 +192,7 @@ func TestJob_delimiter(t *testing.T) {
 					ColumnDelimiter: "BACKQUOTE",
 				},
 			},
-			want: "`",
+			want: '`',
 		},
 		{
 			name: "caret",
@@ -201,7 +201,7 @@ func TestJob_delimiter(t *testing.T) {
 					ColumnDelimiter: "CARET",
 				},
 			},
-			want: "^",
+			want: '^',
 		},
 		{
 			name: "comma",
@@ -210,7 +210,7 @@ func TestJob_delimiter(t *testing.T) {
 					ColumnDelimiter: "COMMA",
 				},
 			},
-			want: ",",
+			want: ',',
 		},
 		{
 			name: "pipe",
@@ -219,7 +219,7 @@ func TestJob_delimiter(t *testing.T) {
 					ColumnDelimiter: "PIPE",
 				},
 			},
-			want: "|",
+			want: '|',
 		},
 		{
 			name: "semi colon",
@@ -228,7 +228,7 @@ func TestJob_delimiter(t *testing.T) {
 					ColumnDelimiter: "SEMICOLON",
 				},
 			},
-			want: ";",
+			want: ';',
 		},
 	}
 	for _, tt := range tests {
@@ -420,7 +420,7 @@ func TestJob_response(t *testing.T) {
 								"fields" : [ "Id" ],
 								"message" : "Account ID: id value of incorrect type: 001900K0001pPuOAAU",
 								"errorCode" : "MALFORMED_ID"
-							}							
+							}
 						]`
 						return &http.Response{
 							StatusCode: http.StatusBadRequest,
@@ -764,7 +764,7 @@ func TestJob_setState(t *testing.T) {
 								"fields" : [ "Id" ],
 								"message" : "Account ID: id value of incorrect type: 001900K0001pPuOAAU",
 								"errorCode" : "MALFORMED_ID"
-							}							
+							}
 						]`
 						return &http.Response{
 							StatusCode: http.StatusBadRequest,
@@ -895,7 +895,7 @@ func TestJob_infoResponse(t *testing.T) {
 								"fields" : [ "Id" ],
 								"message" : "Account ID: id value of incorrect type: 001900K0001pPuOAAU",
 								"errorCode" : "MALFORMED_ID"
-							}							
+							}
 						]`
 						return &http.Response{
 							StatusCode: http.StatusBadRequest,

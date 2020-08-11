@@ -42,7 +42,7 @@ func TestNewFormatter(t *testing.T) {
 					"Name",
 					"Site",
 				},
-				sb: strings.Builder{},
+				sb: &strings.Builder{},
 			},
 			wantErr: false,
 		},
@@ -82,11 +82,13 @@ func TestNewFormatter(t *testing.T) {
 			}
 
 			if tt.want != nil {
-				tt.want.sb.WriteString(strings.Join(tt.want.fields, tt.want.job.delimiter()))
+				tt.want.sb.WriteString(strings.Join(tt.want.fields, string(tt.want.job.delimiter())))
 				tt.want.sb.WriteString(tt.want.job.newline())
 			}
 
-			if !reflect.DeepEqual(got, tt.want) {
+			if tt.want != nil && !(reflect.DeepEqual(got.job, tt.want.job) &&
+				reflect.DeepEqual(got.fields, tt.want.fields) &&
+				reflect.DeepEqual(got.sb, tt.want.sb)) {
 				t.Errorf("NewFormatter() = %v, want %v", got, tt.want)
 			}
 		})
@@ -109,7 +111,7 @@ func TestFormatter_Add(t *testing.T) {
 		job        *Job
 		fields     []string
 		insertNull bool
-		sb         strings.Builder
+		sb         *strings.Builder
 	}
 	type args struct {
 		records []Record
@@ -135,7 +137,7 @@ func TestFormatter_Add(t *testing.T) {
 					"Site",
 				},
 				insertNull: true,
-				sb:         strings.Builder{},
+				sb:         &strings.Builder{},
 			},
 			args: args{
 				records: []Record{
@@ -153,7 +155,7 @@ func TestFormatter_Add(t *testing.T) {
 					},
 				},
 			},
-			want:    "name 1|good site\nname 2|great site\n",
+			want:    "Name|Site\nname 1|good site\nname 2|great site\n",
 			wantErr: false,
 		},
 		{
@@ -170,7 +172,7 @@ func TestFormatter_Add(t *testing.T) {
 					"Site",
 				},
 				insertNull: true,
-				sb:         strings.Builder{},
+				sb:         &strings.Builder{},
 			},
 			args: args{
 				records: nil,
@@ -181,11 +183,7 @@ func TestFormatter_Add(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			f := &Formatter{
-				job:    tt.fields.job,
-				fields: tt.fields.fields,
-				sb:     tt.fields.sb,
-			}
+			f, _ := NewFormatter(tt.fields.job, tt.fields.fields)
 			var err error
 			if err = f.Add(tt.args.records...); (err != nil) != tt.wantErr {
 				t.Errorf("Formatter.Add() error = %v, wantErr %v", err, tt.wantErr)

@@ -3,6 +3,7 @@ package bulk
 import (
 	"bufio"
 	"bytes"
+	"encoding/csv"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -414,35 +415,30 @@ func (j *Job) SuccessfulRecords() ([]SuccessfulRecord, error) {
 		return nil, errMsg
 	}
 
-	scanner := bufio.NewScanner(response.Body)
+	reader := csv.NewReader(response.Body)
+	reader.Comma = j.delimiter()
 	defer response.Body.Close()
-	scanner.Split(bufio.ScanLines)
+
 	var records []SuccessfulRecord
-	delimiter := j.delimiter()
-	columns, err := j.recordResultHeader(scanner, delimiter)
+	fields, err := reader.Read()
 	if err != nil {
 		return nil, err
 	}
-	createIdx, err := j.headerPosition(`sf__Created`, columns)
-	if err != nil {
-		return nil, err
-	}
-	idIdx, err := j.headerPosition(`sf__Id`, columns)
-	if err != nil {
-		return nil, err
-	}
-	fields := j.fields(columns, 2)
-	for scanner.Scan() {
+	for {
+		values, err := reader.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return nil, err
+		}
 		var record SuccessfulRecord
-		values := strings.Split(scanner.Text(), delimiter)
-		isCreated := strings.Replace(values[createIdx], "\"", "", -1)
-		created, err := strconv.ParseBool(isCreated)
+		created, err := strconv.ParseBool(values[0])
 		if err != nil {
 			return nil, err
 		}
 		record.Created = created
-		record.ID = values[idIdx]
-		record.Fields = j.record(fields, values[2:])
+		record.ID = values[1]
+		record.Fields = j.record(fields[2:], values[2:])
 		records = append(records, record)
 	}
 
@@ -480,30 +476,26 @@ func (j *Job) FailedRecords() ([]FailedRecord, error) {
 		return nil, errMsg
 	}
 
-	scanner := bufio.NewScanner(response.Body)
+	reader := csv.NewReader(response.Body)
+	reader.Comma = j.delimiter()
 	defer response.Body.Close()
-	scanner.Split(bufio.ScanLines)
+
 	var records []FailedRecord
-	delimiter := j.delimiter()
-	columns, err := j.recordResultHeader(scanner, delimiter)
+	fields, err := reader.Read()
 	if err != nil {
 		return nil, err
 	}
-	errorIdx, err := j.headerPosition(`sf__Error`, columns)
-	if err != nil {
-		return nil, err
-	}
-	idIdx, err := j.headerPosition(`sf__Id`, columns)
-	if err != nil {
-		return nil, err
-	}
-	fields := j.fields(columns, 2)
-	for scanner.Scan() {
+	for {
+		values, err := reader.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return nil, err
+		}
 		var record FailedRecord
-		values := strings.Split(scanner.Text(), delimiter)
-		record.Error = values[errorIdx]
-		record.ID = values[idIdx]
-		record.Fields = j.record(fields, values[2:])
+		record.Error = values[0]
+		record.ID = values[1]
+		record.Fields = j.record(fields[2:], values[2:])
 		records = append(records, record)
 	}
 
@@ -541,19 +533,23 @@ func (j *Job) UnprocessedRecords() ([]UnprocessedRecord, error) {
 		return nil, errMsg
 	}
 
-	scanner := bufio.NewScanner(response.Body)
+	reader := csv.NewReader(response.Body)
+	reader.Comma = j.delimiter()
 	defer response.Body.Close()
-	scanner.Split(bufio.ScanLines)
+
 	var records []UnprocessedRecord
-	delimiter := j.delimiter()
-	columns, err := j.recordResultHeader(scanner, delimiter)
+	fields, err := reader.Read()
 	if err != nil {
 		return nil, err
 	}
-	fields := j.fields(columns, 0)
-	for scanner.Scan() {
+	for {
+		values, err := reader.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return nil, err
+		}
 		var record UnprocessedRecord
-		values := strings.Split(scanner.Text(), delimiter)
 		record.Fields = j.record(fields, values)
 		records = append(records, record)
 	}
@@ -589,20 +585,20 @@ func (j *Job) record(fields, values []string) map[string]string {
 	return record
 }
 
-func (j *Job) delimiter() string {
+func (j *Job) delimiter() rune {
 	switch ColumnDelimiter(j.info.ColumnDelimiter) {
 	case Tab:
-		return "\t"
+		return '\t'
 	case SemiColon:
-		return ";"
+		return ';'
 	case Pipe:
-		return "|"
+		return '|'
 	case Caret:
-		return "^"
+		return '^'
 	case Backquote:
-		return "`"
+		return '`'
 	default:
-		return ","
+		return ','
 	}
 }
 
