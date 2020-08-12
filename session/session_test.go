@@ -16,6 +16,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestSessionIsServiceFormatter(t *testing.T) {
+	var _ ServiceFormatter = &Session{}
+}
+
 func Test_passwordSessionRequest(t *testing.T) {
 	scenarios := []struct {
 		desc  string
