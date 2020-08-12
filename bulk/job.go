@@ -90,6 +90,17 @@ const (
 	Failed State = "Failed"
 )
 
+const (
+	// sfID is the column name for the Salesforce Object ID in Job CSV responses
+	sfID = "sf__Id"
+
+	// sfError is the column name for the error in Failed record responses
+	sfError = "sf__Error"
+
+	// sfError is the column name for the created flag in Successful record responses
+	sfCreated = "sf__Created"
+)
+
 // UnprocessedRecord is the unprocessed records from the job.
 type UnprocessedRecord struct {
 	Fields map[string]string
@@ -426,16 +437,17 @@ func (j *Job) SuccessfulRecords() ([]SuccessfulRecord, error) {
 		values, err := reader.Read()
 		if err == io.EOF {
 			break
-		} else if err != nil {
+		}
+		if err != nil {
 			return nil, err
 		}
 		var record SuccessfulRecord
-		created, err := strconv.ParseBool(values[j.headerPosition("sf__Created", fields)])
+		created, err := strconv.ParseBool(values[j.headerPosition(sfCreated, fields)])
 		if err != nil {
 			return nil, err
 		}
 		record.Created = created
-		record.ID = values[j.headerPosition("sf__Id", fields)]
+		record.ID = values[j.headerPosition(sfID, fields)]
 		record.Fields = j.record(fields[2:], values[2:])
 		records = append(records, record)
 	}
@@ -487,12 +499,13 @@ func (j *Job) FailedRecords() ([]FailedRecord, error) {
 		values, err := reader.Read()
 		if err == io.EOF {
 			break
-		} else if err != nil {
+		}
+		if err != nil {
 			return nil, err
 		}
 		var record FailedRecord
-		record.Error = values[j.headerPosition("sf__Error", fields)]
-		record.ID = values[j.headerPosition("sf__Id", fields)]
+		record.Error = values[j.headerPosition(sfError, fields)]
+		record.ID = values[j.headerPosition(sfID, fields)]
 		record.Fields = j.record(fields[2:], values[2:])
 		records = append(records, record)
 	}
@@ -544,7 +557,8 @@ func (j *Job) UnprocessedRecords() ([]UnprocessedRecord, error) {
 		values, err := reader.Read()
 		if err == io.EOF {
 			break
-		} else if err != nil {
+		}
+		if err != nil {
 			return nil, err
 		}
 		var record UnprocessedRecord

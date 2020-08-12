@@ -1,9 +1,10 @@
 package bulk
 
 import (
-	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewFormatter(t *testing.T) {
@@ -83,13 +84,11 @@ func TestNewFormatter(t *testing.T) {
 
 			if tt.want != nil {
 				tt.want.sb.WriteString(strings.Join(tt.want.fields, string(tt.want.job.delimiter())))
-				tt.want.sb.WriteString(tt.want.job.newline())
-			}
+				tt.want.sb.WriteString("\n")
 
-			if tt.want != nil && !(reflect.DeepEqual(got.job, tt.want.job) &&
-				reflect.DeepEqual(got.fields, tt.want.fields) &&
-				reflect.DeepEqual(got.sb, tt.want.sb)) {
-				t.Errorf("NewFormatter() = %v, want %v", got, tt.want)
+				assert.Equalf(t, tt.want.job, got.job, "NewFormatter().job = %v, want %v", got.job, tt.want.job)
+				assert.Equalf(t, tt.want.fields, got.fields, "NewFormatter.fields = %v, want %v", got.fields, tt.want.fields)
+				assert.Equalf(t, tt.want.sb, got.sb, "NewFormatter.sb = %v, want %v", got.sb, tt.want.sb)
 			}
 		})
 	}
