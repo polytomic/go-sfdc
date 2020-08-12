@@ -12,6 +12,10 @@ func (mock *mockSessionFormatter) ServiceURL() string {
 	return mock.url
 }
 
+func (mock *mockSessionFormatter) Version() int {
+	return 42
+}
+
 func (mock *mockSessionFormatter) AuthorizationHeader(*http.Request) {}
 
 func (mock *mockSessionFormatter) Client() *http.Client {
