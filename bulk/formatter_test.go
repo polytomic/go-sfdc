@@ -1,9 +1,10 @@
 package bulk
 
 import (
-	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewFormatter(t *testing.T) {
@@ -42,7 +43,7 @@ func TestNewFormatter(t *testing.T) {
 					"Name",
 					"Site",
 				},
-				sb: strings.Builder{},
+				sb: &strings.Builder{},
 			},
 			wantErr: false,
 		},
@@ -82,12 +83,12 @@ func TestNewFormatter(t *testing.T) {
 			}
 
 			if tt.want != nil {
-				tt.want.sb.WriteString(strings.Join(tt.want.fields, tt.want.job.delimiter()))
-				tt.want.sb.WriteString(tt.want.job.newline())
-			}
+				tt.want.sb.WriteString(strings.Join(tt.want.fields, string(tt.want.job.delimiter())))
+				tt.want.sb.WriteString("\n")
 
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewFormatter() = %v, want %v", got, tt.want)
+				assert.Equalf(t, tt.want.job, got.job, "NewFormatter().job = %v, want %v", got.job, tt.want.job)
+				assert.Equalf(t, tt.want.fields, got.fields, "NewFormatter.fields = %v, want %v", got.fields, tt.want.fields)
+				assert.Equalf(t, tt.want.sb, got.sb, "NewFormatter.sb = %v, want %v", got.sb, tt.want.sb)
 			}
 		})
 	}
@@ -109,7 +110,7 @@ func TestFormatter_Add(t *testing.T) {
 		job        *Job
 		fields     []string
 		insertNull bool
-		sb         strings.Builder
+		sb         *strings.Builder
 	}
 	type args struct {
 		records []Record
@@ -135,7 +136,7 @@ func TestFormatter_Add(t *testing.T) {
 					"Site",
 				},
 				insertNull: true,
-				sb:         strings.Builder{},
+				sb:         &strings.Builder{},
 			},
 			args: args{
 				records: []Record{
@@ -153,7 +154,7 @@ func TestFormatter_Add(t *testing.T) {
 					},
 				},
 			},
-			want:    "name 1|good site\nname 2|great site\n",
+			want:    "Name|Site\nname 1|good site\nname 2|great site\n",
 			wantErr: false,
 		},
 		{
@@ -170,7 +171,7 @@ func TestFormatter_Add(t *testing.T) {
 					"Site",
 				},
 				insertNull: true,
-				sb:         strings.Builder{},
+				sb:         &strings.Builder{},
 			},
 			args: args{
 				records: nil,
@@ -181,11 +182,7 @@ func TestFormatter_Add(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			f := &Formatter{
-				job:    tt.fields.job,
-				fields: tt.fields.fields,
-				sb:     tt.fields.sb,
-			}
+			f, _ := NewFormatter(tt.fields.job, tt.fields.fields)
 			var err error
 			if err = f.Add(tt.args.records...); (err != nil) != tt.wantErr {
 				t.Errorf("Formatter.Add() error = %v, wantErr %v", err, tt.wantErr)

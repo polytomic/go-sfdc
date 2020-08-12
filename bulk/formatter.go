@@ -1,6 +1,7 @@
 package bulk
 
 import (
+	"encoding/csv"
 	"errors"
 	"fmt"
 	"strings"
@@ -16,7 +17,8 @@ type Record interface {
 type Formatter struct {
 	job    *Job
 	fields []string
-	sb     strings.Builder
+	writer *csv.Writer
+	sb     *strings.Builder
 }
 
 // NewFormatter creates a new formatter using the job and the list of fields.
@@ -28,19 +30,23 @@ func NewFormatter(job *Job, fields []string) (*Formatter, error) {
 		return nil, errors.New("bulk formatter: fields are required")
 	}
 
+	builder := &strings.Builder{}
+	writer := csv.NewWriter(builder)
+	writer.Comma = job.delimiter()
+	writer.UseCRLF = job.info.LineEnding == CarriageReturnLinefeed
+
 	f := &Formatter{
 		job:    job,
 		fields: fields,
-		sb:     strings.Builder{},
+		sb:     builder,
+		writer: writer,
 	}
 
-	if _, err := f.sb.WriteString(strings.Join(fields, job.delimiter())); err != nil {
+	err := writer.Write(fields)
+	if err != nil {
 		return nil, err
 	}
-	if _, err := f.sb.WriteString(job.newline()); err != nil {
-		return nil, err
-
-	}
+	writer.Flush()
 
 	return f, nil
 }
@@ -67,16 +73,12 @@ func (f *Formatter) Add(records ...Record) error {
 				}
 			}
 		}
-		_, err := f.sb.WriteString(strings.Join(values, f.job.delimiter()))
+		err := f.writer.Write(values)
 		if err != nil {
 			return err
 		}
-		_, err = f.sb.WriteString(f.job.newline())
-		if err != nil {
-			return err
-		}
-
 	}
+	f.writer.Flush()
 
 	return nil
 }
