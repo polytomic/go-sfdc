@@ -2,8 +2,10 @@ package sfdc
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/pkg/errors"
 )
@@ -13,6 +15,11 @@ type Error struct {
 	ErrorCode string   `json:"errorCode"`
 	Message   string   `json:"message"`
 	Fields    []string `json:"fields"`
+}
+
+// Error fulfills the error interface and allows us to return SFDC Errors from Go functions
+func (e Error) Error() string {
+	return fmt.Sprintf("%s: %s", e.ErrorCode, e.Message)
 }
 
 // UnmarshalJSON will unmarshal a JSON byte array.
@@ -65,6 +72,18 @@ func (e *Error) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// Errors provides a type for a collection of Salesforce Errors
+type Errors []Error
+
+func (e Errors) Error() string {
+	msgs := make([]string, len(e))
+	for i, err := range e {
+		msgs[i] = err.Message
+	}
+
+	return strings.Join(msgs, ", ")
+}
+
 // HandleError makes an error from http.Response.
 // It is the caller's responsibility to close resp.Body.
 func HandleError(resp *http.Response) error {
@@ -72,10 +91,23 @@ func HandleError(resp *http.Response) error {
 }
 
 func newErrorFromBody(resp *http.Response) error {
-	body, err := ioutil.ReadAll(resp.Body)
+	response, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return errors.Wrap(err, "could not read the body with error")
 	}
 
-	return errors.New(string(body))
+	errs := Errors{}
+	err = json.Unmarshal(response, &errs)
+	if err != nil {
+		// perhaps this is a single error, not a slice
+		sfdcErr := Error{}
+		err = json.Unmarshal(response, &sfdcErr)
+		if err != nil || sfdcErr.ErrorCode == "" {
+			// either we could not unmarshal the response or the response didn't
+			// match the shape we expected
+			return errors.New(string(response))
+		}
+		return sfdcErr
+	}
+	return errs
 }
