@@ -248,18 +248,17 @@ func (j *Job) response(request *http.Request) (Response, error) {
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		var errs []sfdc.Error
+		var errs sfdc.Errors
 		err = decoder.Decode(&errs)
-		var errMsg error
 		if err == nil {
-			for _, err := range errs {
-				errMsg = fmt.Errorf("insert response err: %s: %s", err.ErrorCode, err.Message)
+			if len(errs) == 1 {
+				return Response{}, errs[0]
 			}
-		} else {
-			errMsg = fmt.Errorf("insert response err: %d %s", response.StatusCode, response.Status)
+			return Response{}, errs
 		}
 
-		return Response{}, errMsg
+		// could not unmarshal the error response, just pass the response status back
+		return Response{}, fmt.Errorf("job err: %d %s", response.StatusCode, response.Status)
 	}
 
 	var value Response
@@ -531,17 +530,16 @@ func (j *Job) UnprocessedRecords() ([]UnprocessedRecord, error) {
 	if response.StatusCode != http.StatusOK {
 		decoder := json.NewDecoder(response.Body)
 		defer response.Body.Close()
-		var errs []sfdc.Error
+		var errs sfdc.Errors
 		err = decoder.Decode(&errs)
-		var errMsg error
 		if err == nil {
-			for _, err := range errs {
-				errMsg = fmt.Errorf("job err: %s: %s", err.ErrorCode, err.Message)
+			if len(errs) == 1 {
+				return nil, errs[0]
 			}
-		} else {
-			errMsg = fmt.Errorf("job err: %d %s", response.StatusCode, response.Status)
+			return nil, errs
 		}
-		return nil, errMsg
+		// could not unmarshal the error response, just pass the response status back
+		return nil, fmt.Errorf("job err: %d %s", response.StatusCode, response.Status)
 	}
 
 	reader := csv.NewReader(response.Body)
