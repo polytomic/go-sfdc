@@ -531,17 +531,18 @@ func (j *Job) UnprocessedRecords() ([]UnprocessedRecord, error) {
 	if response.StatusCode != http.StatusOK {
 		decoder := json.NewDecoder(response.Body)
 		defer response.Body.Close()
-		var errs []sfdc.Error
+		var errs sfdc.Errors
 		err = decoder.Decode(&errs)
-		var errMsg error
 		if err == nil {
-			for _, err := range errs {
-				errMsg = fmt.Errorf("job err: %s: %s", err.ErrorCode, err.Message)
+			if len(errs) == 1 {
+				return nil, errs[0]
 			}
+			return nil, errs
 		} else {
-			errMsg = fmt.Errorf("job err: %d %s", response.StatusCode, response.Status)
+			// could not unmarshal the error response, just pass the response status back
+			err = fmt.Errorf("job err: %d %s", response.StatusCode, response.Status)
 		}
-		return nil, errMsg
+		return nil, err
 	}
 
 	reader := csv.NewReader(response.Body)
