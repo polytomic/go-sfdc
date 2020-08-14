@@ -1,4 +1,7 @@
 # go-sfdc
+
+[![Godoc Reference][godoc-img]][godoc-url] [![CI][ci-img]][ci-url] [![codecov][codecov-img]][codecov-url]
+
 This is a `golang` library for interfacing with `Salesforce` APIs.
 
 ## Getting Started
@@ -46,3 +49,12 @@ var config = sfdc.Configuration{
 
 ## License
 GO-SFDC source code is available under the [MIT License](LICENSE.txt)
+
+[godoc-img]: https://godoc.org/github.com/namely/go-sfdc?status.svg
+[godoc-url]: https://godoc.org/github.com/namely/go-sfdc
+
+[ci-img]: https://github.com/namely/go-sfdc/workflows/CI/badge.svg
+[ci-url]: https://github.com/namely/go-sfdc/actions?query=workflow%3A%22CI%22
+
+[codecov-img]: https://codecov.io/gh/namely/go-sfdc/branch/master/graph/badge.svg
+[codecov-url]: https://codecov.io/gh/namely/go-sfdc
