@@ -5,7 +5,6 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -248,17 +247,7 @@ func (j *Job) response(request *http.Request) (Response, error) {
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		var errs sfdc.Errors
-		err = decoder.Decode(&errs)
-		if err == nil {
-			if len(errs) == 1 {
-				return Response{}, errs[0]
-			}
-			return Response{}, errs
-		}
-
-		// could not unmarshal the error response, just pass the response status back
-		return Response{}, fmt.Errorf("job err: %d %s", response.StatusCode, response.Status)
+		return Response{}, sfdc.HandleError(response)
 	}
 
 	var value Response
@@ -374,9 +363,10 @@ func (j *Job) Upload(body io.Reader) error {
 	if err != nil {
 		return err
 	}
+	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusCreated {
-		return errors.New("job error: unable to upload job")
+		return sfdc.HandleError(response)
 	}
 	return nil
 }
@@ -395,26 +385,14 @@ func (j *Job) SuccessfulRecords() ([]SuccessfulRecord, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		decoder := json.NewDecoder(response.Body)
-		defer response.Body.Close()
-		var errs []sfdc.Error
-		err = decoder.Decode(&errs)
-		var errMsg error
-		if err == nil {
-			for _, err := range errs {
-				errMsg = fmt.Errorf("job err: %s: %s", err.ErrorCode, err.Message)
-			}
-		} else {
-			errMsg = fmt.Errorf("job err: %d %s", response.StatusCode, response.Status)
-		}
-		return nil, errMsg
+		return nil, sfdc.HandleError(response)
 	}
 
 	reader := csv.NewReader(response.Body)
 	reader.Comma = j.delimiter()
-	defer response.Body.Close()
 
 	var records []SuccessfulRecord
 	fields, err := reader.Read()
@@ -457,26 +435,14 @@ func (j *Job) FailedRecords() ([]FailedRecord, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		decoder := json.NewDecoder(response.Body)
-		defer response.Body.Close()
-		var errs []sfdc.Error
-		err = decoder.Decode(&errs)
-		var errMsg error
-		if err == nil {
-			for _, err := range errs {
-				errMsg = fmt.Errorf("job err: %s: %s", err.ErrorCode, err.Message)
-			}
-		} else {
-			errMsg = fmt.Errorf("job err: %d %s", response.StatusCode, response.Status)
-		}
-		return nil, errMsg
+		return nil, sfdc.HandleError(response)
 	}
 
 	reader := csv.NewReader(response.Body)
 	reader.Comma = j.delimiter()
-	defer response.Body.Close()
 
 	var records []FailedRecord
 	fields, err := reader.Read()
@@ -515,25 +481,14 @@ func (j *Job) UnprocessedRecords() ([]UnprocessedRecord, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		decoder := json.NewDecoder(response.Body)
-		defer response.Body.Close()
-		var errs sfdc.Errors
-		err = decoder.Decode(&errs)
-		if err == nil {
-			if len(errs) == 1 {
-				return nil, errs[0]
-			}
-			return nil, errs
-		}
-		// could not unmarshal the error response, just pass the response status back
-		return nil, fmt.Errorf("job err: %d %s", response.StatusCode, response.Status)
+		return nil, sfdc.HandleError(response)
 	}
 
 	reader := csv.NewReader(response.Body)
 	reader.Comma = j.delimiter()
-	defer response.Body.Close()
 
 	var records []UnprocessedRecord
 	fields, err := reader.Read()
