@@ -376,7 +376,7 @@ func (j *Job) Upload(body io.Reader) error {
 	}
 
 	if response.StatusCode != http.StatusCreated {
-		return errors.New("job error: unable to upload job")
+		return sfdc.HandleError(response)
 	}
 	return nil
 }
