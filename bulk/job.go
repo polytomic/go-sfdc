@@ -46,8 +46,12 @@ const (
 // ContentType is the format of the data being processed.
 type ContentType string
 
-// CSV is the supported content data type.
-const CSV ContentType = "CSV"
+const (
+	// CSV is the supported content data type for Bulk v2 Jobs
+	CSV ContentType = "CSV"
+	// JSON is the supported content data type for Bulk v1 Jobs
+	JSON ContentType = "JSON"
+)
 
 // LineEnding is the line ending used for the CSV job data.
 type LineEnding string
@@ -57,6 +61,16 @@ const (
 	Linefeed LineEnding = "LF"
 	// CarriageReturnLinefeed is the (\r\n) character.
 	CarriageReturnLinefeed LineEnding = "CRLF"
+)
+
+// ConcurrencyMode determines how Salesforce processes the Job batches
+type ConcurrencyMode string
+
+const (
+	// Serial batches will be processed by Salesforce sequentially
+	Serial ConcurrencyMode = "Serial"
+	// Parallel batches will be processed by Salesforce simultaneously
+	Parallel ConcurrencyMode = "Parallel"
 )
 
 // Operation is the processing operation for the job.
@@ -79,6 +93,8 @@ type State string
 const (
 	// Open the job has been created and job data can be uploaded tothe job.
 	Open State = "Open"
+	// Closed jobs have started processing; new data may not be added
+	Closed State = "Closed"
 	// UpdateComplete all data for the job has been uploaded and the job is ready to be queued and processed.
 	UpdateComplete State = "UploadComplete"
 	// Aborted the job has been aborted.
@@ -150,8 +166,8 @@ type Options struct {
 type Response struct {
 	APIVersion          float32         `json:"apiVersion"`
 	ColumnDelimiter     ColumnDelimiter `json:"columnDelimiter"`
-	ConcurrencyMode     string          `json:"concurrencyMode"`
-	ContentType         string          `json:"contentType"`
+	ConcurrencyMode     ConcurrencyMode `json:"concurrencyMode"`
+	ContentType         ContentType     `json:"contentType"`
 	ContentURL          string          `json:"contentUrl"`
 	CreatedByID         string          `json:"createdById"`
 	CreatedDate         string          `json:"createdDate"`
