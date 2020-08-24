@@ -292,25 +292,14 @@ func (j *Job) infoResponse(request *http.Request) (Info, error) {
 	if err != nil {
 		return Info{}, err
 	}
-
-	decoder := json.NewDecoder(response.Body)
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		var errs []sfdc.Error
-		err = decoder.Decode(&errs)
-		var errMsg error
-		if err == nil {
-			for _, err := range errs {
-				errMsg = fmt.Errorf("job err: %s: %s", err.ErrorCode, err.Message)
-			}
-		} else {
-			errMsg = fmt.Errorf("job err: %d %s", response.StatusCode, response.Status)
-		}
-
-		return Info{}, errMsg
+		err := sfdc.HandleError(response)
+		return Info{}, err
 	}
 
+	decoder := json.NewDecoder(response.Body)
 	var value Info
 	err = decoder.Decode(&value)
 	if err != nil {
@@ -388,7 +377,6 @@ func (j *Job) Upload(body io.Reader) error {
 
 	if response.StatusCode != http.StatusCreated {
 		return sfdc.HandleError(response)
-		// return errors.New("job error: unable to upload job")
 	}
 	return nil
 }

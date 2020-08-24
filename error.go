@@ -91,10 +91,23 @@ func HandleError(resp *http.Response) error {
 }
 
 func newErrorFromBody(resp *http.Response) error {
-	body, err := ioutil.ReadAll(resp.Body)
+	response, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return errors.Wrap(err, "could not read the body with error")
 	}
 
-	return errors.New(string(body))
+	errs := Errors{}
+	err = json.Unmarshal(response, &errs)
+	if err != nil {
+		// perhaps this is a single error, not a slice
+		sfdcErr := Error{}
+		err = json.Unmarshal(response, &sfdcErr)
+		if err != nil || sfdcErr.ErrorCode == "" {
+			// either we could not unmarshal the response or the response didn't
+			// match the shape we expected
+			return errors.New(string(response))
+		}
+		return sfdcErr
+	}
+	return errs
 }
