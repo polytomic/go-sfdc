@@ -76,9 +76,9 @@ func (e *Error) UnmarshalJSON(data []byte) error {
 type Errors []Error
 
 func (e Errors) Error() string {
-	msgs := make([]string, len(e))
-	for i, err := range e {
-		msgs[i] = err.Message
+	msgs := make([]string, 0, len(e))
+	for _, err := range e {
+		msgs = append(msgs, err.Error())
 	}
 
 	return strings.Join(msgs, ", ")
