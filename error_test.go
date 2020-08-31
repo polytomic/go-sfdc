@@ -1,6 +1,7 @@
 package sfdc
 
 import (
+	"errors"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -95,21 +96,40 @@ func TestHandleError(t *testing.T) {
 	tests := map[string]struct {
 		resp    *http.Response
 		wantErr string
+		errors  Errors
 	}{
 		"single_error": {
 			resp: &http.Response{
 				Status: "400 " + http.StatusText(400),
 				Body:   ioutil.NopCloser(strings.NewReader(singleErrBody)),
 			},
-			wantErr: `400 Bad Request: ` + singleErrBody,
+			wantErr: `400 Bad Request: INVALID_ID_FIELD: invalid record id (id)`,
+			errors: Errors{
+				{
+					Message:   "invalid record id",
+					ErrorCode: "INVALID_ID_FIELD",
+					Fields:    []string{"id"},
+				},
+			},
 		},
-		// TODO(vtopc): remove next case if SF API is never sending multiple errors:
 		"multiple_error": {
 			resp: &http.Response{
 				Status: "400 " + http.StatusText(400),
 				Body:   ioutil.NopCloser(strings.NewReader(multipleErrBody)),
 			},
-			wantErr: `400 Bad Request: ` + multipleErrBody,
+			wantErr: `400 Bad Request: INVALID_ID_FIELD: invalid record id (id), INVALID_ID_FIELD: invalid record id (id)`,
+			errors: Errors{
+				{
+					Message:   "invalid record id",
+					ErrorCode: "INVALID_ID_FIELD",
+					Fields:    []string{"id"},
+				},
+				{
+					Message:   "invalid record id",
+					ErrorCode: "INVALID_ID_FIELD",
+					Fields:    []string{"id"},
+				},
+			},
 		},
 		"read_body_error": {
 			resp: &http.Response{
@@ -125,6 +145,12 @@ func TestHandleError(t *testing.T) {
 			err := HandleError(tt.resp)
 			t.Log("err:", err)
 			require.EqualError(t, err, tt.wantErr)
+
+			if tt.errors != nil {
+				sfdcErr := Errors{}
+				require.True(t, errors.As(err, &sfdcErr))
+				require.Equal(t, tt.errors, sfdcErr)
+			}
 		})
 	}
 }
