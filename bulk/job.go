@@ -5,7 +5,6 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -47,8 +46,12 @@ const (
 // ContentType is the format of the data being processed.
 type ContentType string
 
-// CSV is the supported content data type.
-const CSV ContentType = "CSV"
+const (
+	// CSV is the supported content data type for Bulk v2 Jobs
+	CSV ContentType = "CSV"
+	// JSON is the supported content data type for Bulk v1 Jobs
+	JSON ContentType = "JSON"
+)
 
 // LineEnding is the line ending used for the CSV job data.
 type LineEnding string
@@ -58,6 +61,16 @@ const (
 	Linefeed LineEnding = "LF"
 	// CarriageReturnLinefeed is the (\r\n) character.
 	CarriageReturnLinefeed LineEnding = "CRLF"
+)
+
+// ConcurrencyMode determines how Salesforce processes the Job batches
+type ConcurrencyMode string
+
+const (
+	// Serial batches will be processed by Salesforce sequentially
+	Serial ConcurrencyMode = "Serial"
+	// Parallel batches will be processed by Salesforce simultaneously
+	Parallel ConcurrencyMode = "Parallel"
 )
 
 // Operation is the processing operation for the job.
@@ -80,6 +93,8 @@ type State string
 const (
 	// Open the job has been created and job data can be uploaded tothe job.
 	Open State = "Open"
+	// Closed jobs have started processing; new data may not be added
+	Closed State = "Closed"
 	// UpdateComplete all data for the job has been uploaded and the job is ready to be queued and processed.
 	UpdateComplete State = "UploadComplete"
 	// Aborted the job has been aborted.
@@ -151,8 +166,8 @@ type Options struct {
 type Response struct {
 	APIVersion          float32         `json:"apiVersion"`
 	ColumnDelimiter     ColumnDelimiter `json:"columnDelimiter"`
-	ConcurrencyMode     string          `json:"concurrencyMode"`
-	ContentType         string          `json:"contentType"`
+	ConcurrencyMode     ConcurrencyMode `json:"concurrencyMode"`
+	ContentType         ContentType     `json:"contentType"`
 	ContentURL          string          `json:"contentUrl"`
 	CreatedByID         string          `json:"createdById"`
 	CreatedDate         string          `json:"createdDate"`
@@ -248,17 +263,7 @@ func (j *Job) response(request *http.Request) (Response, error) {
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		var errs sfdc.Errors
-		err = decoder.Decode(&errs)
-		if err == nil {
-			if len(errs) == 1 {
-				return Response{}, errs[0]
-			}
-			return Response{}, errs
-		}
-
-		// could not unmarshal the error response, just pass the response status back
-		return Response{}, fmt.Errorf("job err: %d %s", response.StatusCode, response.Status)
+		return Response{}, sfdc.HandleError(response)
 	}
 
 	var value Response
@@ -374,6 +379,7 @@ func (j *Job) Upload(body io.Reader) error {
 	if err != nil {
 		return err
 	}
+	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusCreated {
 		return sfdc.HandleError(response)
@@ -395,26 +401,14 @@ func (j *Job) SuccessfulRecords() ([]SuccessfulRecord, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		decoder := json.NewDecoder(response.Body)
-		defer response.Body.Close()
-		var errs []sfdc.Error
-		err = decoder.Decode(&errs)
-		var errMsg error
-		if err == nil {
-			for _, err := range errs {
-				errMsg = fmt.Errorf("job err: %s: %s", err.ErrorCode, err.Message)
-			}
-		} else {
-			errMsg = fmt.Errorf("job err: %d %s", response.StatusCode, response.Status)
-		}
-		return nil, errMsg
+		return nil, sfdc.HandleError(response)
 	}
 
 	reader := csv.NewReader(response.Body)
 	reader.Comma = j.delimiter()
-	defer response.Body.Close()
 
 	var records []SuccessfulRecord
 	fields, err := reader.Read()
@@ -457,26 +451,14 @@ func (j *Job) FailedRecords() ([]FailedRecord, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		decoder := json.NewDecoder(response.Body)
-		defer response.Body.Close()
-		var errs []sfdc.Error
-		err = decoder.Decode(&errs)
-		var errMsg error
-		if err == nil {
-			for _, err := range errs {
-				errMsg = fmt.Errorf("job err: %s: %s", err.ErrorCode, err.Message)
-			}
-		} else {
-			errMsg = fmt.Errorf("job err: %d %s", response.StatusCode, response.Status)
-		}
-		return nil, errMsg
+		return nil, sfdc.HandleError(response)
 	}
 
 	reader := csv.NewReader(response.Body)
 	reader.Comma = j.delimiter()
-	defer response.Body.Close()
 
 	var records []FailedRecord
 	fields, err := reader.Read()
@@ -515,25 +497,14 @@ func (j *Job) UnprocessedRecords() ([]UnprocessedRecord, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		decoder := json.NewDecoder(response.Body)
-		defer response.Body.Close()
-		var errs sfdc.Errors
-		err = decoder.Decode(&errs)
-		if err == nil {
-			if len(errs) == 1 {
-				return nil, errs[0]
-			}
-			return nil, errs
-		}
-		// could not unmarshal the error response, just pass the response status back
-		return nil, fmt.Errorf("job err: %d %s", response.StatusCode, response.Status)
+		return nil, sfdc.HandleError(response)
 	}
 
 	reader := csv.NewReader(response.Body)
 	reader.Comma = j.delimiter()
-	defer response.Body.Close()
 
 	var records []UnprocessedRecord
 	fields, err := reader.Read()

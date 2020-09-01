@@ -103,9 +103,9 @@ func TestHandleError(t *testing.T) {
 				Status: "400 " + http.StatusText(400),
 				Body:   ioutil.NopCloser(strings.NewReader(singleErrBody)),
 			},
-			wantErr: `400 Bad Request: invalid record id`,
+			wantErr: `400 Bad Request: INVALID_ID_FIELD: invalid record id (id)`,
 			errors: Errors{
-				Error{
+				{
 					Message:   "invalid record id",
 					ErrorCode: "INVALID_ID_FIELD",
 					Fields:    []string{"id"},
@@ -117,14 +117,14 @@ func TestHandleError(t *testing.T) {
 				Status: "400 " + http.StatusText(400),
 				Body:   ioutil.NopCloser(strings.NewReader(multipleErrBody)),
 			},
-			wantErr: `400 Bad Request: invalid record id, invalid record id`,
+			wantErr: `400 Bad Request: INVALID_ID_FIELD: invalid record id (id), INVALID_ID_FIELD: invalid record id (id)`,
 			errors: Errors{
-				Error{
+				{
 					Message:   "invalid record id",
 					ErrorCode: "INVALID_ID_FIELD",
 					Fields:    []string{"id"},
 				},
-				Error{
+				{
 					Message:   "invalid record id",
 					ErrorCode: "INVALID_ID_FIELD",
 					Fields:    []string{"id"},

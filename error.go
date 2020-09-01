@@ -19,7 +19,7 @@ type Error struct {
 
 // Error fulfills the error interface and allows us to return SFDC Errors from Go functions
 func (e Error) Error() string {
-	return fmt.Sprintf("%s: %s", e.ErrorCode, e.Message)
+	return fmt.Sprintf("%s: %s (%s)", e.ErrorCode, e.Message, strings.Join(e.Fields, ", "))
 }
 
 // UnmarshalJSON will unmarshal a JSON byte array.
@@ -76,9 +76,9 @@ func (e *Error) UnmarshalJSON(data []byte) error {
 type Errors []Error
 
 func (e Errors) Error() string {
-	msgs := make([]string, len(e))
-	for i, err := range e {
-		msgs[i] = err.Message
+	msgs := make([]string, 0, len(e))
+	for _, err := range e {
+		msgs = append(msgs, err.Error())
 	}
 
 	return strings.Join(msgs, ", ")
@@ -91,23 +91,15 @@ func HandleError(resp *http.Response) error {
 }
 
 func newErrorFromBody(resp *http.Response) error {
-	response, err := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return errors.Wrap(err, "could not read the body with error")
 	}
 
 	errs := Errors{}
-	err = json.Unmarshal(response, &errs)
+	err = json.Unmarshal(body, &errs)
 	if err != nil {
-		// perhaps this is a single error, not a slice
-		sfdcErr := Error{}
-		err = json.Unmarshal(response, &sfdcErr)
-		if err != nil || sfdcErr.ErrorCode == "" {
-			// either we could not unmarshal the response or the response didn't
-			// match the shape we expected
-			return errors.New(string(response))
-		}
-		return sfdcErr
+		return errors.New(string(body))
 	}
 	return errs
 }
