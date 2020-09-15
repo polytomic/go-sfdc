@@ -2,6 +2,7 @@ package bulkv1
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -58,6 +59,24 @@ type BatchInfo struct {
 	StateMessage            string     `json:"stateMessage"`
 	SystemModstamp          string     `json:"systemModstamp"`
 	TotalProcessingTime     int        `json:"totalProcessingTime"`
+}
+
+// RecordError provides details about the error in the event of a
+// record failure
+type RecordError struct {
+	Message             string      `json:"message"`
+	Fields              []string    `json:"fields"`
+	StatusCode          string      `json:"statusCode"`
+	ExtendedErrorDetail interface{} `json:"extendedErrorDetail"`
+}
+
+// ResultRecord provides status information about an individual record
+// in the batch
+type ResultRecord struct {
+	ID      string        `json:"id"`
+	Success bool          `json:"success"`
+	Created bool          `json:"created"`
+	Errors  []RecordError `json:"errors"`
 }
 
 // Batch is a single batch in a Bulk v1 Job.
@@ -137,6 +156,35 @@ func (b *Batch) infoResponse(request *http.Request) (BatchInfo, error) {
 	return value, nil
 }
 
+// requestRecords retrieves the record payloads initially passed to
+// the batch at the time of creation.
+func (b *Batch) requestRecords() ([]map[string]string, error) {
+	url := bulkEndpoint(b.session, b.Info.JobID, "batch", b.Info.ID, "request")
+	request, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	b.session.AuthorizationHeader(request)
+
+	response, err := b.session.Client().Do(request)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return nil, sfdc.HandleError(response)
+	}
+
+	decoder := json.NewDecoder(response.Body)
+	result := []map[string]string{}
+	err = decoder.Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // Results fetches the batch results from Salesforce
 func (b *Batch) Results() (BatchResult, error) {
 	result := BatchResult{}
@@ -161,18 +209,16 @@ func (b *Batch) Results() (BatchResult, error) {
 		return result, err
 	}
 
-	records := []struct {
-		ID      string
-		Success bool
-		Created bool
-		Errors  []string
-	}{}
+	records := []ResultRecord{}
 
 	err = json.Unmarshal(body, &records)
 	if err != nil {
+		fmt.Println()
+		fmt.Println(string(body))
 		return result, err
 	}
-	for _, record := range records {
+	var requestRecords []map[string]string
+	for i, record := range records {
 		if record.Success {
 			result.Successful = append(result.Successful,
 				bulk.SuccessfulRecord{
@@ -183,11 +229,29 @@ func (b *Batch) Results() (BatchResult, error) {
 				},
 			)
 		} else {
+			if requestRecords == nil {
+				requestRecords, err = b.requestRecords()
+				if err != nil {
+					return result, fmt.Errorf("error retrieving request: %w", err)
+				}
+			}
+			messages := make([]string, len(record.Errors))
+			for i, e := range record.Errors {
+				messages[i] = fmt.Sprintf("%s (%s)", e.Message, e.StatusCode)
+			}
+
+			fields := map[string]string{}
+			if i < len(requestRecords) {
+				fields = requestRecords[i]
+			}
 			result.Failed = append(result.Failed,
 				bulk.FailedRecord{
-					Error: strings.Join(record.Errors, "\n"),
+					Error: strings.Join(messages, "\n"),
 					JobRecord: bulk.JobRecord{
 						ID: record.ID,
+						UnprocessedRecord: bulk.UnprocessedRecord{
+							Fields: fields,
+						},
 					},
 				},
 			)
