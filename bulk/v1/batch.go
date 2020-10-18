@@ -158,7 +158,7 @@ func (b *Batch) infoResponse(request *http.Request) (BatchInfo, error) {
 
 // requestRecords retrieves the record payloads initially passed to
 // the batch at the time of creation.
-func (b *Batch) requestRecords() ([]map[string]string, error) {
+func (b *Batch) requestRecords() ([]map[string]interface{}, error) {
 	url := bulkEndpoint(b.session, b.Info.JobID, "batch", b.Info.ID, "request")
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -176,7 +176,7 @@ func (b *Batch) requestRecords() ([]map[string]string, error) {
 	}
 
 	decoder := json.NewDecoder(response.Body)
-	result := []map[string]string{}
+	result := []map[string]interface{}{}
 	err = decoder.Decode(&result)
 	if err != nil {
 		return nil, err
@@ -217,7 +217,7 @@ func (b *Batch) Results() (BatchResult, error) {
 		fmt.Println(string(body))
 		return result, err
 	}
-	var requestRecords []map[string]string
+	var requestRecords []map[string]interface{}
 	for i, record := range records {
 		if record.Success {
 			result.Successful = append(result.Successful,
@@ -240,7 +240,7 @@ func (b *Batch) Results() (BatchResult, error) {
 				messages[i] = fmt.Sprintf("%s (%s)", e.Message, e.StatusCode)
 			}
 
-			fields := map[string]string{}
+			fields := map[string]interface{}{}
 			if i < len(requestRecords) {
 				fields = requestRecords[i]
 			}

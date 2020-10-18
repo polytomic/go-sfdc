@@ -118,7 +118,7 @@ const (
 
 // UnprocessedRecord is the unprocessed records from the job.
 type UnprocessedRecord struct {
-	Fields map[string]string
+	Fields map[string]interface{}
 }
 
 // JobRecord is the record for the job.  Includes the Salesforce ID along with the fields.
@@ -542,8 +542,8 @@ func (j *Job) fields(header []string, offset int) []string {
 	return fields
 }
 
-func (j *Job) record(fields, values []string) map[string]string {
-	record := make(map[string]string)
+func (j *Job) record(fields, values []string) map[string]interface{} {
+	record := make(map[string]interface{})
 	for idx, field := range fields {
 		record[field] = values[idx]
 	}
