@@ -215,7 +215,7 @@ func TestJob_record(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   map[string]string
+		want   map[string]interface{}
 	}{
 		{
 			name:   "make record",
@@ -232,7 +232,7 @@ func TestJob_record(t *testing.T) {
 					"1/1/1970",
 				},
 			},
-			want: map[string]string{
+			want: map[string]interface{}{
 				"first": "john",
 				"last":  "doe",
 				"DOB":   "1/1/1970",
@@ -1237,7 +1237,7 @@ func TestJob_SuccessfulRecords(t *testing.T) {
 					JobRecord: JobRecord{
 						ID: "2345",
 						UnprocessedRecord: UnprocessedRecord{
-							Fields: map[string]string{
+							Fields: map[string]interface{}{
 								"FirstName": "John",
 								"LastName":  "Doe",
 								"DOB":       "1/1/1970",
@@ -1250,7 +1250,7 @@ func TestJob_SuccessfulRecords(t *testing.T) {
 					JobRecord: JobRecord{
 						ID: "9876",
 						UnprocessedRecord: UnprocessedRecord{
-							Fields: map[string]string{
+							Fields: map[string]interface{}{
 								"FirstName": "Jane",
 								"LastName":  "Doe",
 								"DOB":       "1/1/1980",
@@ -1336,7 +1336,7 @@ func TestJob_FailedRecords(t *testing.T) {
 					Error: "REQUIRED_FIELD_MISSING:Required fields are missing: [Name]:Name --",
 					JobRecord: JobRecord{
 						UnprocessedRecord: UnprocessedRecord{
-							Fields: map[string]string{
+							Fields: map[string]interface{}{
 								"FirstName": "John",
 								"LastName":  "Doe",
 								"DOB":       "1/1/1970",
@@ -1348,7 +1348,7 @@ func TestJob_FailedRecords(t *testing.T) {
 					Error: "REQUIRED_FIELD_MISSING:Required fields are missing: [Name]:Name --",
 					JobRecord: JobRecord{
 						UnprocessedRecord: UnprocessedRecord{
-							Fields: map[string]string{
+							Fields: map[string]interface{}{
 								"FirstName": "Jane",
 								"LastName":  "Doe",
 								"DOB":       "1/1/1980",
@@ -1431,14 +1431,14 @@ func TestJob_UnprocessedRecords(t *testing.T) {
 			},
 			want: []UnprocessedRecord{
 				{
-					Fields: map[string]string{
+					Fields: map[string]interface{}{
 						"FirstName": "John",
 						"LastName":  "Doe",
 						"DOB":       "1/1/1970",
 					},
 				},
 				{
-					Fields: map[string]string{
+					Fields: map[string]interface{}{
 						"FirstName": "Jane",
 						"LastName":  "Doe",
 						"DOB":       "1/1/1980",
