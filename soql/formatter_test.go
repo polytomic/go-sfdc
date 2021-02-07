@@ -490,6 +490,17 @@ func TestWhereEquals(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "string with quotes",
+			args: args{
+				field: "Name",
+				value: "O'Donnel",
+			},
+			want: &WhereClause{
+				expression: `Name = 'O\'Donnel'`,
+			},
+			wantErr: false,
+		},
+		{
 			name: "boolean",
 			args: args{
 				field: "Name",
@@ -567,6 +578,17 @@ func TestWhereNotEquals(t *testing.T) {
 			},
 			want: &WhereClause{
 				expression: "Name != 'Yeah'",
+			},
+			wantErr: false,
+		},
+		{
+			name: "string with quotes",
+			args: args{
+				field: "Name",
+				value: "O'Donnel",
+			},
+			want: &WhereClause{
+				expression: `Name != 'O\'Donnel'`,
 			},
 			wantErr: false,
 		},
@@ -656,6 +678,20 @@ func TestWhereIn(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "Strings with quotes",
+			args: args{
+				field: "Name",
+				values: []interface{}{
+					"O'Donnel",
+					"it's",
+				},
+			},
+			want: &WhereClause{
+				expression: `Name IN ('O\'Donnel','it\'s')`,
+			},
+			wantErr: false,
+		},
+		{
 			name: "Numbers",
 			args: args{
 				field: "Name",
@@ -735,6 +771,20 @@ func TestWhereNotIn(t *testing.T) {
 			},
 			want: &WhereClause{
 				expression: "Name NOT IN ('Yeah','Yep','Yes')",
+			},
+			wantErr: false,
+		},
+		{
+			name: "Strings with quotes",
+			args: args{
+				field: "Name",
+				values: []interface{}{
+					"O'Donnel",
+					"it's",
+				},
+			},
+			want: &WhereClause{
+				expression: `Name NOT IN ('O\'Donnel','it\'s')`,
 			},
 			wantErr: false,
 		},
