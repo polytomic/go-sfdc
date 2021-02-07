@@ -7,6 +7,12 @@ import (
 	"time"
 )
 
+var (
+	// escapeString defines a String Replacer which will correctly escape values
+	// in quotes SOQL strings.
+	escapeString = strings.NewReplacer(`'`, `\'`)
+)
+
 // QueryInput is used to provide SOQL inputs.
 //
 // ObjectType is the Salesforce Object, like Account
@@ -211,7 +217,7 @@ func WhereEquals(field string, value interface{}) (*WhereClause, error) {
 	if value != nil {
 		switch value.(type) {
 		case string:
-			v = fmt.Sprintf("'%s'", value.(string))
+			v = fmt.Sprintf("'%s'", escapeString.Replace(value.(string)))
 		case time.Time:
 			date := value.(time.Time)
 			v = date.Format(time.RFC3339)
@@ -236,7 +242,7 @@ func WhereNotEquals(field string, value interface{}) (*WhereClause, error) {
 	if value != nil {
 		switch value.(type) {
 		case string:
-			v = fmt.Sprintf("'%s'", value.(string))
+			v = fmt.Sprintf("'%s'", escapeString.Replace(value.(string)))
 		case time.Time:
 			date := value.(time.Time)
 			v = date.Format(time.RFC3339)
@@ -264,7 +270,7 @@ func WhereIn(field string, values []interface{}) (*WhereClause, error) {
 	for idx, value := range values {
 		switch value.(type) {
 		case string:
-			set[idx] = fmt.Sprintf("'%s'", value.(string))
+			set[idx] = fmt.Sprintf("'%s'", escapeString.Replace(value.(string)))
 		case bool:
 			return nil, errors.New("where in: boolean is not a value set value")
 		case time.Time:
@@ -292,7 +298,7 @@ func WhereNotIn(field string, values []interface{}) (*WhereClause, error) {
 	for idx, value := range values {
 		switch value.(type) {
 		case string:
-			set[idx] = fmt.Sprintf("'%s'", value.(string))
+			set[idx] = fmt.Sprintf("'%s'", escapeString.Replace(value.(string)))
 		case bool:
 			return nil, errors.New("where not in: boolean is not a value set value")
 		case time.Time:
