@@ -10,7 +10,10 @@ import (
 var (
 	// escapeString defines a String Replacer which will correctly escape values
 	// in quotes SOQL strings.
-	escapeString = strings.NewReplacer(`'`, `\'`)
+	escapeString = strings.NewReplacer(
+		`'`, `\'`,
+		`\`, `\\`,
+	)
 )
 
 // QueryInput is used to provide SOQL inputs.
@@ -158,12 +161,11 @@ func WhereGreaterThan(field string, value interface{}, equals bool) (*WhereClaus
 		return nil, errors.New("soql where: value can not be nil")
 	}
 	var v string
-	switch value.(type) {
+	switch val := value.(type) {
 	case string, bool:
 		return nil, errors.New("where greater than: value can not be a string or bool")
 	case time.Time:
-		date := value.(time.Time)
-		v = date.Format(time.RFC3339)
+		v = val.Format(time.RFC3339)
 	default:
 		v = fmt.Sprintf("%v", value)
 	}
@@ -188,12 +190,11 @@ func WhereLessThan(field string, value interface{}, equals bool) (*WhereClause, 
 		return nil, errors.New("soql where: value can not be nil")
 	}
 	var v string
-	switch value.(type) {
+	switch val := value.(type) {
 	case string, bool:
 		return nil, errors.New("where less than: value can not be a string")
 	case time.Time:
-		date := value.(time.Time)
-		v = date.Format(time.RFC3339)
+		v = val.Format(time.RFC3339)
 	default:
 		v = fmt.Sprintf("%v", value)
 	}
@@ -215,12 +216,11 @@ func WhereEquals(field string, value interface{}) (*WhereClause, error) {
 	}
 	var v string
 	if value != nil {
-		switch value.(type) {
+		switch val := value.(type) {
 		case string:
-			v = fmt.Sprintf("'%s'", escapeString.Replace(value.(string)))
+			v = fmt.Sprintf("'%s'", escapeString.Replace(val))
 		case time.Time:
-			date := value.(time.Time)
-			v = date.Format(time.RFC3339)
+			v = val.Format(time.RFC3339)
 		default:
 			v = fmt.Sprintf("%v", value)
 		}
@@ -240,12 +240,11 @@ func WhereNotEquals(field string, value interface{}) (*WhereClause, error) {
 	}
 	var v string
 	if value != nil {
-		switch value.(type) {
+		switch val := value.(type) {
 		case string:
-			v = fmt.Sprintf("'%s'", escapeString.Replace(value.(string)))
+			v = fmt.Sprintf("'%s'", escapeString.Replace(val))
 		case time.Time:
-			date := value.(time.Time)
-			v = date.Format(time.RFC3339)
+			v = val.Format(time.RFC3339)
 		default:
 			v = fmt.Sprintf("%v", value)
 		}
@@ -268,14 +267,13 @@ func WhereIn(field string, values []interface{}) (*WhereClause, error) {
 	}
 	set := make([]string, len(values))
 	for idx, value := range values {
-		switch value.(type) {
+		switch val := value.(type) {
 		case string:
-			set[idx] = fmt.Sprintf("'%s'", escapeString.Replace(value.(string)))
+			set[idx] = fmt.Sprintf("'%s'", escapeString.Replace(val))
 		case bool:
 			return nil, errors.New("where in: boolean is not a value set value")
 		case time.Time:
-			date := value.(time.Time)
-			set[idx] = date.Format(time.RFC3339)
+			set[idx] = val.Format(time.RFC3339)
 		default:
 			set[idx] = fmt.Sprintf("%v", value)
 		}
@@ -296,14 +294,13 @@ func WhereNotIn(field string, values []interface{}) (*WhereClause, error) {
 	}
 	set := make([]string, len(values))
 	for idx, value := range values {
-		switch value.(type) {
+		switch val := value.(type) {
 		case string:
-			set[idx] = fmt.Sprintf("'%s'", escapeString.Replace(value.(string)))
+			set[idx] = fmt.Sprintf("'%s'", escapeString.Replace(val))
 		case bool:
 			return nil, errors.New("where not in: boolean is not a value set value")
 		case time.Time:
-			date := value.(time.Time)
-			set[idx] = date.Format(time.RFC3339)
+			set[idx] = val.Format(time.RFC3339)
 		default:
 			set[idx] = fmt.Sprintf("%v", value)
 		}
