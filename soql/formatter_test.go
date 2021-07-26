@@ -692,6 +692,20 @@ func TestWhereIn(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: `Strings with \`,
+			args: args{
+				field: "Name",
+				values: []interface{}{
+					`Blorp\`,
+					`it\s`,
+				},
+			},
+			want: &WhereClause{
+				expression: `Name IN ('Blorp\\','it\\s')`,
+			},
+			wantErr: false,
+		},
+		{
 			name: "Numbers",
 			args: args{
 				field: "Name",
