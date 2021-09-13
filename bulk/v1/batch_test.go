@@ -339,7 +339,10 @@ func TestBatch_Results(t *testing.T) {
 					url: "https://test.salesforce.com",
 					client: mockHTTPClient(
 						func(req *http.Request) *http.Response {
-							resp := `[
+							var resp string
+							switch req.URL.String() {
+							case "https://test.salesforce.com/services/async/42.0/job/1234/batch/abcd/result":
+								resp = `[
 								{
 								   "success" : true,
 								   "created" : true,
@@ -350,9 +353,12 @@ func TestBatch_Results(t *testing.T) {
 								   "success" : false,
 								   "created" : false,
 								   "id" : "001xx000003DHP1AAO",
-								   "errors" : ["REQUIRED_FIELD_MISSING:Required fields are missing: [LastName]:LastName --"]
+								   "errors" : [{"message": "REQUIRED_FIELD_MISSING:Required fields are missing: [LastName]:LastName --"}]
 								}
 							 ]`
+							case "https://test.salesforce.com/services/async/42.0/job/1234/batch/abcd/request":
+								resp = `[]`
+							}
 							return &http.Response{
 								StatusCode: http.StatusOK,
 								Status:     "OK",
@@ -361,7 +367,6 @@ func TestBatch_Results(t *testing.T) {
 							}
 						},
 						wantMethod(http.MethodGet),
-						wantURL("https://test.salesforce.com/services/async/42.0/job/1234/batch/abcd/result"),
 					),
 				},
 			},
@@ -382,9 +387,12 @@ func TestBatch_Results(t *testing.T) {
 				},
 				Failed: []bulk.FailedRecord{
 					{
-						Error: "REQUIRED_FIELD_MISSING:Required fields are missing: [LastName]:LastName --",
+						Error: "REQUIRED_FIELD_MISSING:Required fields are missing: [LastName]:LastName -- ()",
 						JobRecord: bulk.JobRecord{
 							ID: "001xx000003DHP1AAO",
+							UnprocessedRecord: bulk.UnprocessedRecord{
+								Fields: map[string]interface{}{},
+							},
 						},
 					},
 				},

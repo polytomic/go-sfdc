@@ -213,8 +213,6 @@ func (b *Batch) Results() (BatchResult, error) {
 
 	err = json.Unmarshal(body, &records)
 	if err != nil {
-		fmt.Println()
-		fmt.Println(string(body))
 		return result, err
 	}
 	var requestRecords []map[string]interface{}
