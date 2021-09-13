@@ -9,6 +9,10 @@ import (
 	"github.com/namely/go-sfdc/v3/session"
 )
 
+const (
+	LimitDailyApiRequests = "DailyApiRequests"
+)
+
 // LimitRequest provides an batch subrequester that will fetch the current
 // account limits
 type LimitRequest struct {
