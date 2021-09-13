@@ -1,6 +1,7 @@
 package bulkv1
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -19,7 +20,7 @@ func wantURL(url string) mockHTTPFilter {
 		if req.URL.String() != url {
 			return &http.Response{
 				StatusCode: 500,
-				Status:     "Invalid URL",
+				Status:     fmt.Sprintf("Invalid URL; expected %s", url),
 				Body:       ioutil.NopCloser(strings.NewReader(req.URL.String())),
 				Header:     make(http.Header),
 			}
