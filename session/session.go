@@ -13,6 +13,12 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	// CallOptionsHeader defines the header name to use when passing call
+	// options with a request.
+	CallOptionsHeader string = "Sforce-Call-Options"
+)
+
 // Session is the authentication response.  This is used to generate the
 // authorization header for the Salesforce API calls.
 type Session struct {
