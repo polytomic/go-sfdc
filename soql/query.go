@@ -3,7 +3,6 @@ package soql
 import (
 	"encoding/json"
 	"net/http"
-	"net/url"
 
 	"github.com/namely/go-sfdc/v3"
 	"github.com/namely/go-sfdc/v3/session"
@@ -52,7 +51,7 @@ func (r *Resource) Query(querier QueryFormatter, all bool) (*QueryResult, error)
 		return nil, err
 	}
 
-	result, err := newQueryResult(response, r)
+	result, err := NewQueryResult(response, r)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +75,7 @@ func (r *Resource) next(recordURL string) (*QueryResult, error) {
 		return nil, err
 	}
 
-	result, err := newQueryResult(response, r)
+	result, err := NewQueryResult(response, r)
 	if err != nil {
 		return nil, err
 	}
@@ -84,24 +83,12 @@ func (r *Resource) next(recordURL string) (*QueryResult, error) {
 	return result, nil
 }
 func (r *Resource) queryRequest(querier QueryFormatter, all bool) (*http.Request, error) {
-	query, err := querier.Format()
+	query, err := NewQueryRequest(r.session, querier, all)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoint := "/query"
-	if all {
-		endpoint += "All"
-	}
-
-	queryURL := r.session.ServiceURL() + endpoint + "/"
-
-	form := url.Values{}
-	form.Add("q", query)
-	queryURL += "?" + form.Encode()
-
-	request, err := http.NewRequest(http.MethodGet, queryURL, nil)
-
+	request, err := http.NewRequest(http.MethodGet, r.session.ServiceURL()+query.URL(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -111,24 +98,24 @@ func (r *Resource) queryRequest(querier QueryFormatter, all bool) (*http.Request
 	return request, nil
 
 }
-func (r *Resource) queryResponse(request *http.Request) (queryResponse, error) {
+func (r *Resource) queryResponse(request *http.Request) (QueryResponse, error) {
 	response, err := r.session.Client().Do(request)
 
 	if err != nil {
-		return queryResponse{}, err
+		return QueryResponse{}, err
 	}
 
 	decoder := json.NewDecoder(response.Body)
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		return queryResponse{}, sfdc.HandleError(response)
+		return QueryResponse{}, sfdc.HandleError(response)
 	}
 
-	var resp queryResponse
+	var resp QueryResponse
 	err = decoder.Decode(&resp)
 	if err != nil {
-		return queryResponse{}, err
+		return QueryResponse{}, err
 	}
 
 	return resp, nil

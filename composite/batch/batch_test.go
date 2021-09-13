@@ -2,6 +2,7 @@ package batch
 
 import (
 	"bytes"
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -241,11 +242,10 @@ func TestResource_Retrieve(t *testing.T) {
 						 }`
 						return &http.Response{
 							StatusCode: http.StatusOK,
-							Status:     "Good",
+							Status:     "OK",
 							Body:       ioutil.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
-
 					}),
 				},
 			},
@@ -265,15 +265,17 @@ func TestResource_Retrieve(t *testing.T) {
 						StatusCode: 204,
 					},
 					{
-						Result: map[string]interface{}{
-							"attributes": map[string]interface{}{
-								"type": "Account",
-								"url":  "/services/data/v34.0/sobjects/Account/001D000000K0fXOIAZ",
+						Result: toJson(t,
+							map[string]interface{}{
+								"attributes": map[string]interface{}{
+									"type": "Account",
+									"url":  "/services/data/v34.0/sobjects/Account/001D000000K0fXOIAZ",
+								},
+								"Name":              "NewName",
+								"BillingPostalCode": "94105",
+								"Id":                "001D000000K0fXOIAZ",
 							},
-							"Name":              "NewName",
-							"BillingPostalCode": "94105",
-							"Id":                "001D000000K0fXOIAZ",
-						},
+						),
 						StatusCode: 200,
 					},
 				},
@@ -300,7 +302,7 @@ func TestResource_Retrieve(t *testing.T) {
 								"fields" : [ "Id" ],
 								"message" : "Account ID: id value of incorrect type: 001900K0001pPuOAAU",
 								"errorCode" : "MALFORMED_ID"
-							}							
+							}
 						]`
 						return &http.Response{
 							StatusCode: http.StatusBadRequest,
@@ -335,9 +337,51 @@ func TestResource_Retrieve(t *testing.T) {
 				t.Errorf("Resource.Retrieve() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Resource.Retrieve() = %v, want %v", got, tt.want)
-			}
+			assertResultsMatch(t, tt.want, got)
+
 		})
+	}
+}
+
+func toJson(t *testing.T, v interface{}) json.RawMessage {
+	if v == nil {
+		return nil
+	}
+	encoded, err := json.Marshal(v)
+	if err != nil {
+		t.Errorf("Error encoding value: %v", err)
+	}
+	return encoded
+}
+
+func assertResultsMatch(t *testing.T, want, got Value) {
+	if want.HasErrors != got.HasErrors {
+		t.Errorf("HasErrors mismatch; want: %v got %v", want.HasErrors, got.HasErrors)
+	}
+	if len(want.Results) != len(got.Results) {
+		t.Fatalf("Result length mismatch; want: %v got %v", len(want.Results), len(got.Results))
+	}
+
+	for i, wanted := range want.Results {
+		if wanted.StatusCode != got.Results[i].StatusCode {
+			t.Errorf("Result status mismatch; want: %v got %v", wanted.StatusCode, got.Results[i].StatusCode)
+		}
+		var w interface{}
+		err := json.Unmarshal(wanted.Result, &w)
+		if wanted.Result != nil {
+			if err != nil {
+				t.Fatalf("error unmarshalling desired result: %v", err)
+			}
+		}
+		var g interface{}
+		if got.Results[i].Result != nil {
+			err = json.Unmarshal(got.Results[i].Result, &g)
+			if err != nil {
+				t.Fatalf("error unmarshalling result: %v", err)
+			}
+		}
+		if !reflect.DeepEqual(w, g) {
+			t.Errorf("Result mismatch; want: %v got %v", wanted.Result, got.Results[i].Result)
+		}
 	}
 }

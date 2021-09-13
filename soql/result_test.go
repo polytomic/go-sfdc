@@ -21,7 +21,7 @@ func testNewQueryRecords(records []map[string]interface{}) []*QueryRecord {
 }
 func Test_newQueryResult(t *testing.T) {
 	type args struct {
-		response queryResponse
+		response QueryResponse
 	}
 	tests := []struct {
 		name    string
@@ -32,7 +32,7 @@ func Test_newQueryResult(t *testing.T) {
 		{
 			name: "No sub results",
 			args: args{
-				response: queryResponse{
+				response: QueryResponse{
 					Done:      true,
 					TotalSize: 2,
 					Records: []map[string]interface{}{
@@ -54,7 +54,7 @@ func Test_newQueryResult(t *testing.T) {
 				},
 			},
 			want: &QueryResult{
-				response: queryResponse{
+				response: QueryResponse{
 					Done:      true,
 					TotalSize: 2,
 					Records: []map[string]interface{}{
@@ -96,7 +96,7 @@ func Test_newQueryResult(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := newQueryResult(tt.args.response, nil)
+			got, err := NewQueryResult(tt.args.response, nil)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("newQueryResult() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -110,7 +110,7 @@ func Test_newQueryResult(t *testing.T) {
 
 func TestQueryResult_Done(t *testing.T) {
 	type fields struct {
-		response queryResponse
+		response QueryResponse
 		records  []*QueryRecord
 		resource *Resource
 	}
@@ -122,7 +122,7 @@ func TestQueryResult_Done(t *testing.T) {
 		{
 			name: "Done",
 			fields: fields{
-				response: queryResponse{
+				response: QueryResponse{
 					Done: true,
 				},
 			},
@@ -145,7 +145,7 @@ func TestQueryResult_Done(t *testing.T) {
 
 func TestQueryResult_TotalSize(t *testing.T) {
 	type fields struct {
-		response queryResponse
+		response QueryResponse
 		records  []*QueryRecord
 		resource *Resource
 	}
@@ -157,7 +157,7 @@ func TestQueryResult_TotalSize(t *testing.T) {
 		{
 			name: "Total Size",
 			fields: fields{
-				response: queryResponse{
+				response: QueryResponse{
 					TotalSize: 23,
 				},
 			},
@@ -180,7 +180,7 @@ func TestQueryResult_TotalSize(t *testing.T) {
 
 func TestQueryResult_MoreRecords(t *testing.T) {
 	type fields struct {
-		response queryResponse
+		response QueryResponse
 		records  []*QueryRecord
 		resource *Resource
 	}
@@ -192,9 +192,10 @@ func TestQueryResult_MoreRecords(t *testing.T) {
 		{
 			name: "Has More",
 			fields: fields{
-				response: queryResponse{
+				response: QueryResponse{
 					NextRecordsURL: "The Next URL",
 				},
+				resource: &Resource{},
 			},
 			want: true,
 		},
@@ -215,7 +216,7 @@ func TestQueryResult_MoreRecords(t *testing.T) {
 
 func TestQueryResult_Records(t *testing.T) {
 	type fields struct {
-		response queryResponse
+		response QueryResponse
 		records  []*QueryRecord
 		resource *Resource
 	}
@@ -278,7 +279,7 @@ func TestQueryResult_Records(t *testing.T) {
 
 func TestQueryResult_Next(t *testing.T) {
 	type fields struct {
-		response queryResponse
+		response QueryResponse
 		records  []*QueryRecord
 		resource *Resource
 	}
@@ -297,7 +298,7 @@ func TestQueryResult_Next(t *testing.T) {
 		{
 			name: "No more records",
 			fields: fields{
-				response: queryResponse{
+				response: QueryResponse{
 					NextRecordsURL: "/services/data/v20.0/query/01gD0000002HU6KIAW-2000",
 				},
 				resource: &Resource{
@@ -316,22 +317,22 @@ func TestQueryResult_Next(t *testing.T) {
 							{
 								"done" : true,
 								"totalSize" : 2,
-								"records" : 
-								[ 
-									{  
-										"attributes" : 
-										{    
-											"type" : "Account",    
-											"url" : "/services/data/v20.0/sobjects/Account/001D000000IRFmaIAH"  
-										},  
+								"records" :
+								[
+									{
+										"attributes" :
+										{
+											"type" : "Account",
+											"url" : "/services/data/v20.0/sobjects/Account/001D000000IRFmaIAH"
+										},
 										"Name" : "Test 1"
-									}, 
-									{  
-										"attributes" : 
-										{    
-											"type" : "Account",    
-											"url" : "/services/data/v20.0/sobjects/Account/001D000000IomazIAB"  
-										},  
+									},
+									{
+										"attributes" :
+										{
+											"type" : "Account",
+											"url" : "/services/data/v20.0/sobjects/Account/001D000000IomazIAB"
+										},
 										"Name" : "Test 2"
 									}
 								]
@@ -347,7 +348,7 @@ func TestQueryResult_Next(t *testing.T) {
 				},
 			},
 			want: &QueryResult{
-				response: queryResponse{
+				response: QueryResponse{
 					Done:      true,
 					TotalSize: 2,
 					Records: []map[string]interface{}{

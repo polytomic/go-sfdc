@@ -15,6 +15,9 @@ import (
 type Subrequester interface {
 	URL() string
 	Method() string
+}
+
+type BinarySubrequester interface {
 	BinaryPartName() string
 	BinaryPartNameAlias() string
 	RichInput() map[string]interface{}
@@ -28,8 +31,8 @@ type Value struct {
 
 // Subvalue is the subresponses to the composite batch API.
 type Subvalue struct {
-	Result     interface{} `json:"result"`
-	StatusCode int         `json:"statusCode"`
+	Result     json.RawMessage `json:"result"`
+	StatusCode int             `json:"statusCode"`
 }
 
 const endpoint = "/composite/batch"
@@ -124,12 +127,13 @@ func (r *Resource) Retrieve(haltOnError bool, requesters []Subrequester) (Value,
 	}
 	return value, nil
 }
+
 func (r *Resource) validateSubrequests(requesters []Subrequester) error {
 	for _, requester := range requesters {
 		if requester.URL() == "" {
 			return errors.New("composite subrequest: must contain a url")
 		}
-		if _, has := validMethods[requester.Method()]; has == false {
+		if _, has := validMethods[requester.Method()]; !has {
 			return errors.New("composite subrequest: empty or invalid method " + requester.Method())
 		}
 	}
@@ -142,14 +146,16 @@ func (r *Resource) payload(haltOnError bool, requesters []Subrequester) (*bytes.
 			"url":    requester.URL(),
 			"method": requester.Method(),
 		}
-		if requester.BinaryPartName() != "" {
-			subRequest["binaryPartName"] = requester.BinaryPartName()
-		}
-		if requester.BinaryPartNameAlias() != "" {
-			subRequest["binaryPartNameAlias"] = requester.BinaryPartNameAlias()
-		}
-		if requester.RichInput() != nil {
-			subRequest["richInput"] = requester.RichInput()
+		if binarySub, ok := requester.(BinarySubrequester); ok {
+			if binarySub.BinaryPartName() != "" {
+				subRequest["binaryPartName"] = binarySub.BinaryPartName()
+			}
+			if binarySub.BinaryPartNameAlias() != "" {
+				subRequest["binaryPartNameAlias"] = binarySub.BinaryPartNameAlias()
+			}
+			if binarySub.RichInput() != nil {
+				subRequest["richInput"] = binarySub.RichInput()
+			}
 		}
 		subRequests[idx] = subRequest
 	}

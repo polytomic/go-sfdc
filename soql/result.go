@@ -6,12 +6,12 @@ import "errors"
 // allow for retrieving all of the records and query the
 // next round of records if available.
 type QueryResult struct {
-	response queryResponse
+	response QueryResponse
 	records  []*QueryRecord
 	resource *Resource
 }
 
-func newQueryResult(response queryResponse, resource *Resource) (*QueryResult, error) {
+func NewQueryResult(response QueryResponse, resource *Resource) (*QueryResult, error) {
 	result := &QueryResult{
 		response: response,
 		records:  make([]*QueryRecord, len(response.Records)),
@@ -42,7 +42,7 @@ func (result *QueryResult) TotalSize() int {
 // MoreRecords will indicate if the remaining records require another
 // Saleforce service callout.
 func (result *QueryResult) MoreRecords() bool {
-	return result.response.NextRecordsURL != ""
+	return result.response.NextRecordsURL != "" && result.resource != nil
 }
 
 // Records returns the records from the query request.
@@ -52,7 +52,7 @@ func (result *QueryResult) Records() []*QueryRecord {
 
 // Next will query the next set of records.
 func (result *QueryResult) Next() (*QueryResult, error) {
-	if result.MoreRecords() == false {
+	if !result.MoreRecords() {
 		return nil, errors.New("soql query result: no more records to query")
 	}
 	return result.resource.next(result.response.NextRecordsURL)

@@ -23,7 +23,7 @@ func newQueryRecord(jsonMap map[string]interface{}, resource *Resource) (*QueryR
 				if err != nil {
 					return nil, err
 				}
-				result, err := newQueryResult(resp, resource)
+				result, err := NewQueryResult(resp, resource)
 				if err != nil {
 					return nil, err
 				}

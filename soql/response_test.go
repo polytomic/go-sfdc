@@ -12,7 +12,7 @@ func Test_newQueryResponseJSON(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    queryResponse
+		want    QueryResponse
 		wantErr bool
 	}{
 		{
@@ -39,7 +39,7 @@ func Test_newQueryResponseJSON(t *testing.T) {
 					},
 				},
 			},
-			want: queryResponse{
+			want: QueryResponse{
 				Done:      true,
 				TotalSize: 2,
 				Records: []map[string]interface{}{
@@ -86,7 +86,7 @@ func Test_newQueryResponseJSON(t *testing.T) {
 					},
 				},
 			},
-			want: queryResponse{
+			want: QueryResponse{
 				Done:           true,
 				TotalSize:      2,
 				NextRecordsURL: "/services/data/v20.0/query/01gD0000002HU6KIAW-2000",
@@ -116,7 +116,7 @@ func Test_newQueryResponseJSON(t *testing.T) {
 					"done": "true",
 				},
 			},
-			want:    queryResponse{},
+			want:    QueryResponse{},
 			wantErr: true,
 		},
 		{
@@ -124,7 +124,7 @@ func Test_newQueryResponseJSON(t *testing.T) {
 			args: args{
 				jsonMap: map[string]interface{}{},
 			},
-			want:    queryResponse{},
+			want:    QueryResponse{},
 			wantErr: true,
 		},
 		{
@@ -135,7 +135,7 @@ func Test_newQueryResponseJSON(t *testing.T) {
 					"totalSize": "float64(2)",
 				},
 			},
-			want:    queryResponse{},
+			want:    QueryResponse{},
 			wantErr: true,
 		},
 		{
@@ -145,7 +145,7 @@ func Test_newQueryResponseJSON(t *testing.T) {
 					"done": true,
 				},
 			},
-			want:    queryResponse{},
+			want:    QueryResponse{},
 			wantErr: true,
 		},
 		{
@@ -157,7 +157,7 @@ func Test_newQueryResponseJSON(t *testing.T) {
 					"nextRecordsUrl": 22,
 				},
 			},
-			want:    queryResponse{},
+			want:    QueryResponse{},
 			wantErr: true,
 		},
 		{
@@ -170,7 +170,7 @@ func Test_newQueryResponseJSON(t *testing.T) {
 					"records":        "something",
 				},
 			},
-			want:    queryResponse{},
+			want:    QueryResponse{},
 			wantErr: true,
 		},
 		{
@@ -182,7 +182,7 @@ func Test_newQueryResponseJSON(t *testing.T) {
 					"nextRecordsUrl": "/services/data/v20.0/query/01gD0000002HU6KIAW-2000",
 				},
 			},
-			want:    queryResponse{},
+			want:    QueryResponse{},
 			wantErr: true,
 		},
 	}

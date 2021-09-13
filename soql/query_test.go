@@ -143,7 +143,7 @@ func TestResource_Query(t *testing.T) {
 				session: &mockSessionFormatter{
 					url: "https://test.salesforce.com",
 					client: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/query/?q=SELECT+Name+FROM+Account" {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/query/?q=SELECT+Name+FROM+Account" {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Some Status",
@@ -190,7 +190,7 @@ func TestResource_Query(t *testing.T) {
 				},
 			},
 			want: &QueryResult{
-				response: queryResponse{
+				response: QueryResponse{
 					Done:      true,
 					TotalSize: 2,
 					Records: []map[string]interface{}{
@@ -315,7 +315,7 @@ func TestResource_next(t *testing.T) {
 				recordURL: "/services/data/v20.0/query/01gD0000002HU6KIAW-2000",
 			},
 			want: &QueryResult{
-				response: queryResponse{
+				response: QueryResponse{
 					Done:      true,
 					TotalSize: 2,
 					Records: []map[string]interface{}{

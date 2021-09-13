@@ -87,7 +87,7 @@ func Test_newQueryRecord(t *testing.T) {
 				}),
 				subresults: map[string]*QueryResult{
 					"Contacts": &QueryResult{
-						response: queryResponse{
+						response: QueryResponse{
 							Done:      true,
 							TotalSize: 2,
 							Records: []map[string]interface{}{
@@ -215,7 +215,7 @@ func TestQueryRecord_Subresults(t *testing.T) {
 				}),
 				subresults: map[string]*QueryResult{
 					"Contacts": &QueryResult{
-						response: queryResponse{
+						response: QueryResponse{
 							Done:      true,
 							TotalSize: 2,
 							Records: []map[string]interface{}{
@@ -262,7 +262,7 @@ func TestQueryRecord_Subresults(t *testing.T) {
 			},
 			want: map[string]*QueryResult{
 				"Contacts": &QueryResult{
-					response: queryResponse{
+					response: QueryResponse{
 						Done:      true,
 						TotalSize: 2,
 						Records: []map[string]interface{}{
@@ -348,7 +348,7 @@ func TestQueryRecord_Subresult(t *testing.T) {
 				}),
 				subresults: map[string]*QueryResult{
 					"Contacts": &QueryResult{
-						response: queryResponse{
+						response: QueryResponse{
 							Done:      true,
 							TotalSize: 2,
 							Records: []map[string]interface{}{
@@ -397,7 +397,7 @@ func TestQueryRecord_Subresult(t *testing.T) {
 				sub: "Contacts",
 			},
 			want: &QueryResult{
-				response: queryResponse{
+				response: QueryResponse{
 					Done:      true,
 					TotalSize: 2,
 					Records: []map[string]interface{}{
@@ -454,7 +454,7 @@ func TestQueryRecord_Subresult(t *testing.T) {
 				}),
 				subresults: map[string]*QueryResult{
 					"Contacts": &QueryResult{
-						response: queryResponse{
+						response: QueryResponse{
 							Done:      true,
 							TotalSize: 2,
 							Records: []map[string]interface{}{
