@@ -1,6 +1,9 @@
 package soql
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
 type mockSessionFormatter struct {
 	url        string
@@ -8,8 +11,8 @@ type mockSessionFormatter struct {
 	refreshErr error
 }
 
-func (mock *mockSessionFormatter) ServiceURL() string {
-	return mock.url
+func (mock *mockSessionFormatter) DataServiceURL() string {
+	return fmt.Sprintf("%s/services/data/v%d.0", mock.InstanceURL(), mock.Version())
 }
 
 func (mock *mockSessionFormatter) Version() int {

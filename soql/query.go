@@ -88,7 +88,7 @@ func (r *Resource) queryRequest(querier QueryFormatter, all bool) (*http.Request
 		return nil, err
 	}
 
-	request, err := http.NewRequest(http.MethodGet, r.session.ServiceURL()+query.URL(), nil)
+	request, err := http.NewRequest(http.MethodGet, r.session.InstanceURL()+query.URL(), nil)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package soql
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -98,7 +99,6 @@ func TestResource_Query(t *testing.T) {
 				session: &mockSessionFormatter{
 					url: "https://test.salesforce.com",
 					client: mockHTTPClient(func(req *http.Request) *http.Response {
-
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
@@ -146,31 +146,35 @@ func TestResource_Query(t *testing.T) {
 						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/query/?q=SELECT+Name+FROM+Account" {
 							return &http.Response{
 								StatusCode: 500,
-								Status:     "Some Status",
-								Body:       ioutil.NopCloser(strings.NewReader("Error")),
-								Header:     make(http.Header),
+								Status:     "Error",
+								Body: ioutil.NopCloser(
+									strings.NewReader(
+										fmt.Sprintf("Unexpected URL: %s", req.URL.String()),
+									),
+								),
+								Header: make(http.Header),
 							}
 						}
 						resp := `
 						{
 							"done" : true,
 							"totalSize" : 2,
-							"records" : 
-							[ 
-								{  
-									"attributes" : 
-									{    
-										"type" : "Account",    
-										"url" : "/services/data/v20.0/sobjects/Account/001D000000IRFmaIAH"  
-									},  
+							"records" :
+							[
+								{
+									"attributes" :
+									{
+										"type" : "Account",
+										"url" : "/services/data/v20.0/sobjects/Account/001D000000IRFmaIAH"
+									},
 									"Name" : "Test 1"
-								}, 
-								{  
-									"attributes" : 
-									{    
-										"type" : "Account",    
-										"url" : "/services/data/v20.0/sobjects/Account/001D000000IomazIAB"  
-									},  
+								},
+								{
+									"attributes" :
+									{
+										"type" : "Account",
+										"url" : "/services/data/v20.0/sobjects/Account/001D000000IomazIAB"
+									},
 									"Name" : "Test 2"
 								}
 							]
@@ -282,22 +286,22 @@ func TestResource_next(t *testing.T) {
 						{
 							"done" : true,
 							"totalSize" : 2,
-							"records" : 
-							[ 
-								{  
-									"attributes" : 
-									{    
-										"type" : "Account",    
-										"url" : "/services/data/v20.0/sobjects/Account/001D000000IRFmaIAH"  
-									},  
+							"records" :
+							[
+								{
+									"attributes" :
+									{
+										"type" : "Account",
+										"url" : "/services/data/v20.0/sobjects/Account/001D000000IRFmaIAH"
+									},
 									"Name" : "Test 1"
-								}, 
-								{  
-									"attributes" : 
-									{    
-										"type" : "Account",    
-										"url" : "/services/data/v20.0/sobjects/Account/001D000000IomazIAB"  
-									},  
+								},
+								{
+									"attributes" :
+									{
+										"type" : "Account",
+										"url" : "/services/data/v20.0/sobjects/Account/001D000000IomazIAB"
+									},
 									"Name" : "Test 2"
 								}
 							]
