@@ -28,8 +28,8 @@ func TestBatch_response(t *testing.T) {
 		{
 			name: "Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					client: mockHTTPClient(
+				session: &session.Mock{
+					HTTPClient: mockHTTPClient(
 						func(req *http.Request) *http.Response {
 							resp := `{
 							"apexProcessingTime" : 0,
@@ -68,8 +68,8 @@ func TestBatch_response(t *testing.T) {
 		{
 			name: "failing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `[
 							{
 								"fields" : [ "Id" ],
@@ -127,9 +127,9 @@ func TestBatch_fetchInfo(t *testing.T) {
 		{
 			name: "Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(
 						func(req *http.Request) *http.Response {
 							resp := `{
 							"apexProcessingTime" : 0,
@@ -204,9 +204,9 @@ func TestBatch_create(t *testing.T) {
 		{
 			name: "Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(
 						func(req *http.Request) *http.Response {
 							resp := `{
 							"apexProcessingTime" : 0,
@@ -278,9 +278,9 @@ func TestBatch_Results(t *testing.T) {
 		{
 			name: "All successful",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(
 						func(req *http.Request) *http.Response {
 							resp := `[
 								{
@@ -335,9 +335,9 @@ func TestBatch_Results(t *testing.T) {
 		{
 			name: "With failed records",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(
 						func(req *http.Request) *http.Response {
 							var resp string
 							switch req.URL.String() {

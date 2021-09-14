@@ -162,10 +162,10 @@ func TestNewResource(t *testing.T) {
 		{
 			name: "success",
 			args: args{
-				session: &mockSessionFormatter{},
+				session: &session.Mock{},
 			},
 			want: &Resource{
-				session: &mockSessionFormatter{},
+				session: &session.Mock{},
 			},
 			wantErr: false,
 		},
@@ -210,10 +210,10 @@ func TestResource_Retrieve(t *testing.T) {
 		{
 			name: "success",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/composite/batch" {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/composite/batch" {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
@@ -285,10 +285,10 @@ func TestResource_Retrieve(t *testing.T) {
 		{
 			name: "Errors",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/composite/batch" {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/composite/batch" {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",

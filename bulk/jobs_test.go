@@ -28,8 +28,8 @@ func TestJobs_do(t *testing.T) {
 		{
 			name: "Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `{
 							"done": true,
 							"records": [
@@ -49,7 +49,7 @@ func TestJobs_do(t *testing.T) {
 									"operation": "Insert",
 									"state": "Open",
 									"systemModstamp": "1/1/1980"
-								}								
+								}
 							]
 						}`
 						return &http.Response{
@@ -92,14 +92,14 @@ func TestJobs_do(t *testing.T) {
 		{
 			name: "failing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `[
 							{
 								"fields" : [ "Id" ],
 								"message" : "Account ID: id value of incorrect type: 001900K0001pPuOAAU",
 								"errorCode" : "MALFORMED_ID"
-							}							
+							}
 						]`
 						return &http.Response{
 							StatusCode: http.StatusBadRequest,
@@ -136,11 +136,10 @@ func TestJobs_do(t *testing.T) {
 }
 
 func Test_newJobs(t *testing.T) {
-
-	mockSession := &mockSessionFormatter{
-		url: "https://test.salesforce.com",
-		client: mockHTTPClient(func(req *http.Request) *http.Response {
-			if req.URL.String() != "https://test.salesforce.com/jobs/ingest?isPkChunkingEnabled=false&jobType=V2Ingest" {
+	mockSession := &session.Mock{
+		URL: "https://test.salesforce.com",
+		HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+			if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest?isPkChunkingEnabled=false&jobType=V2Ingest" {
 				return &http.Response{
 					StatusCode: 500,
 					Status:     "Invalid URL",
@@ -168,7 +167,7 @@ func Test_newJobs(t *testing.T) {
 						"operation": "Insert",
 						"state": "Open",
 						"systemModstamp": "1/1/1980"
-					}								
+					}
 				]
 			}`
 			return &http.Response{
@@ -343,10 +342,10 @@ func TestJobs_Records(t *testing.T) {
 }
 
 func TestJobs_Next(t *testing.T) {
-	mockSession := &mockSessionFormatter{
-		url: "https://test.salesforce.com",
-		client: mockHTTPClient(func(req *http.Request) *http.Response {
-			if req.URL.String() != "https://test.salesforce.com/jobs/ingest?isPkChunkingEnabled=false&jobType=V2Ingest" {
+	mockSession := &session.Mock{
+		URL: "https://test.salesforce.com",
+		HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+			if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest?isPkChunkingEnabled=false&jobType=V2Ingest" {
 				return &http.Response{
 					StatusCode: 500,
 					Status:     "Invalid URL",
@@ -374,7 +373,7 @@ func TestJobs_Next(t *testing.T) {
 						"operation": "Insert",
 						"state": "Open",
 						"systemModstamp": "1/1/1980"
-					}								
+					}
 				]
 			}`
 			return &http.Response{
@@ -401,7 +400,7 @@ func TestJobs_Next(t *testing.T) {
 			fields: fields{
 				session: mockSession,
 				response: jobResponse{
-					NextRecordsURL: "https://test.salesforce.com/jobs/ingest?isPkChunkingEnabled=false&jobType=V2Ingest",
+					NextRecordsURL: "https://test.salesforce.com/services/data/v42.0/jobs/ingest?isPkChunkingEnabled=false&jobType=V2Ingest",
 				},
 			},
 			want: &Jobs{

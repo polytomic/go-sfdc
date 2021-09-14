@@ -24,10 +24,10 @@ func TestNewResource(t *testing.T) {
 		{
 			name: "Created",
 			args: args{
-				session: &mockSessionFormatter{},
+				session: &session.Mock{},
 			},
 			want: &Resource{
-				session: &mockSessionFormatter{},
+				session: &session.Mock{},
 			},
 			wantErr: false,
 		},
@@ -68,9 +68,9 @@ func TestResource_CreateJob(t *testing.T) {
 		{
 			name: "Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						if req.URL.String() != "https://test.salesforce.com/services/async/42.0/job" {
 							return &http.Response{
 								StatusCode: 500,
@@ -143,9 +143,9 @@ func TestResource_GetJob(t *testing.T) {
 		{
 			name: "Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						if req.URL.String() != "https://test.salesforce.com/services/async/42.0/job/123" {
 							return &http.Response{
 								StatusCode: 500,

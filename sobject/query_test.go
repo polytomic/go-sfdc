@@ -66,8 +66,8 @@ func Test_query_Query(t *testing.T) {
 		{
 			name: "Request Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "123://wrong",
+				session: &session.Mock{
+					URL: "123://wrong",
 				},
 			},
 			args: args{
@@ -86,9 +86,9 @@ func Test_query_Query(t *testing.T) {
 		{
 			name: "Response HTTP Error No JSON",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 
 						return &http.Response{
 							StatusCode: 500,
@@ -115,16 +115,16 @@ func Test_query_Query(t *testing.T) {
 		{
 			name: "Response HTTP Error JSON",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 
 						resp := `
-							[ 
+							[
 								{
 									"message" : "Email: invalid email address: Not a real email address",
 									"errorCode" : "INVALID_EMAIL_ADDRESS"
-							  	} 
+							  	}
 							]`
 						return &http.Response{
 							StatusCode: 500,
@@ -151,9 +151,9 @@ func Test_query_Query(t *testing.T) {
 		{
 			name: "Response JSON Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `
 						{`
 
@@ -181,9 +181,9 @@ func Test_query_Query(t *testing.T) {
 		{
 			name: "Response Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `
 						{
 							"AccountNumber" : "CD656092",
@@ -269,8 +269,8 @@ func Test_query_ExternalQuery(t *testing.T) {
 		{
 			name: "Request Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "123://wrong",
+				session: &session.Mock{
+					URL: "123://wrong",
 				},
 			},
 			args: args{
@@ -290,9 +290,9 @@ func Test_query_ExternalQuery(t *testing.T) {
 		{
 			name: "Response HTTP Error No JSON",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 
 						return &http.Response{
 							StatusCode: 500,
@@ -320,16 +320,16 @@ func Test_query_ExternalQuery(t *testing.T) {
 		{
 			name: "Response HTTP Error JSON",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 
 						resp := `
-							[ 
+							[
 								{
 									"message" : "Email: invalid email address: Not a real email address",
 									"errorCode" : "INVALID_EMAIL_ADDRESS"
-							  	} 
+							  	}
 							]`
 						return &http.Response{
 							StatusCode: 500,
@@ -357,9 +357,9 @@ func Test_query_ExternalQuery(t *testing.T) {
 		{
 			name: "Response JSON Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `
 						{`
 
@@ -388,9 +388,9 @@ func Test_query_ExternalQuery(t *testing.T) {
 		{
 			name: "Response Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `
 						{
 							"AccountNumber" : "CD656092",
@@ -460,8 +460,8 @@ func Test_query_DeletedRecords(t *testing.T) {
 		{
 			name: "Request Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "123://wrong",
+				session: &session.Mock{
+					URL: "123://wrong",
 				},
 			},
 			args: args{
@@ -475,9 +475,9 @@ func Test_query_DeletedRecords(t *testing.T) {
 		{
 			name: "Response HTTP Error No JSON",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 
 						return &http.Response{
 							StatusCode: 500,
@@ -499,11 +499,10 @@ func Test_query_DeletedRecords(t *testing.T) {
 		{
 			name: "Check URL",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-
-						if strings.HasPrefix(req.URL.String(), "https://test.salesforce.com/sobjects/Account/deleted/?") == false {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if strings.HasPrefix(req.URL.String(), "https://test.salesforce.com/services/data/v42.0/sobjects/Account/deleted/?") == false {
 							t.Errorf("Urls do not match %s", req.URL.String())
 						}
 						return &http.Response{
@@ -526,16 +525,16 @@ func Test_query_DeletedRecords(t *testing.T) {
 		{
 			name: "Response HTTP Error JSON",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 
 						resp := `
-							[ 
+							[
 								{
 									"message" : "Email: invalid email address: Not a real email address",
 									"errorCode" : "INVALID_EMAIL_ADDRESS"
-							  	} 
+							  	}
 							]`
 						return &http.Response{
 							StatusCode: 500,
@@ -557,9 +556,9 @@ func Test_query_DeletedRecords(t *testing.T) {
 		{
 			name: "Response JSON Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `
 						{`
 
@@ -582,15 +581,15 @@ func Test_query_DeletedRecords(t *testing.T) {
 		{
 			name: "Response Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `
-						{ 
-							"deletedRecords" : 
-							[ 
-								{ 
-									"id" : "a00D0000008pQRAIA2", 
+						{
+							"deletedRecords" :
+							[
+								{
+									"id" : "a00D0000008pQRAIA2",
 									"deletedDate" : "2013-05-03T15:57:00.000+0000"
 								}
 							],
@@ -663,8 +662,8 @@ func Test_query_UpdatedRecords(t *testing.T) {
 		{
 			name: "Request Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "123://wrong",
+				session: &session.Mock{
+					URL: "123://wrong",
 				},
 			},
 			args: args{
@@ -678,9 +677,9 @@ func Test_query_UpdatedRecords(t *testing.T) {
 		{
 			name: "Response HTTP Error No JSON",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 
 						return &http.Response{
 							StatusCode: 500,
@@ -702,11 +701,11 @@ func Test_query_UpdatedRecords(t *testing.T) {
 		{
 			name: "Check URL",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 
-						if strings.HasPrefix(req.URL.String(), "https://test.salesforce.com/sobjects/Account/updated/?") == false {
+						if strings.HasPrefix(req.URL.String(), "https://test.salesforce.com/services/data/v42.0/sobjects/Account/updated/?") == false {
 							t.Errorf("Urls do not match %s", req.URL.String())
 						}
 						return &http.Response{
@@ -729,16 +728,15 @@ func Test_query_UpdatedRecords(t *testing.T) {
 		{
 			name: "Response HTTP Error JSON",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `
-							[ 
+							[
 								{
 									"message" : "Email: invalid email address: Not a real email address",
 									"errorCode" : "INVALID_EMAIL_ADDRESS"
-							  	} 
+							  	}
 							]`
 						return &http.Response{
 							StatusCode: 500,
@@ -760,9 +758,9 @@ func Test_query_UpdatedRecords(t *testing.T) {
 		{
 			name: "Response JSON Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `
 						{`
 
@@ -785,18 +783,18 @@ func Test_query_UpdatedRecords(t *testing.T) {
 		{
 			name: "Response Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `
-						{ 
-							"ids" : 
-							[ 
-								"a00D0000008pQR5IAM", 
-								"a00D0000008pQRGIA2", 
+						{
+							"ids" :
+							[
+								"a00D0000008pQR5IAM",
+								"a00D0000008pQRGIA2",
 								"a00D0000008pQRFIA2"
 							],
-							"latestDateCovered" : "2013-05-08T21:20:00.000+0000" 
+							"latestDateCovered" : "2013-05-08T21:20:00.000+0000"
 						}`
 
 						return &http.Response{
@@ -859,8 +857,8 @@ func Test_query_GetContent(t *testing.T) {
 		{
 			name: "Request Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "123://wrong",
+				session: &session.Mock{
+					URL: "123://wrong",
 				},
 			},
 			args: args{
@@ -873,10 +871,9 @@ func Test_query_GetContent(t *testing.T) {
 		{
 			name: "Response HTTP Error No JSON",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
@@ -896,11 +893,10 @@ func Test_query_GetContent(t *testing.T) {
 		{
 			name: "Check Attachment URL",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-
-						if strings.HasPrefix(req.URL.String(), "https://test.salesforce.com/sobjects/Attachment/001D000000INjVe/body") == false {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if strings.HasPrefix(req.URL.String(), "https://test.salesforce.com/services/data/v42.0/sobjects/Attachment/001D000000INjVe/body") == false {
 							t.Errorf("Urls do not match %s", req.URL.String())
 						}
 						return &http.Response{
@@ -922,11 +918,10 @@ func Test_query_GetContent(t *testing.T) {
 		{
 			name: "Check Attachment URL",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-
-						if strings.HasPrefix(req.URL.String(), "https://test.salesforce.com/sobjects/Document/001D000000INjVe/body") == false {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if strings.HasPrefix(req.URL.String(), "https://test.salesforce.com/services/data/v42.0/sobjects/Document/001D000000INjVe/body") == false {
 							t.Errorf("Urls do not match %s", req.URL.String())
 						}
 						return &http.Response{
@@ -948,9 +943,9 @@ func Test_query_GetContent(t *testing.T) {
 		{
 			name: "Response Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := "This is the content body"
 
 						return &http.Response{

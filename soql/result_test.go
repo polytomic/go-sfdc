@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/namely/go-sfdc/v3/session"
 )
 
 func testNewQueryRecords(records []map[string]interface{}) []*QueryRecord {
@@ -302,9 +304,9 @@ func TestQueryResult_Next(t *testing.T) {
 					NextRecordsURL: "/services/data/v20.0/query/01gD0000002HU6KIAW-2000",
 				},
 				resource: &Resource{
-					session: &mockSessionFormatter{
-						url: "https://test.salesforce.com",
-						client: mockHTTPClient(func(req *http.Request) *http.Response {
+					session: &session.Mock{
+						URL: "https://test.salesforce.com",
+						HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 							if req.URL.String() != "https://test.salesforce.com/services/data/v20.0/query/01gD0000002HU6KIAW-2000" {
 								return &http.Response{
 									StatusCode: 500,

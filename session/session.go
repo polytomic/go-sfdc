@@ -155,9 +155,8 @@ func (s *Session) Version() int {
 	return s.config.Version
 }
 
-// ServiceURL will return the Salesforce instance for the
-// service URL.
-func (s *Session) ServiceURL() string {
+// DataServiceURL will return the Salesforce instance for the service URL.
+func (s *Session) DataServiceURL() string {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 

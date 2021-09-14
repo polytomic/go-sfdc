@@ -13,7 +13,7 @@ type mockSessionFormatter struct {
 	refreshErr error
 }
 
-func (mock *mockSessionFormatter) ServiceURL() string {
+func (mock *mockSessionFormatter) DataServiceURL() string {
 	return mock.url
 }
 

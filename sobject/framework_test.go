@@ -36,8 +36,8 @@ func TestSalesforceAPI_Metadata(t *testing.T) {
 			name: "Invalid Args",
 			fields: fields{
 				metadata: &metadata{
-					session: &mockSessionFormatter{
-						url: "http://wwww.google.com",
+					session: &session.Mock{
+						URL: "http://wwww.google.com",
 					},
 				},
 			},
@@ -91,8 +91,8 @@ func TestSalesforceAPI_Describe(t *testing.T) {
 			name: "Invalid Args",
 			fields: fields{
 				describe: &describe{
-					session: &mockSessionFormatter{
-						url: "http://wwww.google.com",
+					session: &session.Mock{
+						URL: "http://wwww.google.com",
 					},
 				},
 			},
@@ -146,8 +146,8 @@ func TestSalesforceAPI_Insert(t *testing.T) {
 			name: "Invalid Args",
 			fields: fields{
 				dml: &dml{
-					session: &mockSessionFormatter{
-						url: "http://wwww.google.com",
+					session: &session.Mock{
+						URL: "http://wwww.google.com",
 					},
 				},
 			},
@@ -199,8 +199,8 @@ func TestSalesforceAPI_Update(t *testing.T) {
 			name: "Invalid Args",
 			fields: fields{
 				dml: &dml{
-					session: &mockSessionFormatter{
-						url: "http://wwww.google.com",
+					session: &session.Mock{
+						URL: "http://wwww.google.com",
 					},
 				},
 			},
@@ -248,8 +248,8 @@ func TestSalesforceAPI_Upsert(t *testing.T) {
 			name: "Invalid Args",
 			fields: fields{
 				dml: &dml{
-					session: &mockSessionFormatter{
-						url: "http://wwww.google.com",
+					session: &session.Mock{
+						URL: "http://wwww.google.com",
 					},
 				},
 			},
@@ -301,8 +301,8 @@ func TestSalesforceAPI_Delete(t *testing.T) {
 			name: "Invalid Args",
 			fields: fields{
 				dml: &dml{
-					session: &mockSessionFormatter{
-						url: "http://wwww.google.com",
+					session: &session.Mock{
+						URL: "http://wwww.google.com",
 					},
 				},
 			},
@@ -350,8 +350,8 @@ func TestSalesforceAPI_Query(t *testing.T) {
 			name: "Invalid Args",
 			fields: fields{
 				query: &query{
-					session: &mockSessionFormatter{
-						url: "http://wwww.google.com",
+					session: &session.Mock{
+						URL: "http://wwww.google.com",
 					},
 				},
 			},
@@ -405,8 +405,8 @@ func TestSalesforceAPI_ExternalQuery(t *testing.T) {
 			name: "Invalid Args",
 			fields: fields{
 				query: &query{
-					session: &mockSessionFormatter{
-						url: "http://wwww.google.com",
+					session: &session.Mock{
+						URL: "http://wwww.google.com",
 					},
 				},
 			},
@@ -462,8 +462,8 @@ func TestSalesforceAPI_DeletedRecords(t *testing.T) {
 			name: "Invalid Args",
 			fields: fields{
 				query: &query{
-					session: &mockSessionFormatter{
-						url: "http://wwww.google.com",
+					session: &session.Mock{
+						URL: "http://wwww.google.com",
 					},
 				},
 			},
@@ -519,8 +519,8 @@ func TestSalesforceAPI_UpdatedRecords(t *testing.T) {
 			name: "Invalid Args",
 			fields: fields{
 				query: &query{
-					session: &mockSessionFormatter{
-						url: "http://wwww.google.com",
+					session: &session.Mock{
+						URL: "http://wwww.google.com",
 					},
 				},
 			},
@@ -575,8 +575,8 @@ func TestSalesforceAPI_GetContent(t *testing.T) {
 			name: "Invalid Args",
 			fields: fields{
 				query: &query{
-					session: &mockSessionFormatter{
-						url: "http://wwww.google.com",
+					session: &session.Mock{
+						URL: "http://wwww.google.com",
 					},
 				},
 			},
@@ -587,8 +587,8 @@ func TestSalesforceAPI_GetContent(t *testing.T) {
 			name: "Invalid Content",
 			fields: fields{
 				query: &query{
-					session: &mockSessionFormatter{
-						url: "http://wwww.google.com",
+					session: &session.Mock{
+						URL: "http://wwww.google.com",
 					},
 				},
 			},
@@ -629,33 +629,33 @@ func TestNewResources(t *testing.T) {
 	}{
 		{
 			name: "passing",
-			session: &mockSessionFormatter{
-				url: "https://test.salesforce.com",
+			session: &session.Mock{
+				URL: "https://test.salesforce.com",
 			},
 			want: &Resources{
 				metadata: &metadata{
-					session: &mockSessionFormatter{
-						url: "https://test.salesforce.com",
+					session: &session.Mock{
+						URL: "https://test.salesforce.com",
 					},
 				},
 				describe: &describe{
-					session: &mockSessionFormatter{
-						url: "https://test.salesforce.com",
+					session: &session.Mock{
+						URL: "https://test.salesforce.com",
 					},
 				},
 				list: &list{
-					session: &mockSessionFormatter{
-						url: "https://test.salesforce.com",
+					session: &session.Mock{
+						URL: "https://test.salesforce.com",
 					},
 				},
 				dml: &dml{
-					session: &mockSessionFormatter{
-						url: "https://test.salesforce.com",
+					session: &session.Mock{
+						URL: "https://test.salesforce.com",
 					},
 				},
 				query: &query{
-					session: &mockSessionFormatter{
-						url: "https://test.salesforce.com",
+					session: &session.Mock{
+						URL: "https://test.salesforce.com",
 					},
 				},
 			},
@@ -668,9 +668,9 @@ func TestNewResources(t *testing.T) {
 		},
 		{
 			name: "error_refresh",
-			session: &mockSessionFormatter{
-				url:        "https://test.salesforce.com",
-				refreshErr: errors.New("failed to refresh session"),
+			session: &session.Mock{
+				URL:        "https://test.salesforce.com",
+				RefreshErr: errors.New("failed to refresh session"),
 			},
 			wantErr: true,
 		},

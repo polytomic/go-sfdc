@@ -27,8 +27,8 @@ func Test_describe_Describe(t *testing.T) {
 		{
 			name: "Request Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "123://wrong",
+				session: &session.Mock{
+					URL: "123://wrong",
 				},
 			},
 			args: args{
@@ -40,15 +40,14 @@ func Test_describe_Describe(t *testing.T) {
 		{
 			name: "Response HTTP Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `[
 							{
 								"message" : "The requested resource does not exist",
 								"errorCode" : "NOT_FOUND"
-							}							
+							}
 						]
 						`
 						return &http.Response{
@@ -69,9 +68,9 @@ func Test_describe_Describe(t *testing.T) {
 		{
 			name: "Response JSON Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `
 						{`
 
@@ -92,9 +91,9 @@ func Test_describe_Describe(t *testing.T) {
 		{
 			name: "Response Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `
 						{
 							"actionOverrides": [

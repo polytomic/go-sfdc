@@ -133,7 +133,7 @@ func (r *Resource) response(request *http.Request) (Value, error) {
 	var value Value
 	err = decoder.Decode(&value)
 	if err != nil {
-		return Value{}, err
+		return Value{}, fmt.Errorf("decode: %w", err)
 	}
 
 	if response.StatusCode != http.StatusCreated {

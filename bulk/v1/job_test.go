@@ -145,8 +145,8 @@ func TestJob_response(t *testing.T) {
 		{
 			name: "Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `{
 							"apiVersion": 44.0,
 							"columnDelimiter": "COMMA",
@@ -199,8 +199,8 @@ func TestJob_response(t *testing.T) {
 		{
 			name: "failing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `[
 							{
 								"fields" : [ "Id" ],
@@ -260,9 +260,9 @@ func TestJob_createCallout(t *testing.T) {
 		{
 			name: "Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						if req.URL.String() != "https://test.salesforce.com/services/async/42.0/job" {
 							return &http.Response{
 								StatusCode: 500,
@@ -361,9 +361,9 @@ func TestJob_create(t *testing.T) {
 		{
 			name: "Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						if req.URL.String() != "https://test.salesforce.com/services/async/42.0/job" {
 							return &http.Response{
 								StatusCode: 500,
@@ -444,9 +444,9 @@ func TestJob_setState(t *testing.T) {
 				info: bulk.Response{
 					ID: "1234",
 				},
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						if req.URL.String() != "https://test.salesforce.com/services/async/42.0/job/1234" {
 							return &http.Response{
 								StatusCode: 500,
@@ -519,9 +519,9 @@ func TestJob_setState(t *testing.T) {
 				info: bulk.Response{
 					ID: "1234",
 				},
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						if req.URL.String() != "https://test.salesforce.com/services/async/42.0/job/1234" {
 							return &http.Response{
 								StatusCode: 500,
@@ -598,8 +598,8 @@ func TestJob_infoResponse(t *testing.T) {
 		{
 			name: "Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `{
 							"apiVersion": 44.0,
 							"columnDelimiter": "COMMA",
@@ -668,8 +668,8 @@ func TestJob_infoResponse(t *testing.T) {
 		{
 			name: "failing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `[
 							{
 								"fields" : [ "Id" ],
@@ -728,9 +728,9 @@ func TestJob_Info(t *testing.T) {
 				info: bulk.Response{
 					ID: "1234",
 				},
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						if req.URL.String() != "https://test.salesforce.com/services/async/42.0/job/1234" {
 							return &http.Response{
 								StatusCode: 500,
@@ -847,9 +847,9 @@ func TestJob_Batches(t *testing.T) {
 				info: bulk.Response{
 					ID: "1234",
 				},
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						if req.URL.String() != "https://test.salesforce.com/services/async/42.0/job/1234/batch" {
 							return &http.Response{
 								StatusCode: 500,

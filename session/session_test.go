@@ -337,7 +337,7 @@ func TestSession_ServiceURL(t *testing.T) {
 				response: tt.fields.response,
 				config:   tt.fields.config,
 			}
-			if got := session.ServiceURL(); got != tt.want {
+			if got := session.DataServiceURL(); got != tt.want {
 				t.Errorf("Session.ServiceURL() = %v, want %v", got, tt.want)
 			}
 		})

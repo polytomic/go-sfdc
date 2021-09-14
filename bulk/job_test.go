@@ -317,8 +317,8 @@ func TestJob_response(t *testing.T) {
 		{
 			name: "Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `{
 							"apiVersion": 44.0,
 							"columnDelimiter": "COMMA",
@@ -371,8 +371,8 @@ func TestJob_response(t *testing.T) {
 		{
 			name: "failing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `[
 							{
 								"fields" : [ "Id" ],
@@ -432,10 +432,10 @@ func TestJob_createCallout(t *testing.T) {
 		{
 			name: "Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/jobs/ingest" {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest" {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
@@ -536,10 +536,10 @@ func TestJob_create(t *testing.T) {
 		{
 			name: "Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/jobs/ingest" {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest" {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
@@ -622,10 +622,10 @@ func TestJob_setState(t *testing.T) {
 				info: Response{
 					ID: "1234",
 				},
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/jobs/ingest/1234" {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234" {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
@@ -697,10 +697,10 @@ func TestJob_setState(t *testing.T) {
 				info: Response{
 					ID: "1234",
 				},
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/jobs/ingest/1234" {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234" {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
@@ -776,8 +776,8 @@ func TestJob_infoResponse(t *testing.T) {
 		{
 			name: "Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `{
 							"apiVersion": 44.0,
 							"columnDelimiter": "COMMA",
@@ -846,8 +846,8 @@ func TestJob_infoResponse(t *testing.T) {
 		{
 			name: "failing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `[
 							{
 								"fields" : [ "Id" ],
@@ -906,10 +906,10 @@ func TestJob_Info(t *testing.T) {
 				info: Response{
 					ID: "1234",
 				},
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/jobs/ingest/1234" {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234" {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
@@ -1024,10 +1024,10 @@ func TestJob_Delete(t *testing.T) {
 				info: Response{
 					ID: "1234",
 				},
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/jobs/ingest/1234" {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234" {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
@@ -1063,10 +1063,10 @@ func TestJob_Delete(t *testing.T) {
 				info: Response{
 					ID: "1234",
 				},
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/jobs/ingest/1234" {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234" {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
@@ -1130,10 +1130,10 @@ func TestJob_Upload(t *testing.T) {
 				info: Response{
 					ID: "1234",
 				},
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/jobs/ingest/1234/batches" {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234/batches" {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
@@ -1199,10 +1199,10 @@ func TestJob_SuccessfulRecords(t *testing.T) {
 					ColumnDelimiter: Pipe,
 					LineEnding:      Linefeed,
 				},
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/jobs/ingest/1234/successfulResults/" {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234/successfulResults/" {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
@@ -1299,10 +1299,10 @@ func TestJob_FailedRecords(t *testing.T) {
 					ColumnDelimiter: Pipe,
 					LineEnding:      Linefeed,
 				},
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/jobs/ingest/1234/failedResults/" {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234/failedResults/" {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
@@ -1397,10 +1397,10 @@ func TestJob_UnprocessedRecords(t *testing.T) {
 					ColumnDelimiter: Pipe,
 					LineEnding:      Linefeed,
 				},
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/jobs/ingest/1234/unprocessedrecords/" {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234/unprocessedrecords/" {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",

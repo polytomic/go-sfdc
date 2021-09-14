@@ -43,11 +43,10 @@ func Test_collection_send(t *testing.T) {
 				body: nil,
 			},
 			args: args{
-				session: &mockSessionFormatter{
-					url: "something.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-
-						if strings.HasPrefix(req.URL.String(), "something.com/some/cool/endpoint") == false {
+				session: &session.Mock{
+					URL: "something.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if strings.HasPrefix(req.URL.String(), "something.com/services/data/v42.0/some/cool/endpoint") == false {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Bad URL: " + req.URL.String(),
@@ -115,11 +114,10 @@ func Test_collection_send(t *testing.T) {
 				body: nil,
 			},
 			args: args{
-				session: &mockSessionFormatter{
-					url: "something.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-
-						if strings.HasPrefix(req.URL.String(), "something.com/some/cool/endpoint") == false {
+				session: &session.Mock{
+					URL: "something.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if strings.HasPrefix(req.URL.String(), "something.com/services/data/v42.0/some/cool/endpoint") == false {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Bad URL: " + req.URL.String(),
@@ -206,29 +204,29 @@ func TestNewResource(t *testing.T) {
 		{
 			name: "get resource",
 			args: args{
-				session: &mockSessionFormatter{
-					url: "some.url.com",
+				session: &session.Mock{
+					URL: "some.url.com",
 				},
 			},
 			want: &Resource{
 				update: &update{
-					session: &mockSessionFormatter{
-						url: "some.url.com",
+					session: &session.Mock{
+						URL: "some.url.com",
 					},
 				},
 				query: &query{
-					session: &mockSessionFormatter{
-						url: "some.url.com",
+					session: &session.Mock{
+						URL: "some.url.com",
 					},
 				},
 				insert: &insert{
-					session: &mockSessionFormatter{
-						url: "some.url.com",
+					session: &session.Mock{
+						URL: "some.url.com",
 					},
 				},
 				remove: &remove{
-					session: &mockSessionFormatter{
-						url: "some.url.com",
+					session: &session.Mock{
+						URL: "some.url.com",
 					},
 				},
 			},
@@ -274,11 +272,10 @@ func TestResource_Update(t *testing.T) {
 			name: "success",
 			fields: fields{
 				update: &update{
-					session: &mockSessionFormatter{
-						url: "something.com",
-						client: mockHTTPClient(func(req *http.Request) *http.Response {
-
-							if strings.HasPrefix(req.URL.String(), "something.com/composite/sobjects") == false {
+					session: &session.Mock{
+						URL: "something.com",
+						HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+							if strings.HasPrefix(req.URL.String(), "something.com/services/data/v42.0/composite/sobjects") == false {
 								return &http.Response{
 									StatusCode: 500,
 									Status:     "Bad URL: " + req.URL.String(),
@@ -420,11 +417,11 @@ func TestResource_Query(t *testing.T) {
 			name: "success",
 			fields: fields{
 				query: &query{
-					session: &mockSessionFormatter{
-						url: "something.com",
-						client: mockHTTPClient(func(req *http.Request) *http.Response {
+					session: &session.Mock{
+						URL: "something.com",
+						HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 
-							if strings.HasPrefix(req.URL.String(), "something.com/composite/sobjects") == false {
+							if strings.HasPrefix(req.URL.String(), "something.com/services/data/v42.0/composite/sobjects") == false {
 								return &http.Response{
 									StatusCode: 500,
 									Status:     "Bad URL: " + req.URL.String(),
@@ -562,11 +559,11 @@ func TestResource_Insert(t *testing.T) {
 			name: "success",
 			fields: fields{
 				insert: &insert{
-					session: &mockSessionFormatter{
-						url: "something.com",
-						client: mockHTTPClient(func(req *http.Request) *http.Response {
+					session: &session.Mock{
+						URL: "something.com",
+						HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 
-							if strings.HasPrefix(req.URL.String(), "something.com/composite/sobjects") == false {
+							if strings.HasPrefix(req.URL.String(), "something.com/services/data/v42.0/composite/sobjects") == false {
 								return &http.Response{
 									StatusCode: 500,
 									Status:     "Bad URL: " + req.URL.String(),
@@ -710,11 +707,11 @@ func TestResource_Delete(t *testing.T) {
 			},
 			fields: fields{
 				remove: &remove{
-					session: &mockSessionFormatter{
-						url: "something.com",
-						client: mockHTTPClient(func(req *http.Request) *http.Response {
+					session: &session.Mock{
+						URL: "something.com",
+						HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 
-							if strings.HasPrefix(req.URL.String(), "something.com/composite/sobjects") == false {
+							if strings.HasPrefix(req.URL.String(), "something.com/services/data/v42.0/composite/sobjects") == false {
 								return &http.Response{
 									StatusCode: 500,
 									Status:     "Bad URL: " + req.URL.String(),

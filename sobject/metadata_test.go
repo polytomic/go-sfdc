@@ -27,8 +27,8 @@ func Test_metadata_Metadata(t *testing.T) {
 		{
 			name: "Request Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "123://wrong",
+				session: &session.Mock{
+					URL: "123://wrong",
 				},
 			},
 			args: args{
@@ -40,17 +40,17 @@ func Test_metadata_Metadata(t *testing.T) {
 		{
 			name: "Response HTTP Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 
 						resp := `
-							[ 
+							[
 								{
 									"message" : "Email: invalid email address: Not a real email address",
 									"errorCode" : "INVALID_EMAIL_ADDRESS",
 									"fields" : [ "Email" ]
-							  	} 
+							  	}
 							]`
 						return &http.Response{
 							StatusCode: 500,
@@ -70,9 +70,9 @@ func Test_metadata_Metadata(t *testing.T) {
 		{
 			name: "Response JSON Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `
 						{`
 
@@ -93,9 +93,9 @@ func Test_metadata_Metadata(t *testing.T) {
 		{
 			name: "Response Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `
 						{
 							"objectDescribe": {

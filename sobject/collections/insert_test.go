@@ -95,11 +95,10 @@ func TestInsert_Callout(t *testing.T) {
 		{
 			name: "success",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "something.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
-
-						if strings.HasPrefix(req.URL.String(), "something.com/composite/sobjects") == false {
+				session: &session.Mock{
+					URL: "something.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if strings.HasPrefix(req.URL.String(), "something.com/services/data/v42.0/composite/sobjects") == false {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Bad URL: " + req.URL.String(),

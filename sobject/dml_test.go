@@ -41,8 +41,8 @@ func Test_dml_Insert(t *testing.T) {
 		{
 			name: "Request Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "123://wrong",
+				session: &session.Mock{
+					URL: "123://wrong",
 				},
 			},
 			args: args{
@@ -60,9 +60,9 @@ func Test_dml_Insert(t *testing.T) {
 		{
 			name: "Response HTTP Error No JSON",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 
 						return &http.Response{
 							StatusCode: 500,
@@ -88,17 +88,17 @@ func Test_dml_Insert(t *testing.T) {
 		{
 			name: "Response HTTP Error JSON",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 
 						resp := `
-							[ 
+							[
 								{
 									"message" : "Email: invalid email address: Not a real email address",
 									"errorCode" : "INVALID_EMAIL_ADDRESS",
 									"fields" : [ "Email" ]
-							  	} 
+							  	}
 							]`
 						return &http.Response{
 							StatusCode: 500,
@@ -124,9 +124,9 @@ func Test_dml_Insert(t *testing.T) {
 		{
 			name: "Response JSON Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `
 						{`
 
@@ -153,9 +153,9 @@ func Test_dml_Insert(t *testing.T) {
 		{
 			name: "Response Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `
 						{
 							"id" : "001D000000IqhSLIAZ",
@@ -237,8 +237,8 @@ func Test_dml_Update(t *testing.T) {
 		{
 			name: "Request Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "123://wrong",
+				session: &session.Mock{
+					URL: "123://wrong",
 				},
 			},
 			args: args{
@@ -256,15 +256,15 @@ func Test_dml_Update(t *testing.T) {
 		{
 			name: "Response HTTP Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 
 						resp := `[
 							{
 								"message" : "The requested resource does not exist",
 								"errorCode" : "NOT_FOUND"
-							}							
+							}
 						]
 						`
 						return &http.Response{
@@ -291,9 +291,9 @@ func Test_dml_Update(t *testing.T) {
 		{
 			name: "Response Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						return &http.Response{
 							StatusCode: http.StatusNoContent,
 							Header:     make(http.Header),
@@ -362,8 +362,8 @@ func Test_dml_Upsert(t *testing.T) {
 		{
 			name: "Request Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "123://wrong",
+				session: &session.Mock{
+					URL: "123://wrong",
 				},
 			},
 			args: args{
@@ -383,15 +383,15 @@ func Test_dml_Upsert(t *testing.T) {
 		{
 			name: "Response HTTP Error No JSON",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 
 						resp := `[
 							{
 								"message" : "The requested resource does not exist",
 								"errorCode" : "NOT_FOUND"
-							}							
+							}
 						]
 						`
 						return &http.Response{
@@ -420,9 +420,9 @@ func Test_dml_Upsert(t *testing.T) {
 		{
 			name: "Response HTTP Error JSON",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 
 						resp := `
 							[
@@ -458,9 +458,9 @@ func Test_dml_Upsert(t *testing.T) {
 		{
 			name: "Response JSON Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `
 						{`
 
@@ -489,9 +489,9 @@ func Test_dml_Upsert(t *testing.T) {
 		{
 			name: "Insert Response Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `
 						{
 							"created":true,
@@ -532,9 +532,9 @@ func Test_dml_Upsert(t *testing.T) {
 		{
 			name: "Upsert Response Updated Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `
 						{
 							"id" : "001D000000IqhSLIAZ",
@@ -574,9 +574,9 @@ func Test_dml_Upsert(t *testing.T) {
 		{
 			name: "Upsert Response Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						return &http.Response{
 							StatusCode: http.StatusNoContent,
 							Header:     make(http.Header),
@@ -647,8 +647,8 @@ func Test_dml_Delete(t *testing.T) {
 		{
 			name: "Request Error",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "123://wrong",
+				session: &session.Mock{
+					URL: "123://wrong",
 				},
 			},
 			args: args{
@@ -662,9 +662,9 @@ func Test_dml_Delete(t *testing.T) {
 		{
 			name: "Response HTTP Error JSON",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 
 						return &http.Response{
 							StatusCode: 500,
@@ -685,9 +685,9 @@ func Test_dml_Delete(t *testing.T) {
 		{
 			name: "Passing",
 			fields: fields{
-				session: &mockSessionFormatter{
-					url: "https://test.salesforce.com",
-					client: mockHTTPClient(func(req *http.Request) *http.Response {
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 
 						return &http.Response{
 							StatusCode: http.StatusNoContent,
