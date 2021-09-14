@@ -88,7 +88,7 @@ func (r *Resource) Retrieve(allOrNone bool, requesters []Subrequester) (Value, e
 		return Value{}, err
 	}
 
-	url := r.session.ServiceURL() + endpoint
+	url := r.session.DataServiceURL() + endpoint
 
 	request, err := http.NewRequest(http.MethodPost, url, body)
 

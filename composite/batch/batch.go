@@ -84,7 +84,7 @@ func (r *Resource) Retrieve(haltOnError bool, requesters []Subrequester) (Value,
 		return Value{}, err
 	}
 
-	url := r.session.ServiceURL() + endpoint
+	url := r.session.DataServiceURL() + endpoint
 
 	request, err := http.NewRequest(http.MethodPost, url, body)
 

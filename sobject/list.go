@@ -33,7 +33,7 @@ func (l *list) callout() (ListValue, error) {
 }
 
 func (l *list) request() (*http.Request, error) {
-	url := l.session.ServiceURL() + objectEndpoint
+	url := l.session.DataServiceURL() + objectEndpoint
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err

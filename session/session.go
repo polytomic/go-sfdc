@@ -31,38 +31,34 @@ type Session struct {
 	expiresAt time.Time
 }
 
-// Clienter interface provides the HTTP client used by the
-// the resources.
+// Clienter interface provides the HTTP client used by the the resources.
 type Clienter interface {
 	Client() *http.Client
 }
 
-// InstanceFormatter is the session interface that
-// formaters the session instance information used
-// by the resources.
-//
-// InstanceURL will return the Salesforce instance.
-//
-// AuthorizationHeader will add the authorization to the
-// HTTP request's header.
+// InstanceFormatter is the session interface that formats the session
+// instance information used by the resources.
 type InstanceFormatter interface {
+	// InstanceURL will returns the Salesforce hostname as a URL; for example,
+	// https://na42.salesforce.com.
+	//
+	// The return value of InstanceURL is suitable for use as the base of API URLs
 	InstanceURL() string
+	// AuthorizationHeader will add the authorization to the HTTP request's header.
 	AuthorizationHeader(*http.Request)
 	Refresh() error
 	Clienter
 }
 
-// ServiceFormatter is the session interface that
-// formats the session for service resources.
-//
-// ServiceURL provides the service URL for resources to
-// user.
+// ServiceFormatter is the session interface that formats the session for
+// service resources.
 type ServiceFormatter interface {
 	InstanceFormatter
 	// Version will return the Salesforce API version for this session.
 	Version() int
-	// ServiceURL will return the Salesforce instance for the service URL.
-	ServiceURL() string
+	// DataServiceURL returns the URL for the Salesforce Data service; for
+	// example, https://na42.salesforce.com/services/data/v42.0.
+	DataServiceURL() string
 }
 
 type sessionPasswordResponse struct {

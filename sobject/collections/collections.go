@@ -130,7 +130,7 @@ func (r *Resource) Query(sobject string, records []sobject.Querier) ([]*sfdc.Rec
 }
 
 func (c *collection) send(session session.ServiceFormatter, value interface{}) error {
-	collectionURL := session.ServiceURL() + c.endpoint
+	collectionURL := session.DataServiceURL() + c.endpoint
 	if c.values != nil {
 		collectionURL += "?" + c.values.Encode()
 	}

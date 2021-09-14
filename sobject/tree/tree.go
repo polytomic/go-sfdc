@@ -89,7 +89,7 @@ func (r *Resource) callout(inserter Inserter) (*Value, error) {
 }
 func (r *Resource) request(inserter Inserter) (*http.Request, error) {
 
-	url := r.session.ServiceURL() + objectEndpoint + inserter.SObject()
+	url := r.session.DataServiceURL() + objectEndpoint + inserter.SObject()
 
 	body, err := r.payload(inserter)
 	if err != nil {

@@ -101,7 +101,7 @@ func (q *query) callout(querier Querier) (*sfdc.Record, error) {
 }
 func (q *query) queryRequest(querier Querier) (*http.Request, error) {
 
-	queryURL := q.session.ServiceURL() + objectEndpoint + querier.SObject() + "/" + querier.ID()
+	queryURL := q.session.DataServiceURL() + objectEndpoint + querier.SObject() + "/" + querier.ID()
 
 	if len(querier.Fields()) > 0 {
 		fields := strings.Join(querier.Fields(), ",")
@@ -174,7 +174,7 @@ func (q *query) externalCallout(querier ExternalQuerier) (*sfdc.Record, error) {
 
 func (q *query) externalQueryRequest(querier ExternalQuerier) (*http.Request, error) {
 
-	queryURL := q.session.ServiceURL() + objectEndpoint + querier.SObject() + "/" + querier.ExternalField() + "/" + querier.ID()
+	queryURL := q.session.DataServiceURL() + objectEndpoint + querier.SObject() + "/" + querier.ExternalField() + "/" + querier.ID()
 
 	if len(querier.Fields()) > 0 {
 		fields := strings.Join(querier.Fields(), ",")
@@ -304,7 +304,7 @@ func (q *query) operationRequest(sobject, operation string, startDate, endDate t
 	form.Add("end", endDate.Format(time.RFC3339))
 	dateRange := "?" + form.Encode()
 
-	queryURL := q.session.ServiceURL() + objectEndpoint + sobject + "/" + operation + "/" + dateRange
+	queryURL := q.session.DataServiceURL() + objectEndpoint + sobject + "/" + operation + "/" + dateRange
 
 	request, err := http.NewRequest(http.MethodGet, queryURL, nil)
 
@@ -329,7 +329,7 @@ func (q *query) contentCallout(id string, content ContentType) ([]byte, error) {
 }
 func (q *query) contentRequest(id string, content ContentType) (*http.Request, error) {
 
-	queryURL := q.session.ServiceURL() + objectEndpoint + string(content) + "/" + id + "/" + contentBody
+	queryURL := q.session.DataServiceURL() + objectEndpoint + string(content) + "/" + id + "/" + contentBody
 
 	request, err := http.NewRequest(http.MethodGet, queryURL, nil)
 

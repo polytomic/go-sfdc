@@ -187,7 +187,7 @@ func (d *describe) callout(sobject string) (DescribeValue, error) {
 }
 
 func (d *describe) request(sobject string) (*http.Request, error) {
-	url := d.session.ServiceURL() + objectEndpoint + sobject + describeEndpoint
+	url := d.session.DataServiceURL() + objectEndpoint + sobject + describeEndpoint
 
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 

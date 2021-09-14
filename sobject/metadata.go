@@ -65,7 +65,7 @@ func (md *metadata) callout(sobject string) (MetadataValue, error) {
 }
 
 func (md *metadata) request(sobject string) (*http.Request, error) {
-	url := md.session.ServiceURL() + objectEndpoint + sobject
+	url := md.session.DataServiceURL() + objectEndpoint + sobject
 
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 

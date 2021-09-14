@@ -37,7 +37,7 @@ func newJobs(session session.ServiceFormatter, parameters Parameters) (*Jobs, er
 	j := &Jobs{
 		session: session,
 	}
-	url := session.ServiceURL() + bulk2Endpoint
+	url := session.DataServiceURL() + bulk2Endpoint
 	request, err := j.request(url)
 	if err != nil {
 		return nil, err

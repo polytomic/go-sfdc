@@ -99,7 +99,7 @@ func (d *dml) insertCallout(inserter Inserter) (InsertValue, error) {
 }
 func (d *dml) insertRequest(inserter Inserter) (*http.Request, error) {
 
-	url := d.session.ServiceURL() + objectEndpoint + inserter.SObject()
+	url := d.session.DataServiceURL() + objectEndpoint + inserter.SObject()
 
 	body, err := json.Marshal(inserter.Fields())
 	if err != nil {
@@ -166,7 +166,7 @@ func (d *dml) updateCallout(updater Updater) error {
 
 func (d *dml) updateRequest(updater Updater) (*http.Request, error) {
 
-	url := d.session.ServiceURL() + objectEndpoint + updater.SObject() + "/" + updater.ID()
+	url := d.session.DataServiceURL() + objectEndpoint + updater.SObject() + "/" + updater.ID()
 
 	body, err := json.Marshal(updater.Fields())
 	if err != nil {
@@ -230,7 +230,7 @@ func (d *dml) upsertCallout(upserter Upserter) (UpsertValue, error) {
 }
 
 func (d *dml) upsertRequest(upserter Upserter) (*http.Request, error) {
-	url := d.session.ServiceURL() + objectEndpoint + upserter.SObject() + "/" + upserter.ExternalField() + "/" + upserter.ID()
+	url := d.session.DataServiceURL() + objectEndpoint + upserter.SObject() + "/" + upserter.ExternalField() + "/" + upserter.ID()
 
 	// TODO: switch to json.NewEncoder():
 	body, err := json.Marshal(upserter.Fields())
@@ -289,7 +289,7 @@ func (d *dml) deleteCallout(deleter Deleter) error {
 
 func (d *dml) deleteRequest(deleter Deleter) (*http.Request, error) {
 
-	url := d.session.ServiceURL() + objectEndpoint + deleter.SObject() + "/" + deleter.ID()
+	url := d.session.DataServiceURL() + objectEndpoint + deleter.SObject() + "/" + deleter.ID()
 
 	request, err := http.NewRequest(http.MethodDelete, url, nil)
 
