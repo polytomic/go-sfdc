@@ -130,18 +130,7 @@ func (d *dml) insertResponse(request *http.Request) (InsertValue, error) {
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusCreated {
-		var insertErrs []sfdc.Error
-		err = decoder.Decode(&insertErrs)
-		var errMsg error
-		if err == nil {
-			for _, insertErr := range insertErrs {
-				errMsg = fmt.Errorf("insert response err: %s: %s", insertErr.ErrorCode, insertErr.Message)
-			}
-		} else {
-			errMsg = fmt.Errorf("insert response err: %d %s", response.StatusCode, response.Status)
-		}
-
-		return InsertValue{}, errMsg
+		return InsertValue{}, sfdc.HandleError(response)
 	}
 
 	var value InsertValue
@@ -193,21 +182,7 @@ func (d *dml) updateResponse(request *http.Request) error {
 	}
 
 	if response.StatusCode != http.StatusNoContent {
-		decoder := json.NewDecoder(response.Body)
-		defer response.Body.Close()
-
-		var updateErrs []sfdc.Error
-		err = decoder.Decode(&updateErrs)
-		var errMsg error
-		if err == nil {
-			for _, updateErr := range updateErrs {
-				errMsg = fmt.Errorf("insert response err: %s: %s", updateErr.ErrorCode, updateErr.Message)
-			}
-		} else {
-			errMsg = fmt.Errorf("insert response err: %d %s", response.StatusCode, response.Status)
-		}
-
-		return errMsg
+		return sfdc.HandleError(response)
 	}
 
 	return nil

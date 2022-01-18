@@ -133,18 +133,7 @@ func (q *query) queryResponse(request *http.Request) (*sfdc.Record, error) {
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		var queryErrs []sfdc.Error
-		err = decoder.Decode(&queryErrs)
-		var errMsg error
-		if err == nil {
-			for _, queryErr := range queryErrs {
-				errMsg = fmt.Errorf("insert response err: %s: %s", queryErr.ErrorCode, queryErr.Message)
-			}
-		} else {
-			errMsg = fmt.Errorf("insert response err: %d %s", response.StatusCode, response.Status)
-		}
-
-		return nil, errMsg
+		return nil, sfdc.HandleError(response)
 	}
 
 	var record sfdc.Record

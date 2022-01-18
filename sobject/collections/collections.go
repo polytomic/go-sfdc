@@ -154,17 +154,7 @@ func (c *collection) send(session session.ServiceFormatter, value interface{}) e
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		var insertErrs []sfdc.Error
-		err = decoder.Decode(&insertErrs)
-		var errMsg error
-		if err == nil {
-			for _, insertErr := range insertErrs {
-				errMsg = fmt.Errorf("insert response err: %s: %s", insertErr.ErrorCode, insertErr.Message)
-			}
-		} else {
-			errMsg = fmt.Errorf("insert response err: %d %s", response.StatusCode, response.Status)
-		}
-		return errMsg
+		return sfdc.HandleError(response)
 	}
 	err = decoder.Decode(value)
 	if err != nil {

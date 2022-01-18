@@ -108,6 +108,7 @@ func (r *Resource) request(inserter Inserter) (*http.Request, error) {
 	return request, nil
 
 }
+
 func (r *Resource) payload(inserter Inserter) (*bytes.Reader, error) {
 	records := struct {
 		Records []*Record `json:"records"`
@@ -120,24 +121,24 @@ func (r *Resource) payload(inserter Inserter) (*bytes.Reader, error) {
 	}
 	return bytes.NewReader(payload), nil
 }
+
 func (r *Resource) response(request *http.Request) (Value, error) {
 	response, err := r.session.Client().Do(request)
-
 	if err != nil {
 		return Value{}, err
 	}
+	defer response.Body.Close()
 
 	decoder := json.NewDecoder(response.Body)
-	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusCreated {
+		return Value{}, sfdc.HandleError(response)
+	}
 
 	var value Value
 	err = decoder.Decode(&value)
 	if err != nil {
-		return Value{}, fmt.Errorf("decode: %w", err)
-	}
-
-	if response.StatusCode != http.StatusCreated {
-		return value, fmt.Errorf("insert response err: %d %s", response.StatusCode, response.Status)
+		return Value{}, err
 	}
 
 	return value, nil

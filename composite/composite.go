@@ -3,7 +3,6 @@ package composite
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/namely/go-sfdc/v3"
@@ -110,18 +109,7 @@ func (r *Resource) Retrieve(allOrNone bool, requesters []Subrequester) (Value, e
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		var insertErrs []sfdc.Error
-		err = decoder.Decode(&insertErrs)
-		var errMsg error
-		if err == nil {
-			for _, insertErr := range insertErrs {
-				errMsg = fmt.Errorf("insert response err: %s: %s", insertErr.ErrorCode, insertErr.Message)
-			}
-		} else {
-			errMsg = fmt.Errorf("insert response err: %d %s", response.StatusCode, response.Status)
-		}
-
-		return Value{}, errMsg
+		return Value{}, sfdc.HandleError(response)
 	}
 
 	var value Value

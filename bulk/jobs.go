@@ -3,7 +3,6 @@ package bulk
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -67,7 +66,7 @@ func (j *Jobs) Records() []Response {
 
 // Next will retrieve the next batch of job information.
 func (j *Jobs) Next() (*Jobs, error) {
-	if j.Done() == true {
+	if j.Done() {
 		return nil, errors.New("jobs: there is no more records")
 	}
 	request, err := j.request(j.response.NextRecordsURL)
@@ -83,6 +82,7 @@ func (j *Jobs) Next() (*Jobs, error) {
 		response: response,
 	}, nil
 }
+
 func (j *Jobs) request(url string) (*http.Request, error) {
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -92,6 +92,7 @@ func (j *Jobs) request(url string) (*http.Request, error) {
 	j.session.AuthorizationHeader(request)
 	return request, nil
 }
+
 func (j *Jobs) do(request *http.Request) (jobResponse, error) {
 	response, err := j.session.Client().Do(request)
 	if err != nil {
@@ -102,18 +103,7 @@ func (j *Jobs) do(request *http.Request) (jobResponse, error) {
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		var jobsErrs []sfdc.Error
-		err = decoder.Decode(&jobsErrs)
-		var errMsg error
-		if err == nil {
-			for _, jobErr := range jobsErrs {
-				errMsg = fmt.Errorf("insert response err: %s: %s", jobErr.ErrorCode, jobErr.Message)
-			}
-		} else {
-			errMsg = fmt.Errorf("insert response err: %d %s", response.StatusCode, response.Status)
-		}
-
-		return jobResponse{}, errMsg
+		return jobResponse{}, sfdc.HandleError(response)
 	}
 
 	var value jobResponse
