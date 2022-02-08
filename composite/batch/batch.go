@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/namely/go-sfdc/v3"
+	"github.com/namely/go-sfdc/v3/composite"
 	"github.com/namely/go-sfdc/v3/session"
 	"github.com/pkg/errors"
 )
@@ -47,11 +48,12 @@ var validMethods = map[string]struct{}{
 // Resource is the structure that can be just to call composite batch APIs.
 type Resource struct {
 	session session.ServiceFormatter
+	limiter composite.Limiter
 }
 
 // NewResource creates a new resourse with the session.  If the session is
 // nil an error will be returned.
-func NewResource(session session.ServiceFormatter) (*Resource, error) {
+func NewResource(limiter composite.Limiter, session session.ServiceFormatter) (*Resource, error) {
 	if session == nil {
 		return nil, errors.New("composite: session can not be nil")
 	}
@@ -63,6 +65,7 @@ func NewResource(session session.ServiceFormatter) (*Resource, error) {
 
 	return &Resource{
 		session: session,
+		limiter: limiter,
 	}, nil
 }
 
@@ -95,7 +98,8 @@ func (r *Resource) Retrieve(haltOnError bool, requesters []Subrequester) (Value,
 	request.Header.Add("Content-Type", "application/json")
 	r.session.AuthorizationHeader(request)
 
-	response, err := r.session.Client().Do(request)
+	client := r.limiter.Client(r.session.Client())
+	response, err := client.Do(request)
 
 	if err != nil {
 		return Value{}, err

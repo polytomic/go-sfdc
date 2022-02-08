@@ -53,11 +53,16 @@ var validMethods = map[string]struct{}{
 // Resource is the structure that can be just to call composite APIs.
 type Resource struct {
 	session session.ServiceFormatter
+	limiter Limiter
+}
+
+type Limiter interface {
+	Client(*http.Client) *http.Client
 }
 
 // NewResource creates a new resourse with the session.  If the session is
 // nil an error will be returned.
-func NewResource(session session.ServiceFormatter) (*Resource, error) {
+func NewResource(limiter Limiter, session session.ServiceFormatter) (*Resource, error) {
 	if session == nil {
 		return nil, errors.New("composite: session can not be nil")
 	}
@@ -69,6 +74,7 @@ func NewResource(session session.ServiceFormatter) (*Resource, error) {
 
 	return &Resource{
 		session: session,
+		limiter: limiter,
 	}, nil
 }
 
@@ -99,7 +105,8 @@ func (r *Resource) Retrieve(allOrNone bool, requesters []Subrequester) (Value, e
 	request.Header.Add("Content-Type", "application/json")
 	r.session.AuthorizationHeader(request)
 
-	response, err := r.session.Client().Do(request)
+	limitedClient := r.limiter.Client(r.session.Client())
+	response, err := limitedClient.Do(request)
 
 	if err != nil {
 		return Value{}, err
