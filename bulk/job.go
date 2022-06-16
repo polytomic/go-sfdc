@@ -408,6 +408,7 @@ func (j *Job) SuccessfulRecords() ([]SuccessfulRecord, error) {
 	}
 
 	reader := csv.NewReader(response.Body)
+	reader.LazyQuotes = true
 	reader.Comma = j.delimiter()
 
 	var records []SuccessfulRecord
@@ -421,12 +422,12 @@ func (j *Job) SuccessfulRecords() ([]SuccessfulRecord, error) {
 			break
 		}
 		if err != nil {
-			return nil, err
+			return records, err
 		}
 		var record SuccessfulRecord
 		created, err := strconv.ParseBool(values[j.headerPosition(sfCreated, fields)])
 		if err != nil {
-			return nil, err
+			return records, err
 		}
 		record.Created = created
 		record.ID = values[j.headerPosition(sfID, fields)]
@@ -458,6 +459,7 @@ func (j *Job) FailedRecords() ([]FailedRecord, error) {
 	}
 
 	reader := csv.NewReader(response.Body)
+	reader.LazyQuotes = true
 	reader.Comma = j.delimiter()
 
 	var records []FailedRecord
@@ -471,7 +473,7 @@ func (j *Job) FailedRecords() ([]FailedRecord, error) {
 			break
 		}
 		if err != nil {
-			return nil, err
+			return records, err
 		}
 		var record FailedRecord
 		record.Error = values[j.headerPosition(sfError, fields)]
@@ -504,6 +506,7 @@ func (j *Job) UnprocessedRecords() ([]UnprocessedRecord, error) {
 	}
 
 	reader := csv.NewReader(response.Body)
+	reader.LazyQuotes = true
 	reader.Comma = j.delimiter()
 
 	var records []UnprocessedRecord
@@ -517,7 +520,7 @@ func (j *Job) UnprocessedRecords() ([]UnprocessedRecord, error) {
 			break
 		}
 		if err != nil {
-			return nil, err
+			return records, err
 		}
 		var record UnprocessedRecord
 		record.Fields = j.record(fields, values)
