@@ -69,14 +69,12 @@ func (r *Record) fromJSONMap(jsonMap map[string]interface{}) {
 				}
 			}
 		} else {
-			if v != nil {
-				if obj, is := v.(map[string]interface{}); is == false {
-					r.fields[k] = v
-				} else {
-					if r.isLookUp(obj) {
-						if rec, err := RecordFromJSONMap(obj); err == nil {
-							r.lookUps[k] = rec
-						}
+			if obj, is := v.(map[string]interface{}); is == false {
+				r.fields[k] = v
+			} else {
+				if r.isLookUp(obj) {
+					if rec, err := RecordFromJSONMap(obj); err == nil {
+						r.lookUps[k] = rec
 					}
 				}
 			}
@@ -136,7 +134,6 @@ func (r *Record) FieldValue(field string) (interface{}, bool) {
 
 // Fields returns the map of field name to value relationships.
 func (r *Record) Fields() map[string]interface{} {
-
 	fields := make(map[string]interface{})
 	for k, v := range r.fields {
 		fields[k] = v

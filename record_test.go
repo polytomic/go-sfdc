@@ -352,6 +352,29 @@ func TestRecordFromJSONMap(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "Null values",
+			args: args{
+				jsonMap: map[string]interface{}{
+					"attributes": map[string]interface{}{
+						"type": "Account",
+						"url":  "/services/data/v20.0/sobjects/Account/001D000000IRFmaIAH",
+					},
+					"Name": "Test 1",
+					"Type": nil,
+				},
+			},
+			want: &Record{
+				sobject: "Account",
+				url:     "/services/data/v20.0/sobjects/Account/001D000000IRFmaIAH",
+				fields: map[string]interface{}{
+					"Name": "Test 1",
+					"Type": nil,
+				},
+				lookUps: map[string]*Record{},
+			},
+			wantErr: false,
+		},
+		{
 			name: "JSON Map error",
 			args: args{
 				jsonMap: nil,
