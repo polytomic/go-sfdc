@@ -395,7 +395,7 @@ func TestRecord_LookUp(t *testing.T) {
 			name: "has lookup",
 			fields: fields{
 				lookUps: map[string]*Record{
-					"SomeObject": &Record{
+					"SomeObject": {
 						sobject: "SomeObject",
 						fields: map[string]interface{}{
 							"Here": true,
@@ -418,7 +418,7 @@ func TestRecord_LookUp(t *testing.T) {
 			name: "nope",
 			fields: fields{
 				lookUps: map[string]*Record{
-					"SomeObject": &Record{
+					"SomeObject": {
 						sobject: "SomeObject",
 						fields: map[string]interface{}{
 							"Here": true,
@@ -468,13 +468,13 @@ func TestRecord_LookUps(t *testing.T) {
 			name: "the look ups",
 			fields: fields{
 				lookUps: map[string]*Record{
-					"LookUps": &Record{
+					"LookUps": {
 						sobject: "LookUps",
 					},
 				},
 			},
 			want: []*Record{
-				&Record{
+				{
 					sobject: "LookUps",
 				},
 			},
@@ -490,6 +490,45 @@ func TestRecord_LookUps(t *testing.T) {
 			}
 			if got := r.LookUps(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Record.LookUps() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestRecord_LookUpKeys(t *testing.T) {
+	type fields struct {
+		sobject string
+		url     string
+		fields  map[string]interface{}
+		lookUps map[string]*Record
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   []string
+	}{
+		{
+			name: "the look ups",
+			fields: fields{
+				lookUps: map[string]*Record{
+					"lookup__r": {
+						sobject: "LookUps",
+					},
+				},
+			},
+			want: []string{"lookup__r"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &Record{
+				sobject: tt.fields.sobject,
+				url:     tt.fields.url,
+				fields:  tt.fields.fields,
+				lookUps: tt.fields.lookUps,
+			}
+			if got := r.LookUpKeys(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Record.LookUpKeys() = %v, want %v", got, tt.want)
 			}
 		})
 	}

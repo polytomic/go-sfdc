@@ -100,6 +100,14 @@ func (r *Record) LookUps() []*Record {
 	return records
 }
 
+func (r *Record) LookUpKeys() []string {
+	keys := make([]string, 0, len(r.lookUps))
+	for key := range r.lookUps {
+		keys = append(keys, key)
+	}
+	return keys
+}
+
 // LookUp returns the look up record
 func (r *Record) LookUp(lookUp string) (*Record, bool) {
 	if len(r.lookUps) == 0 {
