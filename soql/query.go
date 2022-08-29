@@ -15,6 +15,27 @@ type Resource struct {
 	session session.ServiceFormatter
 }
 
+type queryOpts struct {
+	all            bool
+	columnMetadata bool
+}
+
+type queryOptsFunc func(opts *queryOpts) *queryOpts
+
+func WithAll() queryOptsFunc {
+	return func(opts *queryOpts) *queryOpts {
+		opts.all = true
+		return opts
+	}
+}
+
+func WithColumnMetadata() queryOptsFunc {
+	return func(opts *queryOpts) *queryOpts {
+		opts.columnMetadata = true
+		return opts
+	}
+}
+
 // NewResource forms the Salesforce SOQL resource. The
 // session formatter is required to form the proper URLs and authorization
 // header.
@@ -36,12 +57,16 @@ func NewResource(session session.ServiceFormatter) (*Resource, error) {
 // Query will call out to the Salesforce org for a SOQL.  The results will
 // be the result of the query.  The all parameter is for querying all records,
 // which include deleted records that are in the recycle bin.
-func (r *Resource) Query(querier QueryFormatter, all bool) (*QueryResult, error) {
+func (r *Resource) Query(querier QueryFormatter, qopts ...queryOptsFunc) (*QueryResult, error) {
 	if querier == nil {
 		return nil, errors.New("soql resource query: querier can not be nil")
 	}
+	opts := &queryOpts{}
+	for _, opt := range qopts {
+		opt(opts)
+	}
 
-	request, err := r.queryRequest(querier, all)
+	request, err := r.queryRequest(querier, opts.all)
 	if err != nil {
 		return nil, err
 	}
@@ -54,6 +79,18 @@ func (r *Resource) Query(querier QueryFormatter, all bool) (*QueryResult, error)
 	result, err := NewQueryResult(response, r)
 	if err != nil {
 		return nil, err
+	}
+
+	if opts.columnMetadata {
+		cmreq, err := r.queryColumnMetadataRequest(querier)
+		if err != nil {
+			return nil, err
+		}
+		cmres, err := r.queryColumnMetadataResponse(cmreq)
+		if err != nil {
+			return nil, err
+		}
+		result.columnMetadata = &cmres
 	}
 
 	return result, nil
@@ -82,6 +119,23 @@ func (r *Resource) next(recordURL string) (*QueryResult, error) {
 
 	return result, nil
 }
+
+func (r *Resource) queryColumnMetadataRequest(querier QueryFormatter) (*http.Request, error) {
+	query, err := NewQueryColumnMetadataRequest(r.session, querier)
+	if err != nil {
+		return nil, err
+	}
+
+	request, err := http.NewRequest(http.MethodGet, r.session.InstanceURL()+query.URL(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Add("Accept", "application/json")
+	r.session.AuthorizationHeader(request)
+	return request, nil
+}
+
 func (r *Resource) queryRequest(querier QueryFormatter, all bool) (*http.Request, error) {
 	query, err := NewQueryRequest(r.session, querier, all)
 	if err != nil {
@@ -96,8 +150,8 @@ func (r *Resource) queryRequest(querier QueryFormatter, all bool) (*http.Request
 	request.Header.Add("Accept", "application/json")
 	r.session.AuthorizationHeader(request)
 	return request, nil
-
 }
+
 func (r *Resource) queryResponse(request *http.Request) (QueryResponse, error) {
 	response, err := r.session.Client().Do(request)
 
@@ -116,6 +170,29 @@ func (r *Resource) queryResponse(request *http.Request) (QueryResponse, error) {
 	err = decoder.Decode(&resp)
 	if err != nil {
 		return QueryResponse{}, err
+	}
+
+	return resp, nil
+}
+
+func (r *Resource) queryColumnMetadataResponse(request *http.Request) (QueryColumnMetadataResposne, error) {
+	response, err := r.session.Client().Do(request)
+
+	if err != nil {
+		return QueryColumnMetadataResposne{}, err
+	}
+
+	decoder := json.NewDecoder(response.Body)
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		return QueryColumnMetadataResposne{}, sfdc.HandleError(response)
+	}
+
+	var resp QueryColumnMetadataResposne
+	err = decoder.Decode(&resp)
+	if err != nil {
+		return QueryColumnMetadataResposne{}, err
 	}
 
 	return resp, nil
