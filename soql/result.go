@@ -6,9 +6,10 @@ import "errors"
 // allow for retrieving all of the records and query the
 // next round of records if available.
 type QueryResult struct {
-	response QueryResponse
-	records  []*QueryRecord
-	resource *Resource
+	response       QueryResponse
+	records        []*QueryRecord
+	resource       *Resource
+	columnMetadata *QueryColumnMetadataResposne
 }
 
 func NewQueryResult(response QueryResponse, resource *Resource) (*QueryResult, error) {
@@ -56,4 +57,8 @@ func (result *QueryResult) Next() (*QueryResult, error) {
 		return nil, errors.New("soql query result: no more records to query")
 	}
 	return result.resource.next(result.response.NextRecordsURL)
+}
+
+func (result *QueryResult) ColumnMetadata() *QueryColumnMetadataResposne {
+	return result.columnMetadata
 }

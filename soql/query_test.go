@@ -72,6 +72,7 @@ func TestResource_Query(t *testing.T) {
 	type args struct {
 		querier QueryFormatter
 		all     bool
+		columns bool
 	}
 	tests := []struct {
 		name    string
@@ -233,13 +234,163 @@ func TestResource_Query(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "Response Passing with columns",
+			fields: fields{
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/query/?q=SELECT+Name+FROM+Account" &&
+							req.URL.String() != "https://test.salesforce.com/services/data/v42.0/query/?columns=true&q=SELECT+Name+FROM+Account" {
+							return &http.Response{
+								StatusCode: 500,
+								Status:     "Error",
+								Body: ioutil.NopCloser(
+									strings.NewReader(
+										fmt.Sprintf("Unexpected URL: %s", req.URL.String()),
+									),
+								),
+								Header: make(http.Header),
+							}
+						}
+						resp := `
+						{
+							"done" : true,
+							"totalSize" : 2,
+							"records" :
+							[
+								{
+									"attributes" :
+									{
+										"type" : "Account",
+										"url" : "/services/data/v20.0/sobjects/Account/001D000000IRFmaIAH"
+									},
+									"Name" : "Test 1"
+								},
+								{
+									"attributes" :
+									{
+										"type" : "Account",
+										"url" : "/services/data/v20.0/sobjects/Account/001D000000IomazIAB"
+									},
+									"Name" : "Test 2"
+								}
+							]
+						}`
+						if req.URL.String() == "https://test.salesforce.com/services/data/v42.0/query/?columns=true&q=SELECT+Name+FROM+Account" {
+							resp = `
+							{
+								"columnMetadata": [
+								  {
+									"aggregate": false,
+									"apexType": "String",
+									"booleanType": false,
+									"columnName": "Name",
+									"custom": false,
+									"displayName": "Name",
+									"foreignKeyName": null,
+									"insertable": false,
+									"joinColumns": [],
+									"numberType": false,
+									"textType": true,
+									"updatable": false
+								  }
+								],
+								"entityName": "Account",
+								"groupBy": false,
+								"idSelected": false,
+								"keyPrefix": "003"
+							  }`
+
+						}
+						return &http.Response{
+							StatusCode: 200,
+							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Header:     make(http.Header),
+						}
+					}),
+				},
+			},
+			args: args{
+				querier: &mockQuerier{
+					stmt: "SELECT Name FROM Account",
+				},
+				columns: true,
+			},
+			want: &QueryResult{
+				response: QueryResponse{
+					Done:      true,
+					TotalSize: 2,
+					Records: []map[string]interface{}{
+						{
+							"attributes": map[string]interface{}{
+								"type": "Account",
+								"url":  "/services/data/v20.0/sobjects/Account/001D000000IRFmaIAH",
+							},
+							"Name": "Test 1",
+						},
+						{
+							"attributes": map[string]interface{}{
+								"type": "Account",
+								"url":  "/services/data/v20.0/sobjects/Account/001D000000IomazIAB",
+							},
+							"Name": "Test 2",
+						},
+					},
+				},
+				records: testNewQueryRecords([]map[string]interface{}{
+					{
+						"attributes": map[string]interface{}{
+							"type": "Account",
+							"url":  "/services/data/v20.0/sobjects/Account/001D000000IRFmaIAH",
+						},
+						"Name": "Test 1",
+					},
+					{
+						"attributes": map[string]interface{}{
+							"type": "Account",
+							"url":  "/services/data/v20.0/sobjects/Account/001D000000IomazIAB",
+						},
+						"Name": "Test 2",
+					},
+				}),
+				columnMetadata: &QueryColumnMetadataResposne{
+					EntityName: "Account",
+					GroupBy:    false,
+					IdSelected: false,
+					KeyPrefix:  "003",
+					ColumnMetadata: []ColumnMetadata{{
+						Aggregate:      false,
+						ApexType:       "String",
+						BooleanType:    false,
+						ColumnName:     "Name",
+						Custom:         false,
+						DisplayName:    "Name",
+						ForeignKeyName: nil,
+						Insertable:     false,
+						JoinColumns:    []ColumnMetadata{},
+						NumberType:     false,
+						TextType:       true,
+						Updateable:     false,
+					}},
+				},
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := &Resource{
 				session: tt.fields.session,
 			}
-			got, err := r.Query(tt.args.querier, tt.args.all)
+			opts := []queryOptsFunc{}
+			if tt.args.all {
+				opts = append(opts, WithAll())
+			}
+			if tt.args.columns {
+				opts = append(opts, WithColumnMetadata())
+			}
+			got, err := r.Query(tt.args.querier, opts...)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Resource.Query() error = %v, wantErr %v", err, tt.wantErr)
 				return

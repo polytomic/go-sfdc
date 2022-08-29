@@ -57,3 +57,25 @@ func newQueryResponseJSON(jsonMap map[string]interface{}) (QueryResponse, error)
 	}
 	return response, nil
 }
+
+type ColumnMetadata struct {
+	Aggregate      bool             `json:"aggregate"`
+	ApexType       string           `json:"apexType"`
+	BooleanType    bool             `json:"booleanType"`
+	ColumnName     string           `json:"columnName"`
+	Custom         bool             `json:"custom"`
+	DisplayName    string           `json:"displayName"`
+	ForeignKeyName *string          `json:"foreignKeyName"`
+	Insertable     bool             `json:"insertable"`
+	JoinColumns    []ColumnMetadata `json:"joinColumns"`
+	NumberType     bool             `json:"numberType"`
+	TextType       bool             `json:"textType"`
+	Updateable     bool             `json:"updateable"`
+}
+type QueryColumnMetadataResposne struct {
+	EntityName     string           `json:"entityName"`
+	GroupBy        bool             `json:"groupBy"`
+	IdSelected     bool             `json:"idSelected"`
+	KeyPrefix      string           `json:"keyPrefix"`
+	ColumnMetadata []ColumnMetadata `json:"columnMetadata"`
+}

@@ -20,6 +20,10 @@ type QueryRequest struct {
 	url string
 }
 
+type QueryColumnMetadataRequest struct {
+	QueryRequest
+}
+
 func NewQueryRequest(service session.ServiceFormatter, querier QueryFormatter, all bool) (*QueryRequest, error) {
 	query, err := querier.Format()
 	if err != nil {
@@ -56,6 +60,39 @@ func (q *QueryRequest) UnmarshalResponse(result batch.Subvalue) (QueryResponse, 
 	err := json.Unmarshal(result.Result, &resp)
 	if err != nil {
 		return QueryResponse{}, err
+	}
+
+	return resp, nil
+}
+
+func NewQueryColumnMetadataRequest(service session.ServiceFormatter, querier QueryFormatter) (*QueryColumnMetadataRequest, error) {
+	query, err := querier.Format()
+	if err != nil {
+		return nil, err
+	}
+
+	endpoint := "query"
+
+	form := url.Values{}
+	form.Add("q", query)
+	form.Add("columns", "true")
+
+	return &QueryColumnMetadataRequest{
+		QueryRequest: QueryRequest{
+			url: fmt.Sprintf("/services/data/v%d.0/%s/?%s", service.Version(), endpoint, form.Encode()),
+		},
+	}, nil
+}
+
+func (q *QueryColumnMetadataRequest) UnmarshalResponse(result batch.Subvalue) (QueryColumnMetadataResposne, error) {
+	if result.StatusCode != http.StatusOK {
+		return QueryColumnMetadataResposne{}, batch.HandleSubrequestError(result)
+	}
+
+	var resp QueryColumnMetadataResposne
+	err := json.Unmarshal(result.Result, &resp)
+	if err != nil {
+		return QueryColumnMetadataResposne{}, err
 	}
 
 	return resp, nil
