@@ -331,6 +331,11 @@ func (wc *WhereClause) Or(where WhereExpression) {
 	wc.expression = fmt.Sprintf("%s OR %s", wc.expression, where.Expression())
 }
 
+// Not will logical NOT the expressions.
+func (wc *WhereClause) Not() {
+	wc.expression = fmt.Sprintf("NOT %s", wc.expression)
+}
+
 // Expression will return the where expression.
 func (wc *WhereClause) Expression() string {
 	return wc.expression
