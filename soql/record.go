@@ -7,7 +7,7 @@ import "github.com/namely/go-sfdc/v3"
 // will be a group of subresults.
 type QueryRecord struct {
 	record     *sfdc.Record
-	subresults map[string]*QueryResult
+	subresults map[string]QueryResult
 }
 
 func newQueryRecord(jsonMap map[string]interface{}, resource *Resource) (*QueryRecord, error) {
@@ -15,7 +15,7 @@ func newQueryRecord(jsonMap map[string]interface{}, resource *Resource) (*QueryR
 	if err != nil {
 		return nil, err
 	}
-	subresults := make(map[string]*QueryResult)
+	subresults := make(map[string]QueryResult)
 	for k, v := range jsonMap {
 		if sub, has := v.(map[string]interface{}); has {
 			if isSubQuery(sub) {
@@ -44,12 +44,12 @@ func (rec *QueryRecord) Record() *sfdc.Record {
 }
 
 // Subresults returns all of the inner query results.
-func (rec *QueryRecord) Subresults() map[string]*QueryResult {
+func (rec *QueryRecord) Subresults() map[string]QueryResult {
 	return rec.subresults
 }
 
 // Subresult returns a specific inner query result.
-func (rec *QueryRecord) Subresult(sub string) (*QueryResult, bool) {
+func (rec *QueryRecord) Subresult(sub string) (QueryResult, bool) {
 	result, has := rec.subresults[sub]
 	return result, has
 }

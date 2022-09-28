@@ -78,7 +78,7 @@ func TestResource_Query(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    *QueryResult
+		want    QueryResult
 		wantErr bool
 	}{
 		{
@@ -194,7 +194,7 @@ func TestResource_Query(t *testing.T) {
 					stmt: "SELECT Name FROM Account",
 				},
 			},
-			want: &QueryResult{
+			want: &QueryResultImpl{
 				response: QueryResponse{
 					Done:      true,
 					TotalSize: 2,
@@ -317,7 +317,7 @@ func TestResource_Query(t *testing.T) {
 				},
 				columns: true,
 			},
-			want: &QueryResult{
+			want: &QueryResultImpl{
 				response: QueryResponse{
 					Done:      true,
 					TotalSize: 2,
@@ -383,7 +383,7 @@ func TestResource_Query(t *testing.T) {
 			r := &Resource{
 				session: tt.fields.session,
 			}
-			opts := []queryOptsFunc{}
+			opts := []QueryOptsFunc{}
 			if tt.args.all {
 				opts = append(opts, WithAll())
 			}
@@ -396,7 +396,9 @@ func TestResource_Query(t *testing.T) {
 				return
 			}
 			if tt.want != nil {
-				tt.want.resource = r
+				if qr, ok := tt.want.(*QueryResultImpl); ok {
+					qr.resource = r
+				}
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Resource.Query() = %v, want %v", got, tt.want)
@@ -416,7 +418,7 @@ func TestResource_next(t *testing.T) {
 		name    string
 		fields  fields
 		args    args
-		want    *QueryResult
+		want    QueryResult
 		wantErr bool
 	}{
 		{
@@ -469,7 +471,7 @@ func TestResource_next(t *testing.T) {
 			args: args{
 				recordURL: "/services/data/v20.0/query/01gD0000002HU6KIAW-2000",
 			},
-			want: &QueryResult{
+			want: &QueryResultImpl{
 				response: QueryResponse{
 					Done:      true,
 					TotalSize: 2,
@@ -521,7 +523,9 @@ func TestResource_next(t *testing.T) {
 				return
 			}
 			if tt.want != nil {
-				tt.want.resource = r
+				if qr, ok := tt.want.(*QueryResultImpl); ok {
+					qr.resource = r
+				}
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Resource.next() = %v, want %v", got, tt.want)

@@ -42,7 +42,7 @@ func Test_newQueryRecord(t *testing.T) {
 					},
 					"Name": "Test 1",
 				}),
-				subresults: make(map[string]*QueryResult),
+				subresults: make(map[string]QueryResult),
 			},
 			wantErr: false,
 		},
@@ -85,8 +85,8 @@ func Test_newQueryRecord(t *testing.T) {
 					},
 					"Name": "Test 1",
 				}),
-				subresults: map[string]*QueryResult{
-					"Contacts": &QueryResult{
+				subresults: map[string]QueryResult{
+					"Contacts": &QueryResultImpl{
 						response: QueryResponse{
 							Done:      true,
 							TotalSize: 2,
@@ -116,7 +116,7 @@ func Test_newQueryRecord(t *testing.T) {
 									},
 									"LastName": "Test 1",
 								}),
-								subresults: make(map[string]*QueryResult),
+								subresults: make(map[string]QueryResult),
 							},
 							{
 								record: testQueryRecord(map[string]interface{}{
@@ -126,7 +126,7 @@ func Test_newQueryRecord(t *testing.T) {
 									},
 									"LastName": "Test 2",
 								}),
-								subresults: make(map[string]*QueryResult),
+								subresults: make(map[string]QueryResult),
 							},
 						},
 					},
@@ -152,7 +152,7 @@ func Test_newQueryRecord(t *testing.T) {
 func TestQueryRecord_Record(t *testing.T) {
 	type fields struct {
 		record     *sfdc.Record
-		subresults map[string]*QueryResult
+		subresults map[string]QueryResult
 	}
 	tests := []struct {
 		name   string
@@ -169,7 +169,7 @@ func TestQueryRecord_Record(t *testing.T) {
 					},
 					"Name": "Test 1",
 				}),
-				subresults: make(map[string]*QueryResult),
+				subresults: make(map[string]QueryResult),
 			},
 			want: testQueryRecord(map[string]interface{}{
 				"attributes": map[string]interface{}{
@@ -196,12 +196,12 @@ func TestQueryRecord_Record(t *testing.T) {
 func TestQueryRecord_Subresults(t *testing.T) {
 	type fields struct {
 		record     *sfdc.Record
-		subresults map[string]*QueryResult
+		subresults map[string]QueryResult
 	}
 	tests := []struct {
 		name   string
 		fields fields
-		want   map[string]*QueryResult
+		want   map[string]QueryResult
 	}{
 		{
 			name: "Sub Results",
@@ -213,8 +213,8 @@ func TestQueryRecord_Subresults(t *testing.T) {
 					},
 					"Name": "Test 1",
 				}),
-				subresults: map[string]*QueryResult{
-					"Contacts": &QueryResult{
+				subresults: map[string]QueryResult{
+					"Contacts": &QueryResultImpl{
 						response: QueryResponse{
 							Done:      true,
 							TotalSize: 2,
@@ -244,7 +244,7 @@ func TestQueryRecord_Subresults(t *testing.T) {
 									},
 									"LastName": "Test 1",
 								}),
-								subresults: make(map[string]*QueryResult),
+								subresults: make(map[string]QueryResult),
 							},
 							{
 								record: testQueryRecord(map[string]interface{}{
@@ -254,14 +254,14 @@ func TestQueryRecord_Subresults(t *testing.T) {
 									},
 									"LastName": "Test 2",
 								}),
-								subresults: make(map[string]*QueryResult),
+								subresults: make(map[string]QueryResult),
 							},
 						},
 					},
 				},
 			},
-			want: map[string]*QueryResult{
-				"Contacts": &QueryResult{
+			want: map[string]QueryResult{
+				"Contacts": &QueryResultImpl{
 					response: QueryResponse{
 						Done:      true,
 						TotalSize: 2,
@@ -291,7 +291,7 @@ func TestQueryRecord_Subresults(t *testing.T) {
 								},
 								"LastName": "Test 1",
 							}),
-							subresults: make(map[string]*QueryResult),
+							subresults: make(map[string]QueryResult),
 						},
 						{
 							record: testQueryRecord(map[string]interface{}{
@@ -301,7 +301,7 @@ func TestQueryRecord_Subresults(t *testing.T) {
 								},
 								"LastName": "Test 2",
 							}),
-							subresults: make(map[string]*QueryResult),
+							subresults: make(map[string]QueryResult),
 						},
 					},
 				},
@@ -324,7 +324,7 @@ func TestQueryRecord_Subresults(t *testing.T) {
 func TestQueryRecord_Subresult(t *testing.T) {
 	type fields struct {
 		record     *sfdc.Record
-		subresults map[string]*QueryResult
+		subresults map[string]QueryResult
 	}
 	type args struct {
 		sub string
@@ -333,7 +333,7 @@ func TestQueryRecord_Subresult(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   *QueryResult
+		want   QueryResult
 		want1  bool
 	}{
 		{
@@ -346,8 +346,8 @@ func TestQueryRecord_Subresult(t *testing.T) {
 					},
 					"Name": "Test 1",
 				}),
-				subresults: map[string]*QueryResult{
-					"Contacts": &QueryResult{
+				subresults: map[string]QueryResult{
+					"Contacts": &QueryResultImpl{
 						response: QueryResponse{
 							Done:      true,
 							TotalSize: 2,
@@ -377,7 +377,7 @@ func TestQueryRecord_Subresult(t *testing.T) {
 									},
 									"LastName": "Test 1",
 								}),
-								subresults: make(map[string]*QueryResult),
+								subresults: make(map[string]QueryResult),
 							},
 							{
 								record: testQueryRecord(map[string]interface{}{
@@ -387,7 +387,7 @@ func TestQueryRecord_Subresult(t *testing.T) {
 									},
 									"LastName": "Test 2",
 								}),
-								subresults: make(map[string]*QueryResult),
+								subresults: make(map[string]QueryResult),
 							},
 						},
 					},
@@ -396,7 +396,7 @@ func TestQueryRecord_Subresult(t *testing.T) {
 			args: args{
 				sub: "Contacts",
 			},
-			want: &QueryResult{
+			want: &QueryResultImpl{
 				response: QueryResponse{
 					Done:      true,
 					TotalSize: 2,
@@ -426,7 +426,7 @@ func TestQueryRecord_Subresult(t *testing.T) {
 							},
 							"LastName": "Test 1",
 						}),
-						subresults: make(map[string]*QueryResult),
+						subresults: make(map[string]QueryResult),
 					},
 					{
 						record: testQueryRecord(map[string]interface{}{
@@ -436,7 +436,7 @@ func TestQueryRecord_Subresult(t *testing.T) {
 							},
 							"LastName": "Test 2",
 						}),
-						subresults: make(map[string]*QueryResult),
+						subresults: make(map[string]QueryResult),
 					},
 				},
 			},
@@ -452,8 +452,8 @@ func TestQueryRecord_Subresult(t *testing.T) {
 					},
 					"Name": "Test 1",
 				}),
-				subresults: map[string]*QueryResult{
-					"Contacts": &QueryResult{
+				subresults: map[string]QueryResult{
+					"Contacts": &QueryResultImpl{
 						response: QueryResponse{
 							Done:      true,
 							TotalSize: 2,
@@ -483,7 +483,7 @@ func TestQueryRecord_Subresult(t *testing.T) {
 									},
 									"LastName": "Test 1",
 								}),
-								subresults: make(map[string]*QueryResult),
+								subresults: make(map[string]QueryResult),
 							},
 							{
 								record: testQueryRecord(map[string]interface{}{
@@ -493,7 +493,7 @@ func TestQueryRecord_Subresult(t *testing.T) {
 									},
 									"LastName": "Test 2",
 								}),
-								subresults: make(map[string]*QueryResult),
+								subresults: make(map[string]QueryResult),
 							},
 						},
 					},
