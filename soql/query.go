@@ -16,22 +16,55 @@ type Resource struct {
 }
 
 type queryOpts struct {
-	all            bool
-	columnMetadata bool
+	all             bool
+	columnMetadata  bool
+	noRecords       bool
+	limitOffsetOpts *limitOffsetOpts
 }
 
-type queryOptsFunc func(opts *queryOpts) *queryOpts
+type limitOffsetOpts struct {
+	start int
+	limit int
+	order string
+}
 
-func WithAll() queryOptsFunc {
+type QueryOptsFunc func(opts *queryOpts) *queryOpts
+
+// Query for all records which includes deleted records in the recycle bin.
+func WithAll() QueryOptsFunc {
 	return func(opts *queryOpts) *queryOpts {
 		opts.all = true
 		return opts
 	}
 }
 
-func WithColumnMetadata() queryOptsFunc {
+// Add column metadata to the query result. The metadata describes the shape of
+// the result regardless of nulls.
+func WithColumnMetadata() QueryOptsFunc {
 	return func(opts *queryOpts) *queryOpts {
 		opts.columnMetadata = true
+		return opts
+	}
+}
+
+// Do not return any records. Combine with WithColumnMetadata to get just the
+// column metadata.
+func NoRecords() QueryOptsFunc {
+	return func(opts *queryOpts) *queryOpts {
+		opts.noRecords = true
+		return opts
+	}
+}
+
+// UseLimitOffsetPagination will perform pagination using limit and offset
+// rather than the next page url provided by Salesforce.
+func UseLimitOffsetPagination(start int, limit int, order string) QueryOptsFunc {
+	return func(opts *queryOpts) *queryOpts {
+		opts.limitOffsetOpts = &limitOffsetOpts{
+			start: start,
+			limit: limit,
+			order: order,
+		}
 		return opts
 	}
 }
@@ -55,9 +88,8 @@ func NewResource(session session.ServiceFormatter) (*Resource, error) {
 }
 
 // Query will call out to the Salesforce org for a SOQL.  The results will
-// be the result of the query.  The all parameter is for querying all records,
-// which include deleted records that are in the recycle bin.
-func (r *Resource) Query(querier QueryFormatter, qopts ...queryOptsFunc) (*QueryResult, error) {
+// be the result of the query.
+func (r *Resource) Query(querier QueryFormatter, qopts ...QueryOptsFunc) (QueryResult, error) {
 	if querier == nil {
 		return nil, errors.New("soql resource query: querier can not be nil")
 	}
@@ -66,6 +98,50 @@ func (r *Resource) Query(querier QueryFormatter, qopts ...queryOptsFunc) (*Query
 		opt(opts)
 	}
 
+	var columnMeta *QueryColumnMetadataResposne
+	if opts.columnMetadata {
+		cmreq, err := r.queryColumnMetadataRequest(querier)
+		if err != nil {
+			return nil, err
+		}
+		cmres, err := r.queryColumnMetadataResponse(cmreq)
+		if err != nil {
+			return nil, err
+		}
+		columnMeta = &cmres
+	}
+
+	if opts.noRecords {
+		result := &QueryResultImpl{}
+		result.columnMetadata = columnMeta
+		return result, nil
+	}
+
+	if opts.limitOffsetOpts != nil {
+		aggQuerier := &AggregationQueryFormatter{
+			baseFormat: querier,
+			orderBy:    opts.limitOffsetOpts.order,
+			limit:      opts.limitOffsetOpts.limit,
+			offset:     opts.limitOffsetOpts.start,
+		}
+		request, err := r.queryRequest(aggQuerier, opts.all)
+		if err != nil {
+			return nil, err
+		}
+
+		response, err := r.queryResponse(request)
+		if err != nil {
+			return nil, err
+		}
+		result, err := NewQueryOffsetLimitResult(response, r, aggQuerier, opts.all)
+		if err != nil {
+			return nil, err
+		}
+		result.QueryResultImpl.columnMetadata = columnMeta
+		return result, nil
+	}
+
+	// normal next page querying
 	request, err := r.queryRequest(querier, opts.all)
 	if err != nil {
 		return nil, err
@@ -80,23 +156,12 @@ func (r *Resource) Query(querier QueryFormatter, qopts ...queryOptsFunc) (*Query
 	if err != nil {
 		return nil, err
 	}
-
-	if opts.columnMetadata {
-		cmreq, err := r.queryColumnMetadataRequest(querier)
-		if err != nil {
-			return nil, err
-		}
-		cmres, err := r.queryColumnMetadataResponse(cmreq)
-		if err != nil {
-			return nil, err
-		}
-		result.columnMetadata = &cmres
-	}
-
+	result.columnMetadata = columnMeta
 	return result, nil
+
 }
 
-func (r *Resource) next(recordURL string) (*QueryResult, error) {
+func (r *Resource) next(recordURL string) (QueryResult, error) {
 	queryURL := r.session.InstanceURL() + recordURL
 	request, err := http.NewRequest(http.MethodGet, queryURL, nil)
 

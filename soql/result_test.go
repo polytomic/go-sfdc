@@ -28,7 +28,7 @@ func Test_newQueryResult(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *QueryResult
+		want    QueryResult
 		wantErr bool
 	}{
 		{
@@ -55,7 +55,7 @@ func Test_newQueryResult(t *testing.T) {
 					},
 				},
 			},
-			want: &QueryResult{
+			want: &QueryResultImpl{
 				response: QueryResponse{
 					Done:      true,
 					TotalSize: 2,
@@ -133,7 +133,7 @@ func TestQueryResult_Done(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := &QueryResult{
+			result := &QueryResultImpl{
 				response: tt.fields.response,
 				records:  tt.fields.records,
 				resource: tt.fields.resource,
@@ -168,7 +168,7 @@ func TestQueryResult_TotalSize(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := &QueryResult{
+			result := &QueryResultImpl{
 				response: tt.fields.response,
 				records:  tt.fields.records,
 				resource: tt.fields.resource,
@@ -204,7 +204,7 @@ func TestQueryResult_MoreRecords(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := &QueryResult{
+			result := &QueryResultImpl{
 				response: tt.fields.response,
 				records:  tt.fields.records,
 				resource: tt.fields.resource,
@@ -267,7 +267,7 @@ func TestQueryResult_Records(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := &QueryResult{
+			result := &QueryResultImpl{
 				response: tt.fields.response,
 				records:  tt.fields.records,
 				resource: tt.fields.resource,
@@ -288,7 +288,7 @@ func TestQueryResult_Next(t *testing.T) {
 	tests := []struct {
 		name    string
 		fields  fields
-		want    *QueryResult
+		want    QueryResult
 		wantErr bool
 	}{
 		{
@@ -349,7 +349,7 @@ func TestQueryResult_Next(t *testing.T) {
 					},
 				},
 			},
-			want: &QueryResult{
+			want: &QueryResultImpl{
 				response: QueryResponse{
 					Done:      true,
 					TotalSize: 2,
@@ -392,7 +392,7 @@ func TestQueryResult_Next(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := &QueryResult{
+			result := &QueryResultImpl{
 				response: tt.fields.response,
 				records:  tt.fields.records,
 				resource: tt.fields.resource,
@@ -403,7 +403,9 @@ func TestQueryResult_Next(t *testing.T) {
 				return
 			}
 			if tt.want != nil {
-				tt.want.resource = result.resource
+				if qt, ok := tt.want.(*QueryResultImpl); ok {
+					qt.resource = result.resource
+				}
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("QueryResult.Next() = %v, want %v", got, tt.want)

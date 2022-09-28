@@ -18,17 +18,17 @@ var (
 
 // QueryInput is used to provide SOQL inputs.
 //
-// ObjectType is the Salesforce Object, like Account
+// # ObjectType is the Salesforce Object, like Account
 //
-// FieldList is the Salesforce Object's fields to query
+// # FieldList is the Salesforce Object's fields to query
 //
-// SubQuery is the inner query
+// # SubQuery is the inner query
 //
-// Where is the SOQL where cause
+// # Where is the SOQL where cause
 //
-// Order is the SOQL ordering
+// # Order is the SOQL ordering
 //
-// Limit is the SOQL record limit
+// # Limit is the SOQL record limit
 //
 // Offset is the SOQL record offset
 type QueryInput struct {
@@ -57,6 +57,30 @@ type Query struct {
 // Format returns the SOQL query.
 type QueryFormatter interface {
 	Format() (string, error)
+}
+
+// AggregationQueryFormatter is a QueryFormatter that takes a base formatter
+// and produces a query string with an order by, limit, and offset in the query.
+// It is to be used with aggregation queries (GROUP BY) where paging is not
+// supported by Salesforce's SOQL API; so we manually page using limit offset.
+type AggregationQueryFormatter struct {
+	baseFormat QueryFormatter
+	orderBy    string
+	offset     int
+	limit      int
+}
+
+func (a *AggregationQueryFormatter) Format() (string, error) {
+	base, err := a.baseFormat.Format()
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%s ORDER BY %s LIMIT %d OFFSET %d", base, a.orderBy, a.limit, a.offset), nil
+}
+
+type QueryOffsetLimiter interface {
+	QueryFormatter
+	UseOffsetLimit() bool
 }
 
 // NewQuery creates a new builder.  If the object is an
