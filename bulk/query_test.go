@@ -11,49 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewResource(t *testing.T) {
-	type args struct {
-		session session.ServiceFormatter
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *Resource
-		wantErr bool
-	}{
-		{
-			name: "Created",
-			args: args{
-				session: &session.Mock{},
-			},
-			want: &Resource{
-				session:  &session.Mock{},
-				endpoint: V2IngestEndpoint,
-			},
-			wantErr: false,
-		},
-		{
-			name:    "failed",
-			args:    args{},
-			want:    nil,
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewResource(V2IngestEndpoint, tt.args.session)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("NewResource() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewResource() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestResource_CreateJob(t *testing.T) {
+func TestResource_CreateQueryJob(t *testing.T) {
 	type fields struct {
 		session session.ServiceFormatter
 	}
@@ -72,7 +30,7 @@ func TestResource_CreateJob(t *testing.T) {
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
 					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest" {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/query" {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
@@ -86,17 +44,12 @@ func TestResource_CreateJob(t *testing.T) {
 							"columnDelimiter": "COMMA",
 							"concurrencyMode": "Parallel",
 							"contentType": "CSV",
-							"contentUrl": "services/v44.0/jobs",
 							"createdById": "1234",
 							"createdDate": "1/1/1970",
-							"externalIdFieldName": "namename",
 							"id": "9876",
-							"jobType": "V2Ingest",
-							"lineEnding": "LF",
 							"object": "Account",
-							"operation": "Insert",
-							"state": "Open",
-							"systemModstamp": "1/1/1980"
+							"operation": "query",
+							"state": "UploadComplete"
 						}`
 						return &http.Response{
 							StatusCode: http.StatusOK,
@@ -110,12 +63,11 @@ func TestResource_CreateJob(t *testing.T) {
 			},
 			args: args{
 				options: Options{
-					ColumnDelimiter:     Comma,
-					ContentType:         CSV,
-					ExternalIDFieldName: "Some External Field",
-					LineEnding:          Linefeed,
-					Object:              "Account",
-					Operation:           Insert,
+					Query:           "SELECT Id, Name FROM Account",
+					ColumnDelimiter: Comma,
+					ContentType:     CSV,
+					LineEnding:      Linefeed,
+					Operation:       Query,
 				},
 			},
 			wantErr: false,
@@ -123,7 +75,7 @@ func TestResource_CreateJob(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r, err := NewResource(V2IngestEndpoint, tt.fields.session)
+			r, err := NewResource(V2QueryEndpoint, tt.fields.session)
 			require.NoError(t, err)
 
 			_, err = r.CreateJob(tt.args.options)
@@ -134,7 +86,7 @@ func TestResource_CreateJob(t *testing.T) {
 		})
 	}
 }
-func TestResource_GetJob(t *testing.T) {
+func TestResource_GetQueryJob(t *testing.T) {
 	type fields struct {
 		session session.ServiceFormatter
 	}
@@ -150,7 +102,7 @@ func TestResource_GetJob(t *testing.T) {
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
 					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest/123" {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/query/123" {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
@@ -191,7 +143,7 @@ func TestResource_GetJob(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r, err := NewResource(V2IngestEndpoint, tt.fields.session)
+			r, err := NewResource(V2QueryEndpoint, tt.fields.session)
 			require.NoError(t, err)
 
 			_, err = r.GetJob("123")
@@ -202,11 +154,11 @@ func TestResource_GetJob(t *testing.T) {
 		})
 	}
 }
-func TestResource_AllJobs(t *testing.T) {
+func TestResource_AllQueryJobs(t *testing.T) {
 	mockSession := &session.Mock{
 		URL: "https://test.salesforce.com",
 		HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-			if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest?isPkChunkingEnabled=false&jobType=V2Ingest" {
+			if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/query?isPkChunkingEnabled=false&jobType=V2Query" {
 				return &http.Response{
 					StatusCode: 500,
 					Status:     "Invalid URL",
@@ -219,22 +171,35 @@ func TestResource_AllJobs(t *testing.T) {
 				"done": true,
 				"records": [
 					{
-						"apiVersion": 44.0,
-						"columnDelimiter": "COMMA",
-						"concurrencyMode": "Parallel",
-						"contentType": "CSV",
-						"contentUrl": "services/v44.0/jobs",
-						"createdById": "1234",
-						"createdDate": "1/1/1970",
-						"externalIdFieldName": "namename",
-						"id": "9876",
-						"jobType": "V2Ingest",
-						"lineEnding": "LF",
-						"object": "Account",
-						"operation": "Insert",
-						"state": "Open",
-						"systemModstamp": "1/1/1980"
-					}
+						"id" : "750R0000000zhfdIAA",
+						"operation" : "query",
+						"object" : "Account",
+						"createdById" : "005R0000000GiwjIAC",
+						"createdDate" : "2018-12-07T19:58:09.000+0000",
+						"systemModstamp" : "2018-12-07T19:59:14.000+0000",
+						"state" : "JobComplete",
+						"concurrencyMode" : "Parallel",
+						"contentType" : "CSV",
+						"apiVersion" : 56.0,
+						"jobType" : "V2Query",
+						"lineEnding" : "LF",
+						"columnDelimiter" : "COMMA"
+					 },
+					 {
+						"id" : "750R0000000zhjzIAA",
+						"operation" : "query",
+						"object" : "Account",
+						"createdById" : "005R0000000GiwjIAC",
+						"createdDate" : "2018-12-07T20:52:28.000+0000",
+						"systemModstamp" : "2018-12-07T20:53:15.000+0000",
+						"state" : "JobComplete",
+						"concurrencyMode" : "Parallel",
+						"contentType" : "CSV",
+						"apiVersion" : 56.0,
+						"jobType" : "V2Query",
+						"lineEnding" : "LF",
+						"columnDelimiter" : "COMMA"
+					 }
 				]
 			}`
 			return &http.Response{
@@ -266,7 +231,7 @@ func TestResource_AllJobs(t *testing.T) {
 			},
 			args: args{
 				parameters: Parameters{
-					JobType: V2Ingest,
+					JobType: V2Query,
 				},
 			},
 			want: &Jobs{
@@ -275,21 +240,34 @@ func TestResource_AllJobs(t *testing.T) {
 					Done: true,
 					Records: []Response{
 						{
-							APIVersion:          44.0,
-							ColumnDelimiter:     "COMMA",
-							ConcurrencyMode:     "Parallel",
-							ContentType:         "CSV",
-							ContentURL:          "services/v44.0/jobs",
-							CreatedByID:         "1234",
-							CreatedDate:         "1/1/1970",
-							ExternalIDFieldName: "namename",
-							ID:                  "9876",
-							JobType:             "V2Ingest",
-							LineEnding:          "LF",
-							Object:              "Account",
-							Operation:           "Insert",
-							State:               "Open",
-							SystemModstamp:      "1/1/1980",
+							ID:              "750R0000000zhfdIAA",
+							Operation:       "query",
+							Object:          "Account",
+							CreatedByID:     "005R0000000GiwjIAC",
+							CreatedDate:     "2018-12-07T19:58:09.000+0000",
+							SystemModstamp:  "2018-12-07T19:59:14.000+0000",
+							State:           "JobComplete",
+							ConcurrencyMode: "Parallel",
+							ContentType:     "CSV",
+							APIVersion:      56.0,
+							JobType:         "V2Query",
+							LineEnding:      "LF",
+							ColumnDelimiter: "COMMA",
+						},
+						{
+							ID:              "750R0000000zhjzIAA",
+							Operation:       "query",
+							Object:          "Account",
+							CreatedByID:     "005R0000000GiwjIAC",
+							CreatedDate:     "2018-12-07T20:52:28.000+0000",
+							SystemModstamp:  "2018-12-07T20:53:15.000+0000",
+							State:           "JobComplete",
+							ConcurrencyMode: "Parallel",
+							ContentType:     "CSV",
+							APIVersion:      56.0,
+							JobType:         "V2Query",
+							LineEnding:      "LF",
+							ColumnDelimiter: "COMMA",
 						},
 					},
 				},
@@ -299,7 +277,7 @@ func TestResource_AllJobs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r, err := NewResource(V2IngestEndpoint, tt.fields.session)
+			r, err := NewResource(V2QueryEndpoint, tt.fields.session)
 			require.NoError(t, err)
 
 			got, err := r.AllJobs(tt.args.parameters)

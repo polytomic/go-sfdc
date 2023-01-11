@@ -12,22 +12,25 @@ import (
 
 func TestJobs_do(t *testing.T) {
 	type fields struct {
-		session  session.ServiceFormatter
-		response jobResponse
+		session session.ServiceFormatter
+		params  Parameters
 	}
 	type args struct {
 		request *http.Request
 	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    jobResponse
-		wantErr bool
+	tests := map[string]struct {
+		endpoint BulkEndpoint
+		fields   fields
+		args     args
+		want     jobResponse
+		wantErr  bool
 	}{
-		{
-			name: "Passing",
+		"Passing": {
+			endpoint: V2IngestEndpoint,
 			fields: fields{
+				params: Parameters{
+					JobType: V2Ingest,
+				},
 				session: &session.Mock{
 					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `{
@@ -89,9 +92,105 @@ func TestJobs_do(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		{
-			name: "failing",
+		"passing -- query": {
+			endpoint: V2QueryEndpoint,
 			fields: fields{
+				params: Parameters{
+					JobType: V2Query,
+				},
+				session: &session.Mock{
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						resp := `{
+							"done": true,
+							"records": [
+								{
+									"id" : "750R0000000zhfdIAA",
+									"operation" : "query",
+									"object" : "Account",
+									"createdById" : "005R0000000GiwjIAC",
+									"createdDate" : "2018-12-07T19:58:09.000+0000",
+									"systemModstamp" : "2018-12-07T19:59:14.000+0000",
+									"state" : "JobComplete",
+									"concurrencyMode" : "Parallel",
+									"contentType" : "CSV",
+									"apiVersion" : 56.0,
+									"jobType" : "V2Query",
+									"lineEnding" : "LF",
+									"columnDelimiter" : "COMMA"
+								 },
+								 {
+									"id" : "750R0000000zhjzIAA",
+									"operation" : "query",
+									"object" : "Account",
+									"createdById" : "005R0000000GiwjIAC",
+									"createdDate" : "2018-12-07T20:52:28.000+0000",
+									"systemModstamp" : "2018-12-07T20:53:15.000+0000",
+									"state" : "JobComplete",
+									"concurrencyMode" : "Parallel",
+									"contentType" : "CSV",
+									"apiVersion" : 56.0,
+									"jobType" : "V2Query",
+									"lineEnding" : "LF",
+									"columnDelimiter" : "COMMA"
+								 }
+							]
+						}`
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Status:     "Good",
+							Body:       io.NopCloser(strings.NewReader(resp)),
+							Header:     make(http.Header),
+						}
+
+					}),
+				},
+			},
+			args: args{
+				request: testNewRequest(),
+			},
+			want: jobResponse{
+				Done: true,
+				Records: []Response{
+					{
+						ID:              "750R0000000zhfdIAA",
+						Operation:       "query",
+						Object:          "Account",
+						CreatedByID:     "005R0000000GiwjIAC",
+						CreatedDate:     "2018-12-07T19:58:09.000+0000",
+						SystemModstamp:  "2018-12-07T19:59:14.000+0000",
+						State:           "JobComplete",
+						ConcurrencyMode: "Parallel",
+						ContentType:     "CSV",
+						APIVersion:      56.0,
+						JobType:         "V2Query",
+						LineEnding:      "LF",
+						ColumnDelimiter: "COMMA",
+					},
+					{
+						ID:              "750R0000000zhjzIAA",
+						Operation:       "query",
+						Object:          "Account",
+						CreatedByID:     "005R0000000GiwjIAC",
+						CreatedDate:     "2018-12-07T20:52:28.000+0000",
+						SystemModstamp:  "2018-12-07T20:53:15.000+0000",
+						State:           "JobComplete",
+						ConcurrencyMode: "Parallel",
+						ContentType:     "CSV",
+						APIVersion:      56.0,
+						JobType:         "V2Query",
+						LineEnding:      "LF",
+						ColumnDelimiter: "COMMA",
+					},
+				},
+			},
+			wantErr: false,
+		},
+		"failing": {
+			endpoint: V2IngestEndpoint,
+			fields: fields{
+				params: Parameters{
+					JobType: V2Ingest,
+				},
 				session: &session.Mock{
 					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
 						resp := `[
@@ -117,19 +216,17 @@ func TestJobs_do(t *testing.T) {
 			wantErr: true,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			j := &Jobs{
-				session:  tt.fields.session,
-				response: tt.fields.response,
-			}
-			got, err := j.do(tt.args.request)
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			j, err := newJobs(tt.fields.session, tt.endpoint, tt.fields.params)
+			// require.NoError(t, err)
+			// got, err := j.do(tt.args.request)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Jobs.do() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Jobs.do() = %v, want %v", got, tt.want)
+			if !(tt.wantErr || reflect.DeepEqual(j.response, tt.want)) {
+				t.Errorf("Jobs.do() = %v, want %v", j.response, tt.want)
 			}
 		})
 	}
@@ -227,7 +324,110 @@ func Test_newJobs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := newJobs(tt.args.session, tt.args.parameters)
+			got, err := newJobs(tt.args.session, V2IngestEndpoint, tt.args.parameters)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("newJobs() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("newJobs() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+func Test_QnewJobs(t *testing.T) {
+	mockSession := &session.Mock{
+		URL: "https://test.salesforce.com",
+		HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+			if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/query?isPkChunkingEnabled=false&jobType=V2Query" {
+				return &http.Response{
+					StatusCode: 500,
+					Status:     "Invalid URL",
+					Body:       io.NopCloser(strings.NewReader(req.URL.String())),
+					Header:     make(http.Header),
+				}
+			}
+
+			resp := `{
+				"done": true,
+				"records": [
+					{
+						"apiVersion": 44.0,
+						"columnDelimiter": "COMMA",
+						"concurrencyMode": "Parallel",
+						"contentType": "CSV",
+						"contentUrl": "services/v44.0/jobs",
+						"createdById": "1234",
+						"createdDate": "1/1/1970",
+						"externalIdFieldName": "namename",
+						"id": "9876",
+						"jobType": "V2Ingest",
+						"lineEnding": "LF",
+						"object": "Account",
+						"operation": "Insert",
+						"state": "Open",
+						"systemModstamp": "1/1/1980"
+					}
+				]
+			}`
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Status:     "Good",
+				Body:       io.NopCloser(strings.NewReader(resp)),
+				Header:     make(http.Header),
+			}
+		}),
+	}
+
+	type args struct {
+		session    session.ServiceFormatter
+		parameters Parameters
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *Jobs
+		wantErr bool
+	}{
+		{
+			name: "Passing",
+			args: args{
+				session: mockSession,
+				parameters: Parameters{
+					JobType: V2Query,
+				},
+			},
+			want: &Jobs{
+				session: mockSession,
+				response: jobResponse{
+					Done: true,
+					Records: []Response{
+						{
+							APIVersion:          44.0,
+							ColumnDelimiter:     "COMMA",
+							ConcurrencyMode:     "Parallel",
+							ContentType:         "CSV",
+							ContentURL:          "services/v44.0/jobs",
+							CreatedByID:         "1234",
+							CreatedDate:         "1/1/1970",
+							ExternalIDFieldName: "namename",
+							ID:                  "9876",
+							JobType:             "V2Ingest",
+							Object:              "Account",
+							LineEnding:          "LF",
+							Operation:           "Insert",
+							State:               "Open",
+							SystemModstamp:      "1/1/1980",
+						},
+					},
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := newJobs(tt.args.session, V2QueryEndpoint, tt.args.parameters)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("newJobs() error = %v, wantErr %v", err, tt.wantErr)
 				return

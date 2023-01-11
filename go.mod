@@ -1,10 +1,11 @@
 module github.com/namely/go-sfdc/v3
 
-go 1.18
+go 1.19
 
 require (
+	github.com/cenkalti/backoff/v4 v4.2.0
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 )
 
 require (

@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/namely/go-sfdc/v3/session"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestJob_formatOptions(t *testing.T) {
@@ -103,6 +104,45 @@ func TestJob_formatOptions(t *testing.T) {
 			},
 			want:    nil,
 			wantErr: true,
+		},
+		{
+			name:   "passing -- query",
+			fields: fields{},
+			args: args{
+				options: &Options{
+					ColumnDelimiter: Caret,
+					ContentType:     CSV,
+					LineEnding:      Linefeed,
+					Operation:       Query,
+					Query:           "SELECT Id FROM Account",
+				},
+			},
+			want: &Options{
+				ColumnDelimiter: Caret,
+				ContentType:     CSV,
+				LineEnding:      Linefeed,
+				Operation:       Query,
+				Query:           "SELECT Id FROM Account",
+			},
+			wantErr: false,
+		},
+		{
+			name:   "defaults -- query",
+			fields: fields{},
+			args: args{
+				options: &Options{
+					Operation: Query,
+					Query:     "SELECT Id FROM Account",
+				},
+			},
+			want: &Options{
+				ColumnDelimiter: Comma,
+				ContentType:     CSV,
+				LineEnding:      Linefeed,
+				Operation:       Query,
+				Query:           "SELECT Id FROM Account",
+			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
@@ -298,6 +338,7 @@ func testNewRequest() *http.Request {
 	req, _ := http.NewRequest(http.MethodGet, "https://test.salesforce.com", nil)
 	return req
 }
+
 func TestJob_response(t *testing.T) {
 	type fields struct {
 		session session.ServiceFormatter
@@ -368,6 +409,52 @@ func TestJob_response(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "Passing -- query",
+			fields: fields{
+				session: &session.Mock{
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						resp := `{
+							"apiVersion": 44.0,
+							"columnDelimiter": "COMMA",
+							"concurrencyMode": "Parallel",
+							"contentType": "CSV",
+							"createdById": "1234",
+							"createdDate": "1/1/1970",
+							"id": "9876",
+							"lineEnding": "LF",
+							"object": "Account",
+							"operation": "query",
+							"state": "UploadComplete"
+						}`
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Status:     "Good",
+							Body:       io.NopCloser(strings.NewReader(resp)),
+							Header:     make(http.Header),
+						}
+
+					}),
+				},
+			},
+			args: args{
+				request: testNewRequest(),
+			},
+			want: Response{
+				APIVersion:      44.0,
+				ColumnDelimiter: "COMMA",
+				ConcurrencyMode: "Parallel",
+				ContentType:     "CSV",
+				CreatedByID:     "1234",
+				CreatedDate:     "1/1/1970",
+				ID:              "9876",
+				LineEnding:      "LF",
+				Object:          "Account",
+				Operation:       Query,
+				State:           "UploadComplete",
+			},
+			wantErr: false,
+		},
+		{
 			name: "failing",
 			fields: fields{
 				session: &session.Mock{
@@ -421,15 +508,15 @@ func TestJob_createCallout(t *testing.T) {
 	type args struct {
 		options Options
 	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    Response
-		wantErr bool
+	tests := map[string]struct {
+		endpoint BulkEndpoint
+		fields   fields
+		args     args
+		want     Response
+		wantErr  bool
 	}{
-		{
-			name: "Passing",
+		"Passing": {
+			endpoint: V2IngestEndpoint,
 			fields: fields{
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
@@ -499,13 +586,75 @@ func TestJob_createCallout(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		"Passing -- Query": {
+			endpoint: V2QueryEndpoint,
+			fields: fields{
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/query" {
+							return &http.Response{
+								StatusCode: 500,
+								Status:     "Invalid URL",
+								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
+								Header:     make(http.Header),
+							}
+						}
+
+						resp := `{
+							"id" : "750R0000000zlh9IAA",
+							"operation" : "query",
+							"object" : "Account",
+							"createdById" : "005R0000000GiwjIAC",
+							"createdDate" : "2018-12-10T17:50:19.000+0000",
+							"systemModstamp" : "2018-12-10T17:50:19.000+0000",
+							"state" : "UploadComplete",
+							"concurrencyMode" : "Parallel",
+							"contentType" : "CSV",
+							"apiVersion" : 46.0,
+							"lineEnding" : "LF",
+							"columnDelimiter" : "COMMA"
+						 }`
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Status:     "Good",
+							Body:       io.NopCloser(strings.NewReader(resp)),
+							Header:     make(http.Header),
+						}
+
+					}),
+				},
+			},
+			args: args{
+				options: Options{
+					ColumnDelimiter: Comma,
+					ContentType:     CSV,
+					LineEnding:      Linefeed,
+					Operation:       Query,
+				},
+			},
+			want: Response{
+				APIVersion:      46.0,
+				ColumnDelimiter: "COMMA",
+				ConcurrencyMode: "Parallel",
+				ContentType:     "CSV",
+				CreatedByID:     "005R0000000GiwjIAC",
+				CreatedDate:     "2018-12-10T17:50:19.000+0000",
+				LineEnding:      "LF",
+				ID:              "750R0000000zlh9IAA",
+				Object:          "Account",
+				Operation:       "query",
+				State:           "UploadComplete",
+				SystemModstamp:  "2018-12-10T17:50:19.000+0000",
+			},
+			wantErr: false,
+		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			j := &Job{
-				session: tt.fields.session,
-				info:    tt.fields.info,
-			}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			j := NewJob(tt.endpoint, tt.fields.session)
+			j.info = tt.fields.info
+
 			got, err := j.createCallout(tt.args.options)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Job.createCallout() error = %v, wantErr %v", err, tt.wantErr)
@@ -526,14 +675,14 @@ func TestJob_create(t *testing.T) {
 	type args struct {
 		options Options
 	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
+	tests := map[string]struct {
+		endpoint BulkEndpoint
+		fields   fields
+		args     args
+		wantErr  bool
 	}{
-		{
-			name: "Passing",
+		"Passing": {
+			endpoint: V2IngestEndpoint,
 			fields: fields{
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
@@ -586,13 +735,62 @@ func TestJob_create(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		"Passing -- Query": {
+			endpoint: V2QueryEndpoint,
+			fields: fields{
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/query" {
+							return &http.Response{
+								StatusCode: 500,
+								Status:     "Invalid URL",
+								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
+								Header:     make(http.Header),
+							}
+						}
+
+						resp := `{
+							"id" : "750R0000000zlh9IAA",
+							"operation" : "query",
+							"object" : "Account",
+							"createdById" : "005R0000000GiwjIAC",
+							"createdDate" : "2018-12-10T17:50:19.000+0000",
+							"systemModstamp" : "2018-12-10T17:50:19.000+0000",
+							"state" : "UploadComplete",
+							"concurrencyMode" : "Parallel",
+							"contentType" : "CSV",
+							"apiVersion" : 46.0,
+							"lineEnding" : "LF",
+							"columnDelimiter" : "COMMA"
+						 }`
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Status:     "Good",
+							Body:       io.NopCloser(strings.NewReader(resp)),
+							Header:     make(http.Header),
+						}
+
+					}),
+				},
+			},
+			args: args{
+				options: Options{
+					ColumnDelimiter: Comma,
+					ContentType:     CSV,
+					LineEnding:      Linefeed,
+					Operation:       Query,
+					Query:           "SELECT Id FROM Account",
+				},
+			},
+			wantErr: false,
+		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			j := &Job{
-				session: tt.fields.session,
-				info:    tt.fields.info,
-			}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			j := NewJob(tt.endpoint, tt.fields.session)
+			j.info = tt.fields.info
+
 			if err := j.create(tt.args.options); (err != nil) != tt.wantErr {
 				t.Errorf("Job.create() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -741,10 +939,9 @@ func TestJob_setState(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			j := &Job{
-				session: tt.fields.session,
-				info:    tt.fields.info,
-			}
+			j := NewJob(V2IngestEndpoint, tt.fields.session)
+			j.info = tt.fields.info
+
 			got, err := j.setState(tt.args.state)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Job.setState() error = %v, wantErr %v", err, tt.wantErr)
@@ -893,14 +1090,14 @@ func TestJob_Info(t *testing.T) {
 		session session.ServiceFormatter
 		info    Response
 	}
-	tests := []struct {
-		name    string
-		fields  fields
-		want    Info
-		wantErr bool
+	tests := map[string]struct {
+		endpoint BulkEndpoint
+		fields   fields
+		want     Info
+		wantErr  bool
 	}{
-		{
-			name: "Passing",
+		"Passing": {
+			endpoint: V2IngestEndpoint,
 			fields: fields{
 				info: Response{
 					ID: "1234",
@@ -988,21 +1185,95 @@ func TestJob_Info(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		"Passing -- Query": {
+			endpoint: V2QueryEndpoint,
+			fields: fields{
+				info: Response{
+					ID: "1234",
+				},
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/query/1234" {
+							return &http.Response{
+								StatusCode: 500,
+								Status:     "Invalid URL",
+								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
+								Header:     make(http.Header),
+							}
+						}
+
+						if req.Method != http.MethodGet {
+							return &http.Response{
+								StatusCode: 500,
+								Status:     "Invalid Method",
+								Body:       io.NopCloser(strings.NewReader(req.Method)),
+								Header:     make(http.Header),
+							}
+						}
+
+						resp := `{
+							"id" : "750R0000000zlh9IAA",
+							"operation" : "query",
+							"object" : "Account",
+							"createdById" : "005R0000000GiwjIAC",
+							"createdDate" : "2018-12-10T17:50:19.000+0000",
+							"systemModstamp" : "2018-12-10T17:51:27.000+0000",
+							"state" : "JobComplete",
+							"concurrencyMode" : "Parallel",
+							"contentType" : "CSV",
+							"apiVersion" : 46.0,
+							"jobType" : "V2Query",
+							"lineEnding" : "LF",
+							"columnDelimiter" : "COMMA",
+							"numberRecordsProcessed" : 500,
+							"retries" : 0,
+							"totalProcessingTime" : 334
+						}`
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Status:     "Good",
+							Body:       io.NopCloser(strings.NewReader(resp)),
+							Header:     make(http.Header),
+						}
+
+					}),
+				},
+			},
+			want: Info{
+				Response: Response{
+					APIVersion:      46.0,
+					ColumnDelimiter: "COMMA",
+					ConcurrencyMode: "Parallel",
+					ContentType:     "CSV",
+					CreatedByID:     "005R0000000GiwjIAC",
+					CreatedDate:     "2018-12-10T17:50:19.000+0000",
+					ID:              "750R0000000zlh9IAA",
+					JobType:         "V2Query",
+					LineEnding:      "LF",
+					Object:          "Account",
+					Operation:       "query",
+					State:           "JobComplete",
+					SystemModstamp:  "2018-12-10T17:51:27.000+0000",
+				},
+				NumberRecordsProcessed: 500,
+				Retries:                0,
+				TotalProcessingTime:    334,
+			},
+			wantErr: false,
+		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			j := &Job{
-				session: tt.fields.session,
-				info:    tt.fields.info,
-			}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			j := NewJob(tt.endpoint, tt.fields.session)
+			j.info = tt.fields.info
+
 			got, err := j.Info()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Job.Info() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Job.Info() = %v, want %v", got, tt.want)
-			}
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -1012,13 +1283,13 @@ func TestJob_Delete(t *testing.T) {
 		session session.ServiceFormatter
 		info    Response
 	}
-	tests := []struct {
-		name    string
-		fields  fields
-		wantErr bool
+	tests := map[string]struct {
+		endpoint BulkEndpoint
+		fields   fields
+		wantErr  bool
 	}{
-		{
-			name: "Passing",
+		"Passing": {
+			endpoint: V2IngestEndpoint,
 			fields: fields{
 				info: Response{
 					ID: "1234",
@@ -1056,8 +1327,47 @@ func TestJob_Delete(t *testing.T) {
 			},
 			wantErr: false,
 		},
-		{
-			name: "Fail",
+		"Passing -- Query": {
+			endpoint: V2QueryEndpoint,
+			fields: fields{
+				info: Response{
+					ID: "1234",
+				},
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/query/1234" {
+							return &http.Response{
+								StatusCode: 500,
+								Status:     "Invalid URL",
+								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
+								Header:     make(http.Header),
+							}
+						}
+
+						if req.Method != http.MethodDelete {
+							return &http.Response{
+								StatusCode: 500,
+								Status:     "Invalid Method",
+								Body:       io.NopCloser(strings.NewReader(req.Method)),
+								Header:     make(http.Header),
+							}
+						}
+
+						return &http.Response{
+							StatusCode: http.StatusNoContent,
+							Status:     "Good",
+							Body:       io.NopCloser(strings.NewReader("")),
+							Header:     make(http.Header),
+						}
+
+					}),
+				},
+			},
+			wantErr: false,
+		},
+		"Fail": {
+			endpoint: V2IngestEndpoint,
 			fields: fields{
 				info: Response{
 					ID: "1234",
@@ -1096,12 +1406,11 @@ func TestJob_Delete(t *testing.T) {
 			wantErr: true,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			j := &Job{
-				session: tt.fields.session,
-				info:    tt.fields.info,
-			}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			j := NewJob(tt.endpoint, tt.fields.session)
+			j.info = tt.fields.info
+
 			if err := j.Delete(); (err != nil) != tt.wantErr {
 				t.Errorf("Job.Delete() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -1168,12 +1477,123 @@ func TestJob_Upload(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			j := &Job{
-				session: tt.fields.session,
-				info:    tt.fields.info,
-			}
+			j := NewJob(V2IngestEndpoint, tt.fields.session)
+			j.info = tt.fields.info
+
 			if err := j.Upload(tt.args.body); (err != nil) != tt.wantErr {
 				t.Errorf("Job.Upload() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestJob_Results(t *testing.T) {
+	type fields struct {
+		endpoint   BulkEndpoint
+		session    session.ServiceFormatter
+		info       Response
+		locator    string
+		maxRecords int
+	}
+	tests := map[string]struct {
+		fields  fields
+		want    ResultsPage
+		wantErr bool
+	}{
+		"Records for ingest job returns error": {
+			fields: fields{
+				endpoint: V2IngestEndpoint,
+				session:  &session.Mock{},
+			},
+			wantErr: true,
+		},
+		"Passing": {
+			fields: fields{
+				endpoint: V2QueryEndpoint,
+				info: Response{
+					ID:              "1234",
+					ColumnDelimiter: Pipe,
+					LineEnding:      Linefeed,
+				},
+				maxRecords: 10000,
+				session: &session.Mock{
+					URL: "https://test.salesforce.com",
+					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
+						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/query/1234/results?maxRecords=10000" {
+							return &http.Response{
+								StatusCode: 500,
+								Status:     "Invalid URL",
+								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
+								Header:     make(http.Header),
+							}
+						}
+
+						if req.Method != http.MethodGet {
+							return &http.Response{
+								StatusCode: 500,
+								Status:     "Invalid Method",
+								Body:       io.NopCloser(strings.NewReader(req.Method)),
+								Header:     make(http.Header),
+							}
+						}
+
+						if req.Header.Get("Accept") != "text/csv" {
+							return &http.Response{
+								StatusCode: 500,
+								Status:     "Invalid Accept Header",
+								Body:       io.NopCloser(strings.NewReader(req.Header.Get("Accept"))),
+								Header:     make(http.Header),
+							}
+						}
+
+						resp := "sf__Created|sf__Id|FirstName|LastName|DOB\ntrue|2345|John|Doe|1/1/1970\ntrue|9876|Jane|Doe|1/1/1980\n"
+						respHeader := make(http.Header)
+						respHeader.Set(HeaderLocator, "next")
+						respHeader.Set(HeaderRecordCount, "4")
+						return &http.Response{
+							StatusCode: http.StatusOK,
+							Status:     "Good",
+							Body:       io.NopCloser(strings.NewReader(resp)),
+							Header:     respHeader,
+						}
+
+					}),
+				},
+			},
+			want: ResultsPage{
+				Locator: "next",
+				Records: []map[string]interface{}{
+					{
+						"sf__Created": "true",
+						"sf__Id":      "2345",
+						"FirstName":   "John",
+						"LastName":    "Doe",
+						"DOB":         "1/1/1970",
+					},
+					{
+						"sf__Created": "true",
+						"sf__Id":      "9876",
+						"FirstName":   "Jane",
+						"LastName":    "Doe",
+						"DOB":         "1/1/1980",
+					},
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			j := NewJob(tt.fields.endpoint, tt.fields.session)
+			j.info = tt.fields.info
+
+			got, err := j.Results(tt.fields.locator, tt.fields.maxRecords)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Job.SuccessfulRecords() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr {
+				assert.Equal(t, tt.want, *got)
 			}
 		})
 	}
@@ -1263,10 +1683,9 @@ func TestJob_SuccessfulRecords(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			j := &Job{
-				session: tt.fields.session,
-				info:    tt.fields.info,
-			}
+			j := NewJob(V2IngestEndpoint, tt.fields.session)
+			j.info = tt.fields.info
+
 			got, err := j.SuccessfulRecords()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Job.SuccessfulRecords() error = %v, wantErr %v", err, tt.wantErr)
@@ -1361,10 +1780,9 @@ func TestJob_FailedRecords(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			j := &Job{
-				session: tt.fields.session,
-				info:    tt.fields.info,
-			}
+			j := NewJob(V2IngestEndpoint, tt.fields.session)
+			j.info = tt.fields.info
+
 			got, err := j.FailedRecords()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Job.FailedRecords() error = %v, wantErr %v", err, tt.wantErr)
@@ -1449,10 +1867,9 @@ func TestJob_UnprocessedRecords(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			j := &Job{
-				session: tt.fields.session,
-				info:    tt.fields.info,
-			}
+			j := NewJob(V2IngestEndpoint, tt.fields.session)
+			j.info = tt.fields.info
+
 			got, err := j.UnprocessedRecords()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Job.UnprocessedRecords() error = %v, wantErr %v", err, tt.wantErr)
