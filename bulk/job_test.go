@@ -358,8 +358,9 @@ func TestJob_response(t *testing.T) {
 			name: "Passing",
 			fields: fields{
 				session: &session.Mock{
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						resp := `{
+					HTTPClient: mockHTTPClient(
+						returnStatus(http.StatusOK),
+						returnBody(`{
 							"apiVersion": 44.0,
 							"columnDelimiter": "COMMA",
 							"concurrencyMode": "Parallel",
@@ -375,15 +376,8 @@ func TestJob_response(t *testing.T) {
 							"operation": "Insert",
 							"state": "Open",
 							"systemModstamp": "1/1/1980"
-						}`
-						return &http.Response{
-							StatusCode: http.StatusOK,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-
-					}),
+						}`),
+					),
 				},
 			},
 			args: args{
@@ -412,8 +406,9 @@ func TestJob_response(t *testing.T) {
 			name: "Passing -- query",
 			fields: fields{
 				session: &session.Mock{
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						resp := `{
+					HTTPClient: mockHTTPClient(
+						returnStatus(http.StatusOK),
+						returnBody(`{
 							"apiVersion": 44.0,
 							"columnDelimiter": "COMMA",
 							"concurrencyMode": "Parallel",
@@ -425,15 +420,8 @@ func TestJob_response(t *testing.T) {
 							"object": "Account",
 							"operation": "query",
 							"state": "UploadComplete"
-						}`
-						return &http.Response{
-							StatusCode: http.StatusOK,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-
-					}),
+						}`),
+					),
 				},
 			},
 			args: args{
@@ -458,21 +446,16 @@ func TestJob_response(t *testing.T) {
 			name: "failing",
 			fields: fields{
 				session: &session.Mock{
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						resp := `[
+					HTTPClient: mockHTTPClient(
+						returnStatus(http.StatusBadRequest),
+						returnBody(`[
 							{
 								"fields" : [ "Id" ],
 								"message" : "Account ID: id value of incorrect type: 001900K0001pPuOAAU",
 								"errorCode" : "MALFORMED_ID"
 							}
-						]`
-						return &http.Response{
-							StatusCode: http.StatusBadRequest,
-							Status:     "Bad",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-					}),
+						]`),
+					),
 				},
 			},
 			args: args{
@@ -520,17 +503,10 @@ func TestJob_createCallout(t *testing.T) {
 			fields: fields{
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest" {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid URL",
-								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-								Header:     make(http.Header),
-							}
-						}
-
-						resp := `{
+					HTTPClient: mockHTTPClient(
+						expectURL("https://test.salesforce.com/services/data/v42.0/jobs/ingest"),
+						returnStatus(http.StatusOK),
+						returnBody(`{
 							"apiVersion": 44.0,
 							"columnDelimiter": "COMMA",
 							"concurrencyMode": "Parallel",
@@ -546,15 +522,8 @@ func TestJob_createCallout(t *testing.T) {
 							"operation": "Insert",
 							"state": "Open",
 							"systemModstamp": "1/1/1980"
-						}`
-						return &http.Response{
-							StatusCode: http.StatusOK,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-
-					}),
+						}`),
+					),
 				},
 			},
 			args: args{
@@ -591,17 +560,10 @@ func TestJob_createCallout(t *testing.T) {
 			fields: fields{
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/query" {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid URL",
-								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-								Header:     make(http.Header),
-							}
-						}
-
-						resp := `{
+					HTTPClient: mockHTTPClient(
+						expectURL("https://test.salesforce.com/services/data/v42.0/jobs/query"),
+						returnStatus(http.StatusOK),
+						returnBody(`{
 							"id" : "750R0000000zlh9IAA",
 							"operation" : "query",
 							"object" : "Account",
@@ -614,15 +576,8 @@ func TestJob_createCallout(t *testing.T) {
 							"apiVersion" : 46.0,
 							"lineEnding" : "LF",
 							"columnDelimiter" : "COMMA"
-						 }`
-						return &http.Response{
-							StatusCode: http.StatusOK,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-
-					}),
+						 }`),
+					),
 				},
 			},
 			args: args{
@@ -686,17 +641,10 @@ func TestJob_create(t *testing.T) {
 			fields: fields{
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest" {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid URL",
-								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-								Header:     make(http.Header),
-							}
-						}
-
-						resp := `{
+					HTTPClient: mockHTTPClient(
+						expectURL("https://test.salesforce.com/services/data/v42.0/jobs/ingest"),
+						returnStatus(http.StatusOK),
+						returnBody(`{
 							"apiVersion": 44.0,
 							"columnDelimiter": "COMMA",
 							"concurrencyMode": "Parallel",
@@ -712,15 +660,8 @@ func TestJob_create(t *testing.T) {
 							"operation": "Insert",
 							"state": "Open",
 							"systemModstamp": "1/1/1980"
-						}`
-						return &http.Response{
-							StatusCode: http.StatusOK,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-
-					}),
+						}`),
+					),
 				},
 			},
 			args: args{
@@ -740,17 +681,10 @@ func TestJob_create(t *testing.T) {
 			fields: fields{
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/query" {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid URL",
-								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-								Header:     make(http.Header),
-							}
-						}
-
-						resp := `{
+					HTTPClient: mockHTTPClient(
+						expectURL("https://test.salesforce.com/services/data/v42.0/jobs/query"),
+						returnStatus(http.StatusOK),
+						returnBody(`{
 							"id" : "750R0000000zlh9IAA",
 							"operation" : "query",
 							"object" : "Account",
@@ -763,15 +697,9 @@ func TestJob_create(t *testing.T) {
 							"apiVersion" : 46.0,
 							"lineEnding" : "LF",
 							"columnDelimiter" : "COMMA"
-						 }`
-						return &http.Response{
-							StatusCode: http.StatusOK,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-
-					}),
+						 }`,
+						),
+					),
 				},
 			},
 			args: args{
@@ -821,25 +749,11 @@ func TestJob_setState(t *testing.T) {
 				},
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234" {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid URL",
-								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-								Header:     make(http.Header),
-							}
-						}
-
-						if req.Method != http.MethodPatch {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid Method",
-								Body:       io.NopCloser(strings.NewReader(req.Method)),
-								Header:     make(http.Header),
-							}
-						}
-						resp := `{
+					HTTPClient: mockHTTPClient(
+						expectURL("https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234"),
+						expectMethod(http.MethodPatch),
+						returnStatus(http.StatusOK),
+						returnBody(`{
 							"apiVersion": 44.0,
 							"columnDelimiter": "COMMA",
 							"concurrencyMode": "Parallel",
@@ -855,15 +769,9 @@ func TestJob_setState(t *testing.T) {
 							"operation": "Insert",
 							"state": "Open",
 							"systemModstamp": "1/1/1980"
-						}`
-						return &http.Response{
-							StatusCode: http.StatusOK,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-
-					}),
+						}`,
+						),
+					),
 				},
 			},
 			args: args{
@@ -896,38 +804,19 @@ func TestJob_setState(t *testing.T) {
 				},
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234" {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid URL",
-								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-								Header:     make(http.Header),
-							}
-						}
-
-						if req.Method != http.MethodPatch {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid Method",
-								Body:       io.NopCloser(strings.NewReader(req.Method)),
-								Header:     make(http.Header),
-							}
-						}
-						resp := `[
+					HTTPClient: mockHTTPClient(
+						expectURL("https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234"),
+						expectMethod(http.MethodPatch),
+						returnStatus(http.StatusBadRequest),
+						returnBody(`[
 							{
 								"fields" : [ "Id" ],
 								"message" : "Account ID: id value of incorrect type: 001900K0001pPuOAAU",
 								"errorCode" : "MALFORMED_ID"
 							}
-						]`
-						return &http.Response{
-							StatusCode: http.StatusBadRequest,
-							Status:     "Bad",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-					}),
+						]`,
+						),
+					),
 				},
 			},
 			args: args{
@@ -973,8 +862,9 @@ func TestJob_infoResponse(t *testing.T) {
 			name: "Passing",
 			fields: fields{
 				session: &session.Mock{
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						resp := `{
+					HTTPClient: mockHTTPClient(
+						returnStatus(http.StatusOK),
+						returnBody(`{
 							"apiVersion": 44.0,
 							"columnDelimiter": "COMMA",
 							"concurrencyMode": "Parallel",
@@ -997,15 +887,9 @@ func TestJob_infoResponse(t *testing.T) {
 							"retries": 0,
 							"totalProcessingTime": 105,
 							"errorMessage": ""
-						}`
-						return &http.Response{
-							StatusCode: http.StatusOK,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-
-					}),
+						}`,
+						),
+					),
 				},
 			},
 			args: args{
@@ -1043,21 +927,17 @@ func TestJob_infoResponse(t *testing.T) {
 			name: "failing",
 			fields: fields{
 				session: &session.Mock{
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						resp := `[
+					HTTPClient: mockHTTPClient(
+						returnStatus(http.StatusBadRequest),
+						returnBody(`[
 							{
 								"fields" : [ "Id" ],
 								"message" : "Account ID: id value of incorrect type: 001900K0001pPuOAAU",
 								"errorCode" : "MALFORMED_ID"
 							}
-						]`
-						return &http.Response{
-							StatusCode: http.StatusBadRequest,
-							Status:     "Bad",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-					}),
+						]`,
+						),
+					),
 				},
 			},
 			args: args{
@@ -1104,26 +984,11 @@ func TestJob_Info(t *testing.T) {
 				},
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234" {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid URL",
-								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-								Header:     make(http.Header),
-							}
-						}
-
-						if req.Method != http.MethodGet {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid Method",
-								Body:       io.NopCloser(strings.NewReader(req.Method)),
-								Header:     make(http.Header),
-							}
-						}
-
-						resp := `{
+					HTTPClient: mockHTTPClient(
+						expectURL("https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234"),
+						expectMethod(http.MethodGet),
+						returnStatus(http.StatusOK),
+						returnBody(`{
 							"apiVersion": 44.0,
 							"columnDelimiter": "COMMA",
 							"concurrencyMode": "Parallel",
@@ -1146,15 +1011,9 @@ func TestJob_Info(t *testing.T) {
 							"retries": 0,
 							"totalProcessingTime": 105,
 							"errorMessage": ""
-						}`
-						return &http.Response{
-							StatusCode: http.StatusOK,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-
-					}),
+						}`,
+						),
+					),
 				},
 			},
 			want: Info{
@@ -1193,26 +1052,11 @@ func TestJob_Info(t *testing.T) {
 				},
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/query/1234" {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid URL",
-								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-								Header:     make(http.Header),
-							}
-						}
-
-						if req.Method != http.MethodGet {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid Method",
-								Body:       io.NopCloser(strings.NewReader(req.Method)),
-								Header:     make(http.Header),
-							}
-						}
-
-						resp := `{
+					HTTPClient: mockHTTPClient(
+						expectMethod(http.MethodGet),
+						expectURL("https://test.salesforce.com/services/data/v42.0/jobs/query/1234"),
+						returnStatus(http.StatusOK),
+						returnBody(`{
 							"id" : "750R0000000zlh9IAA",
 							"operation" : "query",
 							"object" : "Account",
@@ -1229,15 +1073,9 @@ func TestJob_Info(t *testing.T) {
 							"numberRecordsProcessed" : 500,
 							"retries" : 0,
 							"totalProcessingTime" : 334
-						}`
-						return &http.Response{
-							StatusCode: http.StatusOK,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-
-					}),
+						}`,
+						),
+					),
 				},
 			},
 			want: Info{
@@ -1296,33 +1134,11 @@ func TestJob_Delete(t *testing.T) {
 				},
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234" {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid URL",
-								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-								Header:     make(http.Header),
-							}
-						}
-
-						if req.Method != http.MethodDelete {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid Method",
-								Body:       io.NopCloser(strings.NewReader(req.Method)),
-								Header:     make(http.Header),
-							}
-						}
-
-						return &http.Response{
-							StatusCode: http.StatusNoContent,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader("")),
-							Header:     make(http.Header),
-						}
-
-					}),
+					HTTPClient: mockHTTPClient(
+						expectURL("https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234"),
+						expectMethod(http.MethodDelete),
+						returnStatus(http.StatusNoContent),
+					),
 				},
 			},
 			wantErr: false,
@@ -1335,33 +1151,11 @@ func TestJob_Delete(t *testing.T) {
 				},
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/query/1234" {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid URL",
-								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-								Header:     make(http.Header),
-							}
-						}
-
-						if req.Method != http.MethodDelete {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid Method",
-								Body:       io.NopCloser(strings.NewReader(req.Method)),
-								Header:     make(http.Header),
-							}
-						}
-
-						return &http.Response{
-							StatusCode: http.StatusNoContent,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader("")),
-							Header:     make(http.Header),
-						}
-
-					}),
+					HTTPClient: mockHTTPClient(
+						expectURL("https://test.salesforce.com/services/data/v42.0/jobs/query/1234"),
+						expectMethod(http.MethodDelete),
+						returnStatus(http.StatusNoContent),
+					),
 				},
 			},
 			wantErr: false,
@@ -1374,33 +1168,11 @@ func TestJob_Delete(t *testing.T) {
 				},
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234" {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid URL",
-								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-								Header:     make(http.Header),
-							}
-						}
-
-						if req.Method != http.MethodDelete {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid Method",
-								Body:       io.NopCloser(strings.NewReader(req.Method)),
-								Header:     make(http.Header),
-							}
-						}
-
-						return &http.Response{
-							StatusCode: http.StatusBadRequest,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader("")),
-							Header:     make(http.Header),
-						}
-
-					}),
+					HTTPClient: mockHTTPClient(
+						expectURL("https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234"),
+						expectMethod(http.MethodDelete),
+						returnStatus(http.StatusBadRequest),
+					),
 				},
 			},
 			wantErr: true,
@@ -1440,33 +1212,11 @@ func TestJob_Upload(t *testing.T) {
 				},
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234/batches" {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid URL",
-								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-								Header:     make(http.Header),
-							}
-						}
-
-						if req.Method != http.MethodPut {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid Method",
-								Body:       io.NopCloser(strings.NewReader(req.Method)),
-								Header:     make(http.Header),
-							}
-						}
-
-						return &http.Response{
-							StatusCode: http.StatusCreated,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader("")),
-							Header:     make(http.Header),
-						}
-
-					}),
+					HTTPClient: mockHTTPClient(
+						expectURL("https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234/batches"),
+						expectMethod(http.MethodPut),
+						returnStatus(http.StatusCreated),
+					),
 				},
 			},
 			args: args{
@@ -1518,46 +1268,15 @@ func TestJob_Results(t *testing.T) {
 				maxRecords: 10000,
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/query/1234/results?maxRecords=10000" {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid URL",
-								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-								Header:     make(http.Header),
-							}
-						}
-
-						if req.Method != http.MethodGet {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid Method",
-								Body:       io.NopCloser(strings.NewReader(req.Method)),
-								Header:     make(http.Header),
-							}
-						}
-
-						if req.Header.Get("Accept") != "text/csv" {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid Accept Header",
-								Body:       io.NopCloser(strings.NewReader(req.Header.Get("Accept"))),
-								Header:     make(http.Header),
-							}
-						}
-
-						resp := "sf__Created|sf__Id|FirstName|LastName|DOB\ntrue|2345|John|Doe|1/1/1970\ntrue|9876|Jane|Doe|1/1/1980\n"
-						respHeader := make(http.Header)
-						respHeader.Set(HeaderLocator, "next")
-						respHeader.Set(HeaderRecordCount, "4")
-						return &http.Response{
-							StatusCode: http.StatusOK,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     respHeader,
-						}
-
-					}),
+					HTTPClient: mockHTTPClient(
+						expectURL("https://test.salesforce.com/services/data/v42.0/jobs/query/1234/results?maxRecords=10000"),
+						expectMethod(http.MethodGet),
+						expectHeader("Accept", "text/csv"),
+						returnStatus(http.StatusOK),
+						returnBody("sf__Created|sf__Id|FirstName|LastName|DOB\ntrue|2345|John|Doe|1/1/1970\ntrue|9876|Jane|Doe|1/1/1980\n"),
+						returnHeader("Sforce-Locator", "next"),
+						returnHeader("Sforce-NumberOfRecords", "4"),
+					),
 				},
 			},
 			want: ResultsPage{
@@ -1620,34 +1339,12 @@ func TestJob_SuccessfulRecords(t *testing.T) {
 				},
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234/successfulResults/" {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid URL",
-								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-								Header:     make(http.Header),
-							}
-						}
-
-						if req.Method != http.MethodGet {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid Method",
-								Body:       io.NopCloser(strings.NewReader(req.Method)),
-								Header:     make(http.Header),
-							}
-						}
-
-						resp := "sf__Created|sf__Id|FirstName|LastName|DOB\ntrue|2345|John|Doe|1/1/1970\ntrue|9876|Jane|Doe|1/1/1980\n"
-						return &http.Response{
-							StatusCode: http.StatusOK,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-
-					}),
+					HTTPClient: mockHTTPClient(
+						expectURL("https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234/successfulResults/"),
+						expectMethod(http.MethodGet),
+						returnStatus(http.StatusOK),
+						returnBody("sf__Created|sf__Id|FirstName|LastName|DOB\ntrue|2345|John|Doe|1/1/1970\ntrue|9876|Jane|Doe|1/1/1980\n"),
+					),
 				},
 			},
 			want: []SuccessfulRecord{
@@ -1719,34 +1416,12 @@ func TestJob_FailedRecords(t *testing.T) {
 				},
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234/failedResults/" {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid URL",
-								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-								Header:     make(http.Header),
-							}
-						}
-
-						if req.Method != http.MethodGet {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid Method",
-								Body:       io.NopCloser(strings.NewReader(req.Method)),
-								Header:     make(http.Header),
-							}
-						}
-
-						resp := "\"sf__Error\"|\"sf__Id\"|FirstName|LastName|DOB\nREQUIRED_FIELD_MISSING:Required fields are missing: [Name]:Name --||John|Doe|1/1/1970\nREQUIRED_FIELD_MISSING:Required fields are missing: [Name]:Name --||Jane|Doe|1/1/1980\n"
-						return &http.Response{
-							StatusCode: http.StatusOK,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-
-					}),
+					HTTPClient: mockHTTPClient(
+						expectURL("https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234/failedResults/"),
+						expectMethod(http.MethodGet),
+						returnStatus(http.StatusOK),
+						returnBody("sf__Error|sf__Id|FirstName|LastName|DOB\nREQUIRED_FIELD_MISSING:Required fields are missing: [Name]:Name --||John|Doe|1/1/1970\nREQUIRED_FIELD_MISSING:Required fields are missing: [Name]:Name --||Jane|Doe|1/1/1980\n"),
+					),
 				},
 			},
 			want: []FailedRecord{
@@ -1816,34 +1491,12 @@ func TestJob_UnprocessedRecords(t *testing.T) {
 				},
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234/unprocessedrecords/" {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid URL",
-								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-								Header:     make(http.Header),
-							}
-						}
-
-						if req.Method != http.MethodGet {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid Method",
-								Body:       io.NopCloser(strings.NewReader(req.Method)),
-								Header:     make(http.Header),
-							}
-						}
-
-						resp := "FirstName|LastName|DOB\nJohn|Doe|1/1/1970\nJane|Doe|1/1/1980\n"
-						return &http.Response{
-							StatusCode: http.StatusOK,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-
-					}),
+					HTTPClient: mockHTTPClient(
+						expectURL("https://test.salesforce.com/services/data/v42.0/jobs/ingest/1234/unprocessedrecords/"),
+						expectMethod(http.MethodGet),
+						returnStatus(http.StatusOK),
+						returnBody("FirstName|LastName|DOB\nJohn|Doe|1/1/1970\nJane|Doe|1/1/1980\n"),
+					),
 				},
 			},
 			want: []UnprocessedRecord{

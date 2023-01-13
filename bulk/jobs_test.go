@@ -1,10 +1,8 @@
 package bulk
 
 import (
-	"io"
 	"net/http"
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/namely/go-sfdc/v3/session"
@@ -32,8 +30,9 @@ func TestJobs_do(t *testing.T) {
 					JobType: V2Ingest,
 				},
 				session: &session.Mock{
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						resp := `{
+					HTTPClient: mockHTTPClient(
+						returnStatus(http.StatusOK),
+						returnBody(`{
 							"done": true,
 							"records": [
 								{
@@ -54,15 +53,9 @@ func TestJobs_do(t *testing.T) {
 									"systemModstamp": "1/1/1980"
 								}
 							]
-						}`
-						return &http.Response{
-							StatusCode: http.StatusOK,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-
-					}),
+						}`,
+						),
+					),
 				},
 			},
 			args: args{
@@ -99,8 +92,9 @@ func TestJobs_do(t *testing.T) {
 					JobType: V2Query,
 				},
 				session: &session.Mock{
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						resp := `{
+					HTTPClient: mockHTTPClient(
+						returnStatus(http.StatusOK),
+						returnBody(`{
 							"done": true,
 							"records": [
 								{
@@ -134,15 +128,9 @@ func TestJobs_do(t *testing.T) {
 									"columnDelimiter" : "COMMA"
 								 }
 							]
-						}`
-						return &http.Response{
-							StatusCode: http.StatusOK,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-
-					}),
+						}`,
+						),
+					),
 				},
 			},
 			args: args{
@@ -192,21 +180,17 @@ func TestJobs_do(t *testing.T) {
 					JobType: V2Ingest,
 				},
 				session: &session.Mock{
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						resp := `[
+					HTTPClient: mockHTTPClient(
+						returnStatus(http.StatusBadRequest),
+						returnBody(`[
 							{
 								"fields" : [ "Id" ],
 								"message" : "Account ID: id value of incorrect type: 001900K0001pPuOAAU",
 								"errorCode" : "MALFORMED_ID"
 							}
-						]`
-						return &http.Response{
-							StatusCode: http.StatusBadRequest,
-							Status:     "Bad",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-					}),
+						]`,
+						),
+					),
 				},
 			},
 			args: args{
@@ -235,17 +219,10 @@ func TestJobs_do(t *testing.T) {
 func Test_newJobs(t *testing.T) {
 	mockSession := &session.Mock{
 		URL: "https://test.salesforce.com",
-		HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-			if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest?isPkChunkingEnabled=false&jobType=V2Ingest" {
-				return &http.Response{
-					StatusCode: 500,
-					Status:     "Invalid URL",
-					Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-					Header:     make(http.Header),
-				}
-			}
-
-			resp := `{
+		HTTPClient: mockHTTPClient(
+			expectURL("https://test.salesforce.com/services/data/v42.0/jobs/ingest?isPkChunkingEnabled=false&jobType=V2Ingest"),
+			returnStatus(http.StatusOK),
+			returnBody(`{
 				"done": true,
 				"records": [
 					{
@@ -266,14 +243,9 @@ func Test_newJobs(t *testing.T) {
 						"systemModstamp": "1/1/1980"
 					}
 				]
-			}`
-			return &http.Response{
-				StatusCode: http.StatusOK,
-				Status:     "Good",
-				Body:       io.NopCloser(strings.NewReader(resp)),
-				Header:     make(http.Header),
-			}
-		}),
+			}`,
+			),
+		),
 	}
 
 	type args struct {
@@ -319,6 +291,7 @@ func Test_newJobs(t *testing.T) {
 					},
 				},
 			},
+
 			wantErr: false,
 		},
 	}
@@ -335,20 +308,13 @@ func Test_newJobs(t *testing.T) {
 		})
 	}
 }
-func Test_QnewJobs(t *testing.T) {
+func Test_newQueryJobs(t *testing.T) {
 	mockSession := &session.Mock{
 		URL: "https://test.salesforce.com",
-		HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-			if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/query?isPkChunkingEnabled=false&jobType=V2Query" {
-				return &http.Response{
-					StatusCode: 500,
-					Status:     "Invalid URL",
-					Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-					Header:     make(http.Header),
-				}
-			}
-
-			resp := `{
+		HTTPClient: mockHTTPClient(
+			expectURL("https://test.salesforce.com/services/data/v42.0/jobs/query?isPkChunkingEnabled=false&jobType=V2Query"),
+			returnStatus(http.StatusOK),
+			returnBody(`{
 				"done": true,
 				"records": [
 					{
@@ -369,14 +335,9 @@ func Test_QnewJobs(t *testing.T) {
 						"systemModstamp": "1/1/1980"
 					}
 				]
-			}`
-			return &http.Response{
-				StatusCode: http.StatusOK,
-				Status:     "Good",
-				Body:       io.NopCloser(strings.NewReader(resp)),
-				Header:     make(http.Header),
-			}
-		}),
+			}`,
+			),
+		),
 	}
 
 	type args struct {
@@ -544,17 +505,10 @@ func TestJobs_Records(t *testing.T) {
 func TestJobs_Next(t *testing.T) {
 	mockSession := &session.Mock{
 		URL: "https://test.salesforce.com",
-		HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-			if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest?isPkChunkingEnabled=false&jobType=V2Ingest" {
-				return &http.Response{
-					StatusCode: 500,
-					Status:     "Invalid URL",
-					Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-					Header:     make(http.Header),
-				}
-			}
-
-			resp := `{
+		HTTPClient: mockHTTPClient(
+			expectURL("https://test.salesforce.com/services/data/v42.0/jobs/ingest?isPkChunkingEnabled=false&jobType=V2Ingest"),
+			returnStatus(http.StatusOK),
+			returnBody(`{
 				"done": true,
 				"records": [
 					{
@@ -575,14 +529,9 @@ func TestJobs_Next(t *testing.T) {
 						"systemModstamp": "1/1/1980"
 					}
 				]
-			}`
-			return &http.Response{
-				StatusCode: http.StatusOK,
-				Status:     "Good",
-				Body:       io.NopCloser(strings.NewReader(resp)),
-				Header:     make(http.Header),
-			}
-		}),
+			}`,
+			),
+		),
 	}
 
 	type fields struct {

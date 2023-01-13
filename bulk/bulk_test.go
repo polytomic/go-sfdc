@@ -1,10 +1,8 @@
 package bulk
 
 import (
-	"io"
 	"net/http"
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/namely/go-sfdc/v3/session"
@@ -71,17 +69,10 @@ func TestResource_CreateJob(t *testing.T) {
 			fields: fields{
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest" {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid URL",
-								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-								Header:     make(http.Header),
-							}
-						}
-
-						resp := `{
+					HTTPClient: mockHTTPClient(
+						expectURL("https://test.salesforce.com/services/data/v42.0/jobs/ingest"),
+						returnStatus(http.StatusOK),
+						returnBody(`{
 							"apiVersion": 44.0,
 							"columnDelimiter": "COMMA",
 							"concurrencyMode": "Parallel",
@@ -97,15 +88,9 @@ func TestResource_CreateJob(t *testing.T) {
 							"operation": "Insert",
 							"state": "Open",
 							"systemModstamp": "1/1/1980"
-						}`
-						return &http.Response{
-							StatusCode: http.StatusOK,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-
-					}),
+						}`,
+						),
+					),
 				},
 			},
 			args: args{
@@ -149,17 +134,10 @@ func TestResource_GetJob(t *testing.T) {
 			fields: fields{
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
-					HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-						if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest/123" {
-							return &http.Response{
-								StatusCode: 500,
-								Status:     "Invalid URL",
-								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-								Header:     make(http.Header),
-							}
-						}
-
-						resp := `{
+					HTTPClient: mockHTTPClient(
+						expectURL("https://test.salesforce.com/services/data/v42.0/jobs/ingest/123"),
+						returnStatus(http.StatusOK),
+						returnBody(`{
 							"apiVersion": 44.0,
 							"columnDelimiter": "COMMA",
 							"concurrencyMode": "Parallel",
@@ -175,15 +153,9 @@ func TestResource_GetJob(t *testing.T) {
 							"operation": "Insert",
 							"state": "Open",
 							"systemModstamp": "1/1/1980"
-						}`
-						return &http.Response{
-							StatusCode: http.StatusOK,
-							Status:     "Good",
-							Body:       io.NopCloser(strings.NewReader(resp)),
-							Header:     make(http.Header),
-						}
-
-					}),
+						}`,
+						),
+					),
 				},
 			},
 			wantErr: false,
@@ -205,17 +177,10 @@ func TestResource_GetJob(t *testing.T) {
 func TestResource_AllJobs(t *testing.T) {
 	mockSession := &session.Mock{
 		URL: "https://test.salesforce.com",
-		HTTPClient: mockHTTPClient(func(req *http.Request) *http.Response {
-			if req.URL.String() != "https://test.salesforce.com/services/data/v42.0/jobs/ingest?isPkChunkingEnabled=false&jobType=V2Ingest" {
-				return &http.Response{
-					StatusCode: 500,
-					Status:     "Invalid URL",
-					Body:       io.NopCloser(strings.NewReader(req.URL.String())),
-					Header:     make(http.Header),
-				}
-			}
-
-			resp := `{
+		HTTPClient: mockHTTPClient(
+			expectURL("https://test.salesforce.com/services/data/v42.0/jobs/ingest?isPkChunkingEnabled=false&jobType=V2Ingest"),
+			returnStatus(http.StatusOK),
+			returnBody(`{
 				"done": true,
 				"records": [
 					{
@@ -236,14 +201,9 @@ func TestResource_AllJobs(t *testing.T) {
 						"systemModstamp": "1/1/1980"
 					}
 				]
-			}`
-			return &http.Response{
-				StatusCode: http.StatusOK,
-				Status:     "Good",
-				Body:       io.NopCloser(strings.NewReader(resp)),
-				Header:     make(http.Header),
-			}
-		}),
+			}`,
+			),
+		),
 	}
 
 	type fields struct {
