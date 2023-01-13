@@ -32,11 +32,11 @@ type Jobs struct {
 	response jobResponse
 }
 
-func newJobs(session session.ServiceFormatter, parameters Parameters) (*Jobs, error) {
+func newJobs(session session.ServiceFormatter, endpoint BulkEndpoint, parameters Parameters) (*Jobs, error) {
 	j := &Jobs{
 		session: session,
 	}
-	url := session.DataServiceURL() + bulk2Endpoint
+	url := session.DataServiceURL() + string(endpoint)
 	request, err := j.request(url)
 	if err != nil {
 		return nil, err
