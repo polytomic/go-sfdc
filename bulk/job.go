@@ -445,6 +445,10 @@ func (j *Job) Wait(ctx context.Context) (Info, error) {
 		for {
 			select {
 			case <-ctx.Done():
+				// abort the job if the context was cancelled before we
+				// returned; use context.Background() since calling context is
+				// already Done.
+				j.Abort(context.Background())
 				return
 			case <-time.After(bo.NextBackOff()):
 			}
