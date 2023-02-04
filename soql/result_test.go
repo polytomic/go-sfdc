@@ -1,6 +1,7 @@
 package soql
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -397,7 +398,7 @@ func TestQueryResult_Next(t *testing.T) {
 				records:  tt.fields.records,
 				resource: tt.fields.resource,
 			}
-			got, err := result.Next()
+			got, err := result.Next(context.Background())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("QueryResult.Next() error = %v, wantErr %v", err, tt.wantErr)
 				return

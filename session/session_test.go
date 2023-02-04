@@ -1,6 +1,7 @@
 package session
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -56,7 +57,7 @@ func Test_passwordSessionRequest(t *testing.T) {
 		if err != nil {
 			t.Fatal("password credentials can not return an error for these tests")
 		}
-		request, err := passwordSessionRequest(passwordCreds)
+		request, err := passwordSessionRequest(context.Background(), passwordCreds)
 
 		if err != nil && scenario.err == nil {
 			t.Errorf("%s Error was not expected %s", scenario.desc, err.Error())
@@ -295,7 +296,7 @@ func TestNewPasswordSession(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			session, err := Open(tc.config)
+			session, err := Open(context.Background(), tc.config)
 			if tc.wantErr != nil {
 				require.EqualError(t, err, tc.wantErr.Error())
 			} else {
@@ -523,7 +524,7 @@ func TestSession_Refresh(t *testing.T) {
 			config:    config,
 		}
 
-		err := s.Refresh()
+		err := s.Refresh(context.Background())
 		require.NoError(t, err)
 		assert.Equal(t, newToken, s.response.AccessToken)
 	})
@@ -535,7 +536,7 @@ func TestSession_Refresh(t *testing.T) {
 			config:    config,
 		}
 
-		err := s.Refresh()
+		err := s.Refresh(context.Background())
 		require.NoError(t, err)
 		assert.Equal(t, oldToken, s.response.AccessToken)
 	})
@@ -559,7 +560,7 @@ func TestSession_Refresh(t *testing.T) {
 			},
 		}
 
-		err := s.Refresh()
+		err := s.Refresh(context.Background())
 		assert.EqualError(t, err, wantErr)
 	})
 }

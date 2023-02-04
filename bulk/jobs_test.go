@@ -1,6 +1,7 @@
 package bulk
 
 import (
+	"context"
 	"net/http"
 	"reflect"
 	"testing"
@@ -202,7 +203,7 @@ func TestJobs_do(t *testing.T) {
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			j, err := newJobs(tt.fields.session, tt.endpoint, tt.fields.params)
+			j, err := newJobs(context.Background(), tt.fields.session, tt.endpoint, tt.fields.params)
 			// require.NoError(t, err)
 			// got, err := j.do(tt.args.request)
 			if (err != nil) != tt.wantErr {
@@ -297,7 +298,7 @@ func Test_newJobs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := newJobs(tt.args.session, V2IngestEndpoint, tt.args.parameters)
+			got, err := newJobs(context.Background(), tt.args.session, V2IngestEndpoint, tt.args.parameters)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("newJobs() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -388,7 +389,7 @@ func Test_newQueryJobs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := newJobs(tt.args.session, V2QueryEndpoint, tt.args.parameters)
+			got, err := newJobs(context.Background(), tt.args.session, V2QueryEndpoint, tt.args.parameters)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("newJobs() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -586,7 +587,7 @@ func TestJobs_Next(t *testing.T) {
 				session:  tt.fields.session,
 				response: tt.fields.response,
 			}
-			got, err := j.Next()
+			got, err := j.Next(context.Background())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Jobs.Next() error = %v, wantErr %v", err, tt.wantErr)
 				return

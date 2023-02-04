@@ -1,6 +1,7 @@
 package sobject
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -84,8 +85,8 @@ type query struct {
 	session session.ServiceFormatter
 }
 
-func (q *query) callout(querier Querier) (*sfdc.Record, error) {
-	request, err := q.queryRequest(querier)
+func (q *query) callout(ctx context.Context, querier Querier) (*sfdc.Record, error) {
+	request, err := q.queryRequest(ctx, querier)
 
 	if err != nil {
 		return nil, err
@@ -99,7 +100,7 @@ func (q *query) callout(querier Querier) (*sfdc.Record, error) {
 
 	return value, nil
 }
-func (q *query) queryRequest(querier Querier) (*http.Request, error) {
+func (q *query) queryRequest(ctx context.Context, querier Querier) (*http.Request, error) {
 
 	queryURL := q.session.DataServiceURL() + objectEndpoint + querier.SObject() + "/" + querier.ID()
 
@@ -110,7 +111,7 @@ func (q *query) queryRequest(querier Querier) (*http.Request, error) {
 		queryURL += "?" + form.Encode()
 	}
 
-	request, err := http.NewRequest(http.MethodGet, queryURL, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, queryURL, nil)
 
 	if err != nil {
 		return nil, err
@@ -145,8 +146,8 @@ func (q *query) queryResponse(request *http.Request) (*sfdc.Record, error) {
 	return &record, nil
 }
 
-func (q *query) externalCallout(querier ExternalQuerier) (*sfdc.Record, error) {
-	request, err := q.externalQueryRequest(querier)
+func (q *query) externalCallout(ctx context.Context, querier ExternalQuerier) (*sfdc.Record, error) {
+	request, err := q.externalQueryRequest(ctx, querier)
 
 	if err != nil {
 		return nil, err
@@ -161,7 +162,7 @@ func (q *query) externalCallout(querier ExternalQuerier) (*sfdc.Record, error) {
 	return value, nil
 }
 
-func (q *query) externalQueryRequest(querier ExternalQuerier) (*http.Request, error) {
+func (q *query) externalQueryRequest(ctx context.Context, querier ExternalQuerier) (*http.Request, error) {
 
 	queryURL := q.session.DataServiceURL() + objectEndpoint + querier.SObject() + "/" + querier.ExternalField() + "/" + querier.ID()
 
@@ -172,7 +173,7 @@ func (q *query) externalQueryRequest(querier ExternalQuerier) (*http.Request, er
 		queryURL += "?" + form.Encode()
 	}
 
-	request, err := http.NewRequest(http.MethodGet, queryURL, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, queryURL, nil)
 
 	if err != nil {
 		return nil, err
@@ -183,8 +184,8 @@ func (q *query) externalQueryRequest(querier ExternalQuerier) (*http.Request, er
 	return request, nil
 
 }
-func (q *query) deletedRecordsCallout(sobject string, startDate, endDate time.Time) (DeletedRecords, error) {
-	request, err := q.operationRequest(sobject, deletedRoute, startDate, endDate)
+func (q *query) deletedRecordsCallout(ctx context.Context, sobject string, startDate, endDate time.Time) (DeletedRecords, error) {
+	request, err := q.operationRequest(ctx, sobject, deletedRoute, startDate, endDate)
 
 	if err != nil {
 		return DeletedRecords{}, err
@@ -241,8 +242,8 @@ func (q *query) deletedRecordsResponse(request *http.Request) (DeletedRecords, e
 	return records, nil
 }
 
-func (q *query) updatedRecordsCallout(sobject string, startDate, endDate time.Time) (UpdatedRecords, error) {
-	request, err := q.operationRequest(sobject, updatedRoute, startDate, endDate)
+func (q *query) updatedRecordsCallout(ctx context.Context, sobject string, startDate, endDate time.Time) (UpdatedRecords, error) {
+	request, err := q.operationRequest(ctx, sobject, updatedRoute, startDate, endDate)
 
 	if err != nil {
 		return UpdatedRecords{}, err
@@ -286,7 +287,7 @@ func (q *query) updatedRecordsResponse(request *http.Request) (UpdatedRecords, e
 	return records, nil
 }
 
-func (q *query) operationRequest(sobject, operation string, startDate, endDate time.Time) (*http.Request, error) {
+func (q *query) operationRequest(ctx context.Context, sobject, operation string, startDate, endDate time.Time) (*http.Request, error) {
 
 	form := url.Values{}
 	form.Add("start", startDate.Format(time.RFC3339))
@@ -295,7 +296,7 @@ func (q *query) operationRequest(sobject, operation string, startDate, endDate t
 
 	queryURL := q.session.DataServiceURL() + objectEndpoint + sobject + "/" + operation + "/" + dateRange
 
-	request, err := http.NewRequest(http.MethodGet, queryURL, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, queryURL, nil)
 
 	if err != nil {
 		return nil, err
@@ -307,8 +308,8 @@ func (q *query) operationRequest(sobject, operation string, startDate, endDate t
 
 }
 
-func (q *query) contentCallout(id string, content ContentType) ([]byte, error) {
-	request, err := q.contentRequest(id, content)
+func (q *query) contentCallout(ctx context.Context, id string, content ContentType) ([]byte, error) {
+	request, err := q.contentRequest(ctx, id, content)
 
 	if err != nil {
 		return nil, err
@@ -316,11 +317,11 @@ func (q *query) contentCallout(id string, content ContentType) ([]byte, error) {
 
 	return q.contentResponse(request)
 }
-func (q *query) contentRequest(id string, content ContentType) (*http.Request, error) {
+func (q *query) contentRequest(ctx context.Context, id string, content ContentType) (*http.Request, error) {
 
 	queryURL := q.session.DataServiceURL() + objectEndpoint + string(content) + "/" + id + "/" + contentBody
 
-	request, err := http.NewRequest(http.MethodGet, queryURL, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, queryURL, nil)
 
 	if err != nil {
 		return nil, err

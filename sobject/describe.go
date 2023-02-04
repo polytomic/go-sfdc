@@ -1,6 +1,7 @@
 package sobject
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -169,9 +170,9 @@ type describe struct {
 	session session.ServiceFormatter
 }
 
-func (d *describe) callout(sobject string) (DescribeValue, error) {
+func (d *describe) callout(ctx context.Context, sobject string) (DescribeValue, error) {
 
-	request, err := d.request(sobject)
+	request, err := d.request(ctx, sobject)
 
 	if err != nil {
 		return DescribeValue{}, err
@@ -186,10 +187,10 @@ func (d *describe) callout(sobject string) (DescribeValue, error) {
 	return value, nil
 }
 
-func (d *describe) request(sobject string) (*http.Request, error) {
+func (d *describe) request(ctx context.Context, sobject string) (*http.Request, error) {
 	url := d.session.DataServiceURL() + objectEndpoint + sobject + describeEndpoint
 
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 
 	if err != nil {
 		return nil, err

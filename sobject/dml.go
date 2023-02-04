@@ -2,6 +2,7 @@ package sobject
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -82,8 +83,8 @@ type dml struct {
 	session session.ServiceFormatter
 }
 
-func (d *dml) insertCallout(inserter Inserter) (InsertValue, error) {
-	request, err := d.insertRequest(inserter)
+func (d *dml) insertCallout(ctx context.Context, inserter Inserter) (InsertValue, error) {
+	request, err := d.insertRequest(ctx, inserter)
 
 	if err != nil {
 		return InsertValue{}, err
@@ -97,7 +98,7 @@ func (d *dml) insertCallout(inserter Inserter) (InsertValue, error) {
 
 	return value, nil
 }
-func (d *dml) insertRequest(inserter Inserter) (*http.Request, error) {
+func (d *dml) insertRequest(ctx context.Context, inserter Inserter) (*http.Request, error) {
 
 	url := d.session.DataServiceURL() + objectEndpoint + inserter.SObject()
 
@@ -106,7 +107,7 @@ func (d *dml) insertRequest(inserter Inserter) (*http.Request, error) {
 		return nil, err
 	}
 
-	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 
 	if err != nil {
 		return nil, err
@@ -142,8 +143,8 @@ func (d *dml) insertResponse(request *http.Request) (InsertValue, error) {
 	return value, nil
 }
 
-func (d *dml) updateCallout(updater Updater) error {
-	request, err := d.updateRequest(updater)
+func (d *dml) updateCallout(ctx context.Context, updater Updater) error {
+	request, err := d.updateRequest(ctx, updater)
 
 	if err != nil {
 		return err
@@ -153,7 +154,7 @@ func (d *dml) updateCallout(updater Updater) error {
 
 }
 
-func (d *dml) updateRequest(updater Updater) (*http.Request, error) {
+func (d *dml) updateRequest(ctx context.Context, updater Updater) (*http.Request, error) {
 
 	url := d.session.DataServiceURL() + objectEndpoint + updater.SObject() + "/" + updater.ID()
 
@@ -161,7 +162,7 @@ func (d *dml) updateRequest(updater Updater) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
-	request, err := http.NewRequest(http.MethodPatch, url, bytes.NewReader(body))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPatch, url, bytes.NewReader(body))
 
 	if err != nil {
 		return nil, err
@@ -188,8 +189,8 @@ func (d *dml) updateResponse(request *http.Request) error {
 	return nil
 }
 
-func (d *dml) upsertCallout(upserter Upserter) (UpsertValue, error) {
-	request, err := d.upsertRequest(upserter)
+func (d *dml) upsertCallout(ctx context.Context, upserter Upserter) (UpsertValue, error) {
+	request, err := d.upsertRequest(ctx, upserter)
 
 	if err != nil {
 		return UpsertValue{}, err
@@ -204,7 +205,7 @@ func (d *dml) upsertCallout(upserter Upserter) (UpsertValue, error) {
 	return value, nil
 }
 
-func (d *dml) upsertRequest(upserter Upserter) (*http.Request, error) {
+func (d *dml) upsertRequest(ctx context.Context, upserter Upserter) (*http.Request, error) {
 	url := d.session.DataServiceURL() + objectEndpoint + upserter.SObject() + "/" + upserter.ExternalField() + "/" + upserter.ID()
 
 	// TODO: switch to json.NewEncoder():
@@ -213,7 +214,7 @@ func (d *dml) upsertRequest(upserter Upserter) (*http.Request, error) {
 		return nil, err
 	}
 
-	request, err := http.NewRequest(http.MethodPatch, url, bytes.NewReader(body))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPatch, url, bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
@@ -251,9 +252,9 @@ func (d *dml) upsertResponse(request *http.Request) (UpsertValue, error) {
 	return value, nil
 }
 
-func (d *dml) deleteCallout(deleter Deleter) error {
+func (d *dml) deleteCallout(ctx context.Context, deleter Deleter) error {
 
-	request, err := d.deleteRequest(deleter)
+	request, err := d.deleteRequest(ctx, deleter)
 
 	if err != nil {
 		return err
@@ -262,11 +263,11 @@ func (d *dml) deleteCallout(deleter Deleter) error {
 	return d.deleteResponse(request)
 }
 
-func (d *dml) deleteRequest(deleter Deleter) (*http.Request, error) {
+func (d *dml) deleteRequest(ctx context.Context, deleter Deleter) (*http.Request, error) {
 
 	url := d.session.DataServiceURL() + objectEndpoint + deleter.SObject() + "/" + deleter.ID()
 
-	request, err := http.NewRequest(http.MethodDelete, url, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
 
 	if err != nil {
 		return nil, err

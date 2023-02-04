@@ -1,6 +1,7 @@
 package bulkv1
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -23,9 +24,9 @@ type JobBatches struct {
 	info    []BatchInfo
 }
 
-func (b *JobBatches) fetchInfo() (err error) {
+func (b *JobBatches) fetchInfo(ctx context.Context) (err error) {
 	url := bulkEndpoint(b.session, b.job.ID, "batch")
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return err
 	}
@@ -72,11 +73,11 @@ func (b *JobBatches) All() []*Batch {
 }
 
 // Create creates a new Batch in the Job
-func (b *JobBatches) Create(body io.Reader) (*Batch, error) {
+func (b *JobBatches) Create(ctx context.Context, body io.Reader) (*Batch, error) {
 	batch := &Batch{
 		session: b.session,
 	}
-	err := batch.create(b.job.ID, b.job.ContentType, body)
+	err := batch.create(ctx, b.job.ID, b.job.ContentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -85,11 +86,11 @@ func (b *JobBatches) Create(body io.Reader) (*Batch, error) {
 }
 
 // GetInfo retrieves the details of a single batch
-func (b *JobBatches) GetInfo(batchID string) (*Batch, error) {
+func (b *JobBatches) GetInfo(ctx context.Context, batchID string) (*Batch, error) {
 	batch := &Batch{
 		session: b.session,
 	}
-	err := batch.fetchInfo(b.job.ID, batchID)
+	err := batch.fetchInfo(ctx, b.job.ID, batchID)
 	if err != nil {
 		return nil, err
 	}

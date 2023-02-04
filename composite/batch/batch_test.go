@@ -2,6 +2,7 @@ package batch
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -180,7 +181,7 @@ func TestNewResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewResource(tt.args.session)
+			got, err := NewResource(context.Background(), tt.args.session)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewResource() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -332,7 +333,7 @@ func TestResource_Retrieve(t *testing.T) {
 			r := &Resource{
 				session: tt.fields.session,
 			}
-			got, err := r.Retrieve(tt.args.haltOnError, tt.args.requesters)
+			got, err := r.Retrieve(context.Background(), tt.args.haltOnError, tt.args.requesters)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Resource.Retrieve() error = %v, wantErr %v", err, tt.wantErr)
 				return

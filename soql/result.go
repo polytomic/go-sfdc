@@ -1,6 +1,7 @@
 package soql
 
 import (
+	"context"
 	"errors"
 )
 
@@ -13,7 +14,7 @@ type QueryResult interface {
 	TotalSize() int
 	MoreRecords() bool
 	Records() []*QueryRecord
-	Next() (QueryResult, error)
+	Next(context.Context) (QueryResult, error)
 	ColumnMetadata() *QueryColumnMetadataResposne
 	Resource() *Resource
 }
@@ -68,11 +69,11 @@ func (result *QueryResultImpl) Records() []*QueryRecord {
 }
 
 // Next will query the next set of records.
-func (result *QueryResultImpl) Next() (QueryResult, error) {
+func (result *QueryResultImpl) Next(ctx context.Context) (QueryResult, error) {
 	if !result.MoreRecords() {
 		return nil, ErrNoMoreResults
 	}
-	return result.resource.next(result.response.NextRecordsURL)
+	return result.resource.next(ctx, result.response.NextRecordsURL)
 }
 
 func (result *QueryResultImpl) ColumnMetadata() *QueryColumnMetadataResposne {
@@ -107,7 +108,7 @@ func (result *QueryOffsetLimitResult) MoreRecords() bool {
 	return result.TotalSize() == result.query.limit
 }
 
-func (result *QueryOffsetLimitResult) Next() (QueryResult, error) {
+func (result *QueryOffsetLimitResult) Next(ctx context.Context) (QueryResult, error) {
 	if !result.MoreRecords() {
 		return nil, ErrNoMoreResults
 	}
@@ -118,5 +119,5 @@ func (result *QueryOffsetLimitResult) Next() (QueryResult, error) {
 		opts = append(opts, WithAll())
 	}
 
-	return result.Resource().Query(result.query.baseFormat, opts...)
+	return result.Resource().Query(ctx, result.query.baseFormat, opts...)
 }

@@ -1,6 +1,7 @@
 package collections
 
 import (
+	"context"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -184,7 +185,7 @@ func Test_collection_send(t *testing.T) {
 				values:   tt.fields.values,
 				body:     tt.fields.body,
 			}
-			if err := c.send(tt.args.session, tt.args.value); (err != nil) != tt.wantErr {
+			if err := c.send(context.Background(), tt.args.session, tt.args.value); (err != nil) != tt.wantErr {
 				t.Errorf("collection.send() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -241,7 +242,7 @@ func TestNewResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewResources(tt.args.session)
+			got, err := NewResources(context.Background(), tt.args.session)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Resource.Update() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -386,7 +387,7 @@ func TestResource_Update(t *testing.T) {
 			r := &Resource{
 				update: tt.fields.update,
 			}
-			got, err := r.Update(tt.args.allOrNone, tt.args.records)
+			got, err := r.Update(context.Background(), tt.args.allOrNone, tt.args.records)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Resource.Update() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -529,7 +530,7 @@ func TestResource_Query(t *testing.T) {
 				update: tt.fields.update,
 				query:  tt.fields.query,
 			}
-			_, err := r.Query(tt.args.sobject, tt.args.records)
+			_, err := r.Query(context.Background(), tt.args.sobject, tt.args.records)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Resource.Query() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -670,7 +671,7 @@ func TestResource_Insert(t *testing.T) {
 				query:  tt.fields.query,
 				insert: tt.fields.insert,
 			}
-			got, err := r.Insert(tt.args.allOrNone, tt.args.records)
+			got, err := r.Insert(context.Background(), tt.args.allOrNone, tt.args.records)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Resource.Insert() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -823,7 +824,7 @@ func TestResource_Delete(t *testing.T) {
 				insert: tt.fields.insert,
 				remove: tt.fields.remove,
 			}
-			got, err := r.Delete(tt.args.allOrNone, tt.args.records)
+			got, err := r.Delete(context.Background(), tt.args.allOrNone, tt.args.records)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Resource.Delete() error = %v, wantErr %v", err, tt.wantErr)
 				return

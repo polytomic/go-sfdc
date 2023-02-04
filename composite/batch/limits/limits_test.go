@@ -1,6 +1,7 @@
 package limits
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -31,7 +32,7 @@ func (mock *mockSessionFormatter) InstanceURL() string {
 	return mock.url
 }
 
-func (mock *mockSessionFormatter) Refresh() error {
+func (mock *mockSessionFormatter) Refresh(context.Context) error {
 	return mock.refreshErr
 }
 

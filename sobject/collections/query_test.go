@@ -1,6 +1,7 @@
 package collections
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -247,7 +248,7 @@ func TestQuery_Callout(t *testing.T) {
 			q := &query{
 				session: tt.fields.session,
 			}
-			_, err := q.callout(tt.args.sobject, tt.args.records)
+			_, err := q.callout(context.Background(), tt.args.sobject, tt.args.records)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Query.Callout() error = %v, wantErr %v", err, tt.wantErr)
 				return

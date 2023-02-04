@@ -1,6 +1,7 @@
 package sobject
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -47,9 +48,9 @@ type metadata struct {
 	session session.ServiceFormatter
 }
 
-func (md *metadata) callout(sobject string) (MetadataValue, error) {
+func (md *metadata) callout(ctx context.Context, sobject string) (MetadataValue, error) {
 
-	request, err := md.request(sobject)
+	request, err := md.request(ctx, sobject)
 
 	if err != nil {
 		return MetadataValue{}, err
@@ -64,10 +65,10 @@ func (md *metadata) callout(sobject string) (MetadataValue, error) {
 	return value, nil
 }
 
-func (md *metadata) request(sobject string) (*http.Request, error) {
+func (md *metadata) request(ctx context.Context, sobject string) (*http.Request, error) {
 	url := md.session.DataServiceURL() + objectEndpoint + sobject
 
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 
 	if err != nil {
 		return nil, err

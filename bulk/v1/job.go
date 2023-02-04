@@ -2,6 +2,7 @@ package bulkv1
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -33,12 +34,12 @@ type Job struct {
 	info    bulk.Response
 }
 
-func (j *Job) create(options Options) error {
+func (j *Job) create(ctx context.Context, options Options) error {
 	err := j.formatOptions(&options)
 	if err != nil {
 		return err
 	}
-	j.info, err = j.createCallout(options)
+	j.info, err = j.createCallout(ctx, options)
 	if err != nil {
 		return err
 	}
@@ -68,13 +69,13 @@ func (j *Job) formatOptions(options *Options) error {
 	return nil
 }
 
-func (j *Job) createCallout(options Options) (bulk.Response, error) {
+func (j *Job) createCallout(ctx context.Context, options Options) (bulk.Response, error) {
 	url := bulkEndpoint(j.session)
 	body, err := json.Marshal(options)
 	if err != nil {
 		return bulk.Response{}, err
 	}
-	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
 		return bulk.Response{}, err
 	}
@@ -108,13 +109,13 @@ func (j *Job) response(request *http.Request) (bulk.Response, error) {
 }
 
 // Info returns the current job information.
-func (j *Job) Info() (bulk.Info, error) {
-	return j.fetchInfo(j.info.ID)
+func (j *Job) Info(ctx context.Context) (bulk.Info, error) {
+	return j.fetchInfo(ctx, j.info.ID)
 }
 
-func (j *Job) fetchInfo(id string) (bulk.Info, error) {
+func (j *Job) fetchInfo(ctx context.Context, id string) (bulk.Info, error) {
 	url := bulkEndpoint(j.session, id)
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return bulk.Info{}, err
 	}
@@ -146,7 +147,7 @@ func (j *Job) infoResponse(request *http.Request) (bulk.Info, error) {
 	return value, nil
 }
 
-func (j *Job) setState(state bulk.State) (bulk.Response, error) {
+func (j *Job) setState(ctx context.Context, state bulk.State) (bulk.Response, error) {
 	url := bulkEndpoint(j.session, j.info.ID)
 	jobState := struct {
 		State string `json:"state"`
@@ -157,7 +158,7 @@ func (j *Job) setState(state bulk.State) (bulk.Response, error) {
 	if err != nil {
 		return bulk.Response{}, err
 	}
-	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
 		return bulk.Response{}, err
 	}
@@ -169,21 +170,21 @@ func (j *Job) setState(state bulk.State) (bulk.Response, error) {
 }
 
 // Close will close the current job.
-func (j *Job) Close() (bulk.Response, error) {
-	return j.setState(bulk.Closed)
+func (j *Job) Close(ctx context.Context) (bulk.Response, error) {
+	return j.setState(ctx, bulk.Closed)
 }
 
 // Abort will abort the current job.
-func (j *Job) Abort() (bulk.Response, error) {
-	return j.setState(bulk.Aborted)
+func (j *Job) Abort(ctx context.Context) (bulk.Response, error) {
+	return j.setState(ctx, bulk.Aborted)
 }
 
 // Batches returns the collection of Batches for a Job
-func (j *Job) Batches() (*JobBatches, error) {
+func (j *Job) Batches(ctx context.Context) (*JobBatches, error) {
 	batches := &JobBatches{
 		session: j.session,
 		job:     j.info,
 	}
-	err := batches.fetchInfo()
+	err := batches.fetchInfo(ctx)
 	return batches, err
 }

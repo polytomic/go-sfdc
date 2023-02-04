@@ -1,6 +1,7 @@
 package bulk
 
 import (
+	"context"
 	"net/http"
 	"reflect"
 	"testing"
@@ -59,10 +60,10 @@ func TestResource_CreateQueryJob(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r, err := NewResource(V2QueryEndpoint, tt.fields.session)
+			r, err := NewResource(context.Background(), V2QueryEndpoint, tt.fields.session)
 			require.NoError(t, err)
 
-			_, err = r.CreateJob(tt.args.options)
+			_, err = r.CreateJob(context.Background(), tt.args.options)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Resource.CreateJob() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -114,10 +115,10 @@ func TestResource_GetQueryJob(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r, err := NewResource(V2QueryEndpoint, tt.fields.session)
+			r, err := NewResource(context.Background(), V2QueryEndpoint, tt.fields.session)
 			require.NoError(t, err)
 
-			_, err = r.GetJob("123")
+			_, err = r.GetJob(context.Background(), "123")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Resource.GetJob() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -236,10 +237,10 @@ func TestResource_AllQueryJobs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r, err := NewResource(V2QueryEndpoint, tt.fields.session)
+			r, err := NewResource(context.Background(), V2QueryEndpoint, tt.fields.session)
 			require.NoError(t, err)
 
-			got, err := r.AllJobs(tt.args.parameters)
+			got, err := r.AllJobs(context.Background(), tt.args.parameters)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Resource.AllJobs() error = %v, wantErr %v", err, tt.wantErr)
 				return

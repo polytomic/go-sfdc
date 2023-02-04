@@ -1,6 +1,7 @@
 package bulk
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"reflect"
@@ -610,7 +611,7 @@ func TestJob_createCallout(t *testing.T) {
 			j := NewJob(tt.endpoint, tt.fields.session)
 			j.info = tt.fields.info
 
-			got, err := j.createCallout(tt.args.options)
+			got, err := j.createCallout(context.Background(), tt.args.options)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Job.createCallout() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -719,7 +720,7 @@ func TestJob_create(t *testing.T) {
 			j := NewJob(tt.endpoint, tt.fields.session)
 			j.info = tt.fields.info
 
-			if err := j.create(tt.args.options); (err != nil) != tt.wantErr {
+			if err := j.create(context.Background(), tt.args.options); (err != nil) != tt.wantErr {
 				t.Errorf("Job.create() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -831,7 +832,7 @@ func TestJob_setState(t *testing.T) {
 			j := NewJob(V2IngestEndpoint, tt.fields.session)
 			j.info = tt.fields.info
 
-			got, err := j.setState(tt.args.state)
+			got, err := j.setState(context.Background(), tt.args.state)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Job.setState() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1106,7 +1107,7 @@ func TestJob_Info(t *testing.T) {
 			j := NewJob(tt.endpoint, tt.fields.session)
 			j.info = tt.fields.info
 
-			got, err := j.Info()
+			got, err := j.Info(context.Background())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Job.Info() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1183,7 +1184,7 @@ func TestJob_Delete(t *testing.T) {
 			j := NewJob(tt.endpoint, tt.fields.session)
 			j.info = tt.fields.info
 
-			if err := j.Delete(); (err != nil) != tt.wantErr {
+			if err := j.Delete(context.Background()); (err != nil) != tt.wantErr {
 				t.Errorf("Job.Delete() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -1230,7 +1231,7 @@ func TestJob_Upload(t *testing.T) {
 			j := NewJob(V2IngestEndpoint, tt.fields.session)
 			j.info = tt.fields.info
 
-			if err := j.Upload(tt.args.body); (err != nil) != tt.wantErr {
+			if err := j.Upload(context.Background(), tt.args.body); (err != nil) != tt.wantErr {
 				t.Errorf("Job.Upload() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -1306,7 +1307,7 @@ func TestJob_Results(t *testing.T) {
 			j := NewJob(tt.fields.endpoint, tt.fields.session)
 			j.info = tt.fields.info
 
-			got, err := j.Results(tt.fields.locator, tt.fields.maxRecords)
+			got, err := j.Results(context.Background(), tt.fields.locator, tt.fields.maxRecords)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Job.SuccessfulRecords() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1383,7 +1384,7 @@ func TestJob_SuccessfulRecords(t *testing.T) {
 			j := NewJob(V2IngestEndpoint, tt.fields.session)
 			j.info = tt.fields.info
 
-			got, err := j.SuccessfulRecords()
+			got, err := j.SuccessfulRecords(context.Background())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Job.SuccessfulRecords() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1458,7 +1459,7 @@ func TestJob_FailedRecords(t *testing.T) {
 			j := NewJob(V2IngestEndpoint, tt.fields.session)
 			j.info = tt.fields.info
 
-			got, err := j.FailedRecords()
+			got, err := j.FailedRecords(context.Background())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Job.FailedRecords() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -1523,7 +1524,7 @@ func TestJob_UnprocessedRecords(t *testing.T) {
 			j := NewJob(V2IngestEndpoint, tt.fields.session)
 			j.info = tt.fields.info
 
-			got, err := j.UnprocessedRecords()
+			got, err := j.UnprocessedRecords(context.Background())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Job.UnprocessedRecords() error = %v, wantErr %v", err, tt.wantErr)
 				return

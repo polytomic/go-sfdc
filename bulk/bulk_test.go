@@ -1,6 +1,7 @@
 package bulk
 
 import (
+	"context"
 	"net/http"
 	"reflect"
 	"testing"
@@ -39,7 +40,7 @@ func TestNewResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewResource(V2IngestEndpoint, tt.args.session)
+			got, err := NewResource(context.Background(), V2IngestEndpoint, tt.args.session)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewResource() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -108,10 +109,10 @@ func TestResource_CreateJob(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r, err := NewResource(V2IngestEndpoint, tt.fields.session)
+			r, err := NewResource(context.Background(), V2IngestEndpoint, tt.fields.session)
 			require.NoError(t, err)
 
-			_, err = r.CreateJob(tt.args.options)
+			_, err = r.CreateJob(context.Background(), tt.args.options)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Resource.CreateJob() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -163,10 +164,10 @@ func TestResource_GetJob(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r, err := NewResource(V2IngestEndpoint, tt.fields.session)
+			r, err := NewResource(context.Background(), V2IngestEndpoint, tt.fields.session)
 			require.NoError(t, err)
 
-			_, err = r.GetJob("123")
+			_, err = r.GetJob(context.Background(), "123")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Resource.GetJob() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -259,10 +260,10 @@ func TestResource_AllJobs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r, err := NewResource(V2IngestEndpoint, tt.fields.session)
+			r, err := NewResource(context.Background(), V2IngestEndpoint, tt.fields.session)
 			require.NoError(t, err)
 
-			got, err := r.AllJobs(tt.args.parameters)
+			got, err := r.AllJobs(context.Background(), tt.args.parameters)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Resource.AllJobs() error = %v, wantErr %v", err, tt.wantErr)
 				return

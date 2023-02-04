@@ -1,6 +1,7 @@
 package bulkv1
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -174,7 +175,7 @@ func TestBatch_fetchInfo(t *testing.T) {
 			b := &Batch{
 				session: tt.fields.session,
 			}
-			err := b.fetchInfo(tt.args.jobID, tt.args.id)
+			err := b.fetchInfo(context.Background(), tt.args.jobID, tt.args.id)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -250,7 +251,7 @@ func TestBatch_create(t *testing.T) {
 			b := &Batch{
 				session: tt.fields.session,
 			}
-			err := b.create(tt.args.jobID, tt.args.contentType, strings.NewReader(tt.args.body))
+			err := b.create(context.Background(), tt.args.jobID, tt.args.contentType, strings.NewReader(tt.args.body))
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -407,7 +408,7 @@ func TestBatch_Results(t *testing.T) {
 				Info:    tt.args.info,
 			}
 
-			result, err := b.Results()
+			result, err := b.Results(context.Background())
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {

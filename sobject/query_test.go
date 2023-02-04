@@ -1,6 +1,7 @@
 package sobject
 
 import (
+	"context"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -221,7 +222,7 @@ func Test_query_Query(t *testing.T) {
 			q := &query{
 				session: tt.fields.session,
 			}
-			got, err := q.callout(tt.args.querier)
+			got, err := q.callout(context.Background(), tt.args.querier)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("query.Query() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -429,7 +430,7 @@ func Test_query_ExternalQuery(t *testing.T) {
 			q := &query{
 				session: tt.fields.session,
 			}
-			got, err := q.externalCallout(tt.args.querier)
+			got, err := q.externalCallout(context.Background(), tt.args.querier)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("query.ExternalQuery() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -631,7 +632,7 @@ func Test_query_DeletedRecords(t *testing.T) {
 			q := &query{
 				session: tt.fields.session,
 			}
-			got, err := q.deletedRecordsCallout(tt.args.sobject, tt.args.startDate, tt.args.endDate)
+			got, err := q.deletedRecordsCallout(context.Background(), tt.args.sobject, tt.args.startDate, tt.args.endDate)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("query.DeletedRecords() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -827,7 +828,7 @@ func Test_query_UpdatedRecords(t *testing.T) {
 			q := &query{
 				session: tt.fields.session,
 			}
-			got, err := q.updatedRecordsCallout(tt.args.sobject, tt.args.startDate, tt.args.endDate)
+			got, err := q.updatedRecordsCallout(context.Background(), tt.args.sobject, tt.args.startDate, tt.args.endDate)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("query.UpdatedRecords() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -969,7 +970,7 @@ func Test_query_GetContent(t *testing.T) {
 			q := &query{
 				session: tt.fields.session,
 			}
-			got, err := q.contentCallout(tt.args.id, tt.args.content)
+			got, err := q.contentCallout(context.Background(), tt.args.id, tt.args.content)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("query.GetContent() error = %v, wantErr %v", err, tt.wantErr)
 				return

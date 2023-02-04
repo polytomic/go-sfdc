@@ -1,6 +1,7 @@
 package sobject
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -17,8 +18,8 @@ type list struct {
 	session session.ServiceFormatter
 }
 
-func (l *list) callout() (ListValue, error) {
-	request, err := l.request()
+func (l *list) callout(ctx context.Context) (ListValue, error) {
+	request, err := l.request(ctx)
 	if err != nil {
 		return ListValue{}, err
 	}
@@ -32,9 +33,9 @@ func (l *list) callout() (ListValue, error) {
 	return value, nil
 }
 
-func (l *list) request() (*http.Request, error) {
+func (l *list) request(ctx context.Context) (*http.Request, error) {
 	url := l.session.DataServiceURL() + objectEndpoint
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package collections
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -20,7 +21,7 @@ type remove struct {
 	session session.ServiceFormatter
 }
 
-func (r *remove) callout(allOrNone bool, records []string) ([]DeleteValue, error) {
+func (r *remove) callout(ctx context.Context, allOrNone bool, records []string) ([]DeleteValue, error) {
 	if r == nil {
 		panic("collections: Collection Delete can not be nil")
 	}
@@ -30,7 +31,7 @@ func (r *remove) callout(allOrNone bool, records []string) ([]DeleteValue, error
 		values:   r.values(allOrNone, records),
 	}
 	var values []DeleteValue
-	err := c.send(r.session, &values)
+	err := c.send(ctx, r.session, &values)
 	if err != nil {
 		return nil, err
 	}

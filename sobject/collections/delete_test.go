@@ -1,6 +1,7 @@
 package collections
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -170,7 +171,7 @@ func TestDelete_Callout(t *testing.T) {
 			d := &remove{
 				session: tt.fields.session,
 			}
-			got, err := d.callout(tt.args.allOrNone, tt.args.records)
+			got, err := d.callout(context.Background(), tt.args.allOrNone, tt.args.records)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Delete.Callout() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -1,6 +1,7 @@
 package collections
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -196,7 +197,7 @@ func TestUpdate_Callout(t *testing.T) {
 			u := &update{
 				session: tt.fields.session,
 			}
-			got, err := u.callout(tt.args.allOrNone, tt.args.records)
+			got, err := u.callout(context.Background(), tt.args.allOrNone, tt.args.records)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Update.Callout() error = %v, wantErr %v", err, tt.wantErr)
 				return

@@ -2,6 +2,7 @@ package collections
 
 import (
 	"bytes"
+	"context"
 	"net/http"
 
 	"github.com/namely/go-sfdc/v3/session"
@@ -12,7 +13,7 @@ type insert struct {
 	session session.ServiceFormatter
 }
 
-func (i *insert) callout(allOrNone bool, records []sobject.Inserter) ([]sobject.InsertValue, error) {
+func (i *insert) callout(ctx context.Context, allOrNone bool, records []sobject.Inserter) ([]sobject.InsertValue, error) {
 	payload, err := i.payload(allOrNone, records)
 	if err != nil {
 		return nil, err
@@ -24,7 +25,7 @@ func (i *insert) callout(allOrNone bool, records []sobject.Inserter) ([]sobject.
 		contentType: jsonContentType,
 	}
 	var values []sobject.InsertValue
-	err = c.send(i.session, &values)
+	err = c.send(ctx, i.session, &values)
 	if err != nil {
 		return nil, err
 	}

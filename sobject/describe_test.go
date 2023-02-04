@@ -1,6 +1,7 @@
 package sobject
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -387,7 +388,7 @@ func Test_describe_Describe(t *testing.T) {
 			d := &describe{
 				session: tt.fields.session,
 			}
-			got, err := d.callout(tt.args.sobject)
+			got, err := d.callout(context.Background(), tt.args.sobject)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("describe.Describe() error = %v, wantErr %v", err, tt.wantErr)
 				return

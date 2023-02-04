@@ -3,6 +3,7 @@ package collections
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -45,12 +46,12 @@ type Resource struct {
 // NewResources forms the Salesforce SObject Collections resource structure.  The
 // session formatter is required to form the proper URLs and authorization
 // header.
-func NewResources(session session.ServiceFormatter) (*Resource, error) {
+func NewResources(ctx context.Context, session session.ServiceFormatter) (*Resource, error) {
 	if session == nil {
 		return nil, errors.New("collections: session can not be nil")
 	}
 
-	err := session.Refresh()
+	err := session.Refresh(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "session refresh")
 	}
@@ -73,43 +74,43 @@ func NewResources(session session.ServiceFormatter) (*Resource, error) {
 
 // Insert will create a group of records in the Salesforce org.  The records do not need to be
 // the same SObject.  It is the responsibility of the caller to properly chunck the records.
-func (r *Resource) Insert(allOrNone bool, records []sobject.Inserter) ([]sobject.InsertValue, error) {
+func (r *Resource) Insert(ctx context.Context, allOrNone bool, records []sobject.Inserter) ([]sobject.InsertValue, error) {
 	if r.insert == nil {
 		return nil, errors.New("collections resource: collections may not have been initialized properly")
 	}
 	if records == nil {
 		return nil, errors.New("collections resource: insert records can not be nil")
 	}
-	return r.insert.callout(allOrNone, records)
+	return r.insert.callout(ctx, allOrNone, records)
 }
 
 // Delete will remove a group of records in the Salesforce org.  The records do not need to
 // be the same SObject.
-func (r *Resource) Delete(allOrNone bool, records []string) ([]DeleteValue, error) {
+func (r *Resource) Delete(ctx context.Context, allOrNone bool, records []string) ([]DeleteValue, error) {
 	if r.remove == nil {
 		return nil, errors.New("collections resource: collections may not have been initialized properly")
 	}
 	if records == nil {
 		return nil, errors.New("collections resource: delete records can not be nil")
 	}
-	return r.remove.callout(allOrNone, records)
+	return r.remove.callout(ctx, allOrNone, records)
 }
 
 // Update will update a group of records in the Salesforce org.  The records do not need to be
 // the same SObject.  It is the responsibility of the caller to properly chunck the records.
-func (r *Resource) Update(allOrNone bool, records []sobject.Updater) ([]UpdateValue, error) {
+func (r *Resource) Update(ctx context.Context, allOrNone bool, records []sobject.Updater) ([]UpdateValue, error) {
 	if r.update == nil {
 		return nil, errors.New("collections resource: collections may not have been initialized properly")
 	}
 	if records == nil {
 		return nil, errors.New("collections resource: update records can not be nil")
 	}
-	return r.update.callout(allOrNone, records)
+	return r.update.callout(ctx, allOrNone, records)
 }
 
 // Query will retrieve a group of records from the Salesforce org.  The records to retrieve must
 // be the same SObject.
-func (r *Resource) Query(sobject string, records []sobject.Querier) ([]*sfdc.Record, error) {
+func (r *Resource) Query(ctx context.Context, sobject string, records []sobject.Querier) ([]*sfdc.Record, error) {
 	if r.query == nil {
 		return nil, errors.New("collections resource: collections may not have been initialized properly")
 	}
@@ -126,15 +127,15 @@ func (r *Resource) Query(sobject string, records []sobject.Querier) ([]*sfdc.Rec
 		return nil, fmt.Errorf("collection resource: %s is not a valid sobject", sobject)
 	}
 
-	return r.query.callout(sobject, records)
+	return r.query.callout(ctx, sobject, records)
 }
 
-func (c *collection) send(session session.ServiceFormatter, value interface{}) error {
+func (c *collection) send(ctx context.Context, session session.ServiceFormatter, value interface{}) error {
 	collectionURL := session.DataServiceURL() + c.endpoint
 	if c.values != nil {
 		collectionURL += "?" + c.values.Encode()
 	}
-	request, err := http.NewRequest(c.method, collectionURL, c.body)
+	request, err := http.NewRequestWithContext(ctx, c.method, collectionURL, c.body)
 	if err != nil {
 		return err
 	}

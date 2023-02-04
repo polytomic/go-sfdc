@@ -1,6 +1,7 @@
 package sobject
 
 import (
+	"context"
 	"reflect"
 	"testing"
 	"time"
@@ -53,7 +54,7 @@ func TestSalesforceAPI_Metadata(t *testing.T) {
 				dml:      tt.fields.dml,
 				query:    tt.fields.query,
 			}
-			got, err := a.Metadata(tt.args.sobject)
+			got, err := a.Metadata(context.Background(), tt.args.sobject)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SalesforceAPI.Metadata() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -108,7 +109,7 @@ func TestSalesforceAPI_Describe(t *testing.T) {
 				dml:      tt.fields.dml,
 				query:    tt.fields.query,
 			}
-			got, err := a.Describe(tt.args.sobject)
+			got, err := a.Describe(context.Background(), tt.args.sobject)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SalesforceAPI.Describe() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -163,7 +164,7 @@ func TestSalesforceAPI_Insert(t *testing.T) {
 				dml:      tt.fields.dml,
 				query:    tt.fields.query,
 			}
-			got, err := a.Insert(tt.args.inserter)
+			got, err := a.Insert(context.Background(), tt.args.inserter)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SalesforceAPI.Insert() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -215,7 +216,7 @@ func TestSalesforceAPI_Update(t *testing.T) {
 				dml:      tt.fields.dml,
 				query:    tt.fields.query,
 			}
-			if err := a.Update(tt.args.updater); (err != nil) != tt.wantErr {
+			if err := a.Update(context.Background(), tt.args.updater); (err != nil) != tt.wantErr {
 				t.Errorf("SalesforceAPI.Update() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -265,7 +266,7 @@ func TestSalesforceAPI_Upsert(t *testing.T) {
 				dml:      tt.fields.dml,
 				query:    tt.fields.query,
 			}
-			got, err := a.Upsert(tt.args.upserter)
+			got, err := a.Upsert(context.Background(), tt.args.upserter)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SalesforceAPI.Upsert() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -317,7 +318,7 @@ func TestSalesforceAPI_Delete(t *testing.T) {
 				dml:      tt.fields.dml,
 				query:    tt.fields.query,
 			}
-			if err := a.Delete(tt.args.deleter); (err != nil) != tt.wantErr {
+			if err := a.Delete(context.Background(), tt.args.deleter); (err != nil) != tt.wantErr {
 				t.Errorf("SalesforceAPI.Delete() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -367,7 +368,7 @@ func TestSalesforceAPI_Query(t *testing.T) {
 				dml:      tt.fields.dml,
 				query:    tt.fields.query,
 			}
-			got, err := a.Query(tt.args.querier)
+			got, err := a.Query(context.Background(), tt.args.querier)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SalesforceAPI.Query() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -422,7 +423,7 @@ func TestSalesforceAPI_ExternalQuery(t *testing.T) {
 				dml:      tt.fields.dml,
 				query:    tt.fields.query,
 			}
-			got, err := a.ExternalQuery(tt.args.querier)
+			got, err := a.ExternalQuery(context.Background(), tt.args.querier)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SalesforceAPI.ExternalQuery() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -479,7 +480,7 @@ func TestSalesforceAPI_DeletedRecords(t *testing.T) {
 				dml:      tt.fields.dml,
 				query:    tt.fields.query,
 			}
-			got, err := a.DeletedRecords(tt.args.sobject, tt.args.startDate, tt.args.endDate)
+			got, err := a.DeletedRecords(context.Background(), tt.args.sobject, tt.args.startDate, tt.args.endDate)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SalesforceAPI.DeletedRecords() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -536,7 +537,7 @@ func TestSalesforceAPI_UpdatedRecords(t *testing.T) {
 				dml:      tt.fields.dml,
 				query:    tt.fields.query,
 			}
-			got, err := a.UpdatedRecords(tt.args.sobject, tt.args.startDate, tt.args.endDate)
+			got, err := a.UpdatedRecords(context.Background(), tt.args.sobject, tt.args.startDate, tt.args.endDate)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SalesforceAPI.UpdatedRecords() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -608,7 +609,7 @@ func TestSalesforceAPI_GetContent(t *testing.T) {
 				dml:      tt.fields.dml,
 				query:    tt.fields.query,
 			}
-			got, err := a.GetContent(tt.args.id, tt.args.content)
+			got, err := a.GetContent(context.Background(), tt.args.id, tt.args.content)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("SalesforceAPI.GetContent() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -678,7 +679,7 @@ func TestNewResources(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewResources(tt.session)
+			got, err := NewResources(context.Background(), tt.session)
 			t.Log("got error:", err)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewResources() error = %v, wantErr %v", err, tt.wantErr)

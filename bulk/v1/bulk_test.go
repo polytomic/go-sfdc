@@ -1,6 +1,7 @@
 package bulkv1
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -40,7 +41,7 @@ func TestNewResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewResource(tt.args.session)
+			got, err := NewResource(context.Background(), tt.args.session)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewResource() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -122,7 +123,7 @@ func TestResource_CreateJob(t *testing.T) {
 			r := &Resource{
 				session: tt.fields.session,
 			}
-			_, err := r.CreateJob(tt.args.options)
+			_, err := r.CreateJob(context.Background(), tt.args.options)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Resource.CreateJob() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -190,7 +191,7 @@ func TestResource_GetJob(t *testing.T) {
 			r := &Resource{
 				session: tt.fields.session,
 			}
-			_, err := r.GetJob("123")
+			_, err := r.GetJob(context.Background(), "123")
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Resource.GetJob() error = %v, wantErr %v", err, tt.wantErr)
 				return

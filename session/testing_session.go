@@ -1,6 +1,7 @@
 package session
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 )
@@ -34,6 +35,6 @@ func (mock *Mock) InstanceURL() string {
 	return mock.URL
 }
 
-func (mock *Mock) Refresh() error {
+func (mock *Mock) Refresh(context.Context) error {
 	return mock.RefreshErr
 }

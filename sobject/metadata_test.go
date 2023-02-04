@@ -1,6 +1,7 @@
 package sobject
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -190,7 +191,7 @@ func Test_metadata_Metadata(t *testing.T) {
 			md := &metadata{
 				session: tt.fields.session,
 			}
-			got, err := md.callout(tt.args.sobject)
+			got, err := md.callout(context.Background(), tt.args.sobject)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("metadata.Metadata() error = %v, wantErr %v", err, tt.wantErr)
 				return

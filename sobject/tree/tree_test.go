@@ -1,6 +1,7 @@
 package tree
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -282,7 +283,7 @@ func TestResource_Insert(t *testing.T) {
 			r := &Resource{
 				session: tt.fields.session,
 			}
-			got, err := r.Insert(tt.args.inserter)
+			got, err := r.Insert(context.Background(), tt.args.inserter)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Resource.Insert() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -323,7 +324,7 @@ func TestNewResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewResource(tt.args.session)
+			got, err := NewResource(context.Background(), tt.args.session)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewResource() error = %v, wantErr %v", err, tt.wantErr)
 				return

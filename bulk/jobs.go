@@ -1,6 +1,7 @@
 package bulk
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -32,12 +33,12 @@ type Jobs struct {
 	response jobResponse
 }
 
-func newJobs(session session.ServiceFormatter, endpoint BulkEndpoint, parameters Parameters) (*Jobs, error) {
+func newJobs(ctx context.Context, session session.ServiceFormatter, endpoint BulkEndpoint, parameters Parameters) (*Jobs, error) {
 	j := &Jobs{
 		session: session,
 	}
 	url := session.DataServiceURL() + string(endpoint)
-	request, err := j.request(url)
+	request, err := j.request(ctx, url)
 	if err != nil {
 		return nil, err
 	}
@@ -65,11 +66,11 @@ func (j *Jobs) Records() []Response {
 }
 
 // Next will retrieve the next batch of job information.
-func (j *Jobs) Next() (*Jobs, error) {
+func (j *Jobs) Next(ctx context.Context) (*Jobs, error) {
 	if j.Done() {
 		return nil, errors.New("jobs: there is no more records")
 	}
-	request, err := j.request(j.response.NextRecordsURL)
+	request, err := j.request(ctx, j.response.NextRecordsURL)
 	if err != nil {
 		return nil, err
 	}
@@ -83,8 +84,8 @@ func (j *Jobs) Next() (*Jobs, error) {
 	}, nil
 }
 
-func (j *Jobs) request(url string) (*http.Request, error) {
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+func (j *Jobs) request(ctx context.Context, url string) (*http.Request, error) {
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}

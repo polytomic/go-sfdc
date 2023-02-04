@@ -2,6 +2,7 @@ package composite
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -57,12 +58,12 @@ type Resource struct {
 
 // NewResource creates a new resourse with the session.  If the session is
 // nil an error will be returned.
-func NewResource(session session.ServiceFormatter) (*Resource, error) {
+func NewResource(ctx context.Context, session session.ServiceFormatter) (*Resource, error) {
 	if session == nil {
 		return nil, errors.New("composite: session can not be nil")
 	}
 
-	err := session.Refresh()
+	err := session.Refresh(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "session refresh")
 	}
@@ -73,7 +74,7 @@ func NewResource(session session.ServiceFormatter) (*Resource, error) {
 }
 
 // Retrieve will retrieve the responses to a composite requests.
-func (r *Resource) Retrieve(allOrNone bool, requesters []Subrequester) (Value, error) {
+func (r *Resource) Retrieve(ctx context.Context, allOrNone bool, requesters []Subrequester) (Value, error) {
 	if requesters == nil {
 		return Value{}, errors.New("composite subrequests: requesters can not nil")
 	}
@@ -89,7 +90,7 @@ func (r *Resource) Retrieve(allOrNone bool, requesters []Subrequester) (Value, e
 
 	url := r.session.DataServiceURL() + endpoint
 
-	request, err := http.NewRequest(http.MethodPost, url, body)
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, body)
 
 	if err != nil {
 		return Value{}, err

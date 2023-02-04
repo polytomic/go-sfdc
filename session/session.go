@@ -2,6 +2,7 @@
 package session
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -46,7 +47,7 @@ type InstanceFormatter interface {
 	InstanceURL() string
 	// AuthorizationHeader will add the authorization to the HTTP request's header.
 	AuthorizationHeader(*http.Request)
-	Refresh() error
+	Refresh(context.Context) error
 	Clienter
 }
 
@@ -77,7 +78,7 @@ const (
 
 // Open is used to authenticate with Salesforce and open a session.  The user will need to
 // supply the proper credentials and a HTTP client.
-func Open(config sfdc.Configuration) (*Session, error) {
+func Open(ctx context.Context, config sfdc.Configuration) (*Session, error) {
 	if config.Credentials == nil {
 		return nil, errors.New("session: configuration credentials can not be nil")
 	}
@@ -95,7 +96,7 @@ func Open(config sfdc.Configuration) (*Session, error) {
 		config: config,
 	}
 
-	err := session.refresh()
+	err := session.refresh(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +104,7 @@ func Open(config sfdc.Configuration) (*Session, error) {
 	return session, nil
 }
 
-func passwordSessionRequest(creds *credentials.Credentials) (*http.Request, error) {
+func passwordSessionRequest(ctx context.Context, creds *credentials.Credentials) (*http.Request, error) {
 	oauthURL := creds.URL() + oauthEndpoint
 
 	body, err := creds.Retrieve()
@@ -111,7 +112,7 @@ func passwordSessionRequest(creds *credentials.Credentials) (*http.Request, erro
 		return nil, err
 	}
 
-	request, err := http.NewRequest(http.MethodPost, oauthURL, body)
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, oauthURL, body)
 	if err != nil {
 		return nil, err
 	}
@@ -179,9 +180,9 @@ func (s *Session) Client() *http.Client {
 }
 
 // Refresh check if session is expired and refresh it if needed.
-func (s *Session) Refresh() error {
+func (s *Session) Refresh(ctx context.Context) error {
 	if s.isExpired() {
-		return s.refresh()
+		return s.refresh(ctx)
 	}
 
 	return nil
@@ -195,11 +196,11 @@ func (s *Session) isExpired() bool {
 }
 
 // refresh the session
-func (s *Session) refresh() error {
+func (s *Session) refresh(ctx context.Context) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	req, err := passwordSessionRequest(s.config.Credentials)
+	req, err := passwordSessionRequest(ctx, s.config.Credentials)
 	if err != nil {
 		return err
 	}

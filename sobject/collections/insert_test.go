@@ -1,6 +1,7 @@
 package collections
 
 import (
+	"context"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -188,7 +189,7 @@ func TestInsert_Callout(t *testing.T) {
 			i := &insert{
 				session: tt.fields.session,
 			}
-			got, err := i.callout(tt.args.allOrNone, tt.args.records)
+			got, err := i.callout(context.Background(), tt.args.allOrNone, tt.args.records)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Insert.Callout() error = %v, wantErr %v", err, tt.wantErr)
 				return

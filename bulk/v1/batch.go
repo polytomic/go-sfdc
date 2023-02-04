@@ -1,6 +1,7 @@
 package bulkv1
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -85,9 +86,9 @@ type Batch struct {
 	Info    BatchInfo
 }
 
-func (b *Batch) create(jobID string, contentType bulk.ContentType, body io.Reader) error {
+func (b *Batch) create(ctx context.Context, jobID string, contentType bulk.ContentType, body io.Reader) error {
 	url := bulkEndpoint(b.session, jobID, "batch")
-	request, err := http.NewRequest(http.MethodPost, url, body)
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, body)
 	if err != nil {
 		return err
 	}
@@ -120,9 +121,9 @@ func (b *Batch) response(response *http.Response) (BatchInfo, error) {
 	return value, nil
 }
 
-func (b *Batch) fetchInfo(jobID, ID string) error {
+func (b *Batch) fetchInfo(ctx context.Context, jobID, ID string) error {
 	url := bulkEndpoint(b.session, jobID, "batch", ID)
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return err
 	}
@@ -158,9 +159,9 @@ func (b *Batch) infoResponse(request *http.Request) (BatchInfo, error) {
 
 // requestRecords retrieves the record payloads initially passed to
 // the batch at the time of creation.
-func (b *Batch) requestRecords() ([]map[string]interface{}, error) {
+func (b *Batch) requestRecords(ctx context.Context) ([]map[string]interface{}, error) {
 	url := bulkEndpoint(b.session, b.Info.JobID, "batch", b.Info.ID, "request")
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -186,10 +187,10 @@ func (b *Batch) requestRecords() ([]map[string]interface{}, error) {
 }
 
 // Results fetches the batch results from Salesforce
-func (b *Batch) Results() (BatchResult, error) {
+func (b *Batch) Results(ctx context.Context) (BatchResult, error) {
 	result := BatchResult{}
 	url := bulkEndpoint(b.session, b.Info.JobID, "batch", b.Info.ID, "result")
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return result, err
 	}
@@ -228,7 +229,7 @@ func (b *Batch) Results() (BatchResult, error) {
 			)
 		} else {
 			if requestRecords == nil {
-				requestRecords, err = b.requestRecords()
+				requestRecords, err = b.requestRecords(ctx)
 				if err != nil {
 					return result, fmt.Errorf("error retrieving request: %w", err)
 				}

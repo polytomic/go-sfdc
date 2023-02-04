@@ -2,6 +2,7 @@ package collections
 
 import (
 	"bytes"
+	"context"
 	"net/http"
 
 	"github.com/namely/go-sfdc/v3/session"
@@ -18,7 +19,7 @@ type update struct {
 	session session.ServiceFormatter
 }
 
-func (u *update) callout(allOrNone bool, records []sobject.Updater) ([]UpdateValue, error) {
+func (u *update) callout(ctx context.Context, allOrNone bool, records []sobject.Updater) ([]UpdateValue, error) {
 	payload, err := u.payload(allOrNone, records)
 	if err != nil {
 		return nil, err
@@ -30,12 +31,13 @@ func (u *update) callout(allOrNone bool, records []sobject.Updater) ([]UpdateVal
 		contentType: jsonContentType,
 	}
 	var values []UpdateValue
-	err = c.send(u.session, &values)
+	err = c.send(ctx, u.session, &values)
 	if err != nil {
 		return nil, err
 	}
 	return values, nil
 }
+
 func (u *update) payload(allOrNone bool, recs []sobject.Updater) (*bytes.Reader, error) {
 	records := make([]interface{}, len(recs))
 	for idx, updater := range recs {

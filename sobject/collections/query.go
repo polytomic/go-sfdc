@@ -2,6 +2,7 @@ package collections
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -20,7 +21,7 @@ type query struct {
 	session session.ServiceFormatter
 }
 
-func (q *query) callout(sobject string, records []sobject.Querier) ([]*sfdc.Record, error) {
+func (q *query) callout(ctx context.Context, sobject string, records []sobject.Querier) ([]*sfdc.Record, error) {
 	if q == nil {
 		panic("collections: Collection Query can not be nil")
 	}
@@ -35,7 +36,7 @@ func (q *query) callout(sobject string, records []sobject.Querier) ([]*sfdc.Reco
 		contentType: jsonContentType,
 	}
 	var values []*sfdc.Record
-	err = c.send(q.session, &values)
+	err = c.send(ctx, q.session, &values)
 	if err != nil {
 		return nil, err
 	}

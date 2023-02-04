@@ -2,6 +2,7 @@ package tree
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -40,12 +41,12 @@ type Resource struct {
 const objectEndpoint = "/composite/tree/"
 
 // NewResource creates a new composite tree resource from the session.
-func NewResource(session session.ServiceFormatter) (*Resource, error) {
+func NewResource(ctx context.Context, session session.ServiceFormatter) (*Resource, error) {
 	if session == nil {
 		return nil, errors.New("sobject tree: session can not be nil")
 	}
 
-	err := session.Refresh()
+	err := session.Refresh(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "session refresh")
 	}
@@ -56,7 +57,7 @@ func NewResource(session session.ServiceFormatter) (*Resource, error) {
 }
 
 // Insert will call the composite tree API.
-func (r *Resource) Insert(inserter Inserter) (*Value, error) {
+func (r *Resource) Insert(ctx context.Context, inserter Inserter) (*Value, error) {
 	if inserter == nil {
 		return nil, errors.New("tree resourse: inserter can not be nil")
 	}
@@ -65,15 +66,15 @@ func (r *Resource) Insert(inserter Inserter) (*Value, error) {
 	if err != nil {
 		return nil, err
 	}
-	if matching == false {
+	if !matching {
 		return nil, fmt.Errorf("tree resourse: %s is not a valid sobject", sobject)
 	}
 
-	return r.callout(inserter)
+	return r.callout(ctx, inserter)
 }
-func (r *Resource) callout(inserter Inserter) (*Value, error) {
+func (r *Resource) callout(ctx context.Context, inserter Inserter) (*Value, error) {
 
-	request, err := r.request(inserter)
+	request, err := r.request(ctx, inserter)
 
 	if err != nil {
 		return nil, err
@@ -87,7 +88,7 @@ func (r *Resource) callout(inserter Inserter) (*Value, error) {
 
 	return &value, nil
 }
-func (r *Resource) request(inserter Inserter) (*http.Request, error) {
+func (r *Resource) request(ctx context.Context, inserter Inserter) (*http.Request, error) {
 
 	url := r.session.DataServiceURL() + objectEndpoint + inserter.SObject()
 
@@ -96,7 +97,7 @@ func (r *Resource) request(inserter Inserter) (*http.Request, error) {
 		return nil, err
 	}
 
-	request, err := http.NewRequest(http.MethodPost, url, body)
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, body)
 
 	if err != nil {
 		return nil, err

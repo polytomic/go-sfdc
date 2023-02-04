@@ -1,6 +1,7 @@
 package soql
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -53,7 +54,7 @@ func TestNewResource(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewResource(tt.args.session)
+			got, err := NewResource(context.Background(), tt.args.session)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewResource() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -390,7 +391,7 @@ func TestResource_Query(t *testing.T) {
 			if tt.args.columns {
 				opts = append(opts, WithColumnMetadata())
 			}
-			got, err := r.Query(tt.args.querier, opts...)
+			got, err := r.Query(context.Background(), tt.args.querier, opts...)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Resource.Query() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -517,7 +518,7 @@ func TestResource_next(t *testing.T) {
 			r := &Resource{
 				session: tt.fields.session,
 			}
-			got, err := r.next(tt.args.recordURL)
+			got, err := r.next(context.Background(), tt.args.recordURL)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Resource.next() error = %v, wantErr %v", err, tt.wantErr)
 				return

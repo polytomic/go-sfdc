@@ -1,6 +1,7 @@
 package soql
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -72,12 +73,12 @@ func UseLimitOffsetPagination(start int, limit int, order string) QueryOptsFunc 
 // NewResource forms the Salesforce SOQL resource. The
 // session formatter is required to form the proper URLs and authorization
 // header.
-func NewResource(session session.ServiceFormatter) (*Resource, error) {
+func NewResource(ctx context.Context, session session.ServiceFormatter) (*Resource, error) {
 	if session == nil {
 		return nil, errors.New("soql: session can not be nil")
 	}
 
-	err := session.Refresh()
+	err := session.Refresh(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "session refresh")
 	}
@@ -89,7 +90,7 @@ func NewResource(session session.ServiceFormatter) (*Resource, error) {
 
 // Query will call out to the Salesforce org for a SOQL.  The results will
 // be the result of the query.
-func (r *Resource) Query(querier QueryFormatter, qopts ...QueryOptsFunc) (QueryResult, error) {
+func (r *Resource) Query(ctx context.Context, querier QueryFormatter, qopts ...QueryOptsFunc) (QueryResult, error) {
 	if querier == nil {
 		return nil, errors.New("soql resource query: querier can not be nil")
 	}
@@ -100,7 +101,7 @@ func (r *Resource) Query(querier QueryFormatter, qopts ...QueryOptsFunc) (QueryR
 
 	var columnMeta *QueryColumnMetadataResposne
 	if opts.columnMetadata {
-		cmreq, err := r.queryColumnMetadataRequest(querier)
+		cmreq, err := r.queryColumnMetadataRequest(ctx, querier)
 		if err != nil {
 			return nil, err
 		}
@@ -124,7 +125,7 @@ func (r *Resource) Query(querier QueryFormatter, qopts ...QueryOptsFunc) (QueryR
 			limit:      opts.limitOffsetOpts.limit,
 			offset:     opts.limitOffsetOpts.start,
 		}
-		request, err := r.queryRequest(aggQuerier, opts.all)
+		request, err := r.queryRequest(ctx, aggQuerier, opts.all)
 		if err != nil {
 			return nil, err
 		}
@@ -142,7 +143,7 @@ func (r *Resource) Query(querier QueryFormatter, qopts ...QueryOptsFunc) (QueryR
 	}
 
 	// normal next page querying
-	request, err := r.queryRequest(querier, opts.all)
+	request, err := r.queryRequest(ctx, querier, opts.all)
 	if err != nil {
 		return nil, err
 	}
@@ -161,9 +162,9 @@ func (r *Resource) Query(querier QueryFormatter, qopts ...QueryOptsFunc) (QueryR
 
 }
 
-func (r *Resource) next(recordURL string) (QueryResult, error) {
+func (r *Resource) next(ctx context.Context, recordURL string) (QueryResult, error) {
 	queryURL := r.session.InstanceURL() + recordURL
-	request, err := http.NewRequest(http.MethodGet, queryURL, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, queryURL, nil)
 
 	if err != nil {
 		return nil, err
@@ -185,13 +186,13 @@ func (r *Resource) next(recordURL string) (QueryResult, error) {
 	return result, nil
 }
 
-func (r *Resource) queryColumnMetadataRequest(querier QueryFormatter) (*http.Request, error) {
+func (r *Resource) queryColumnMetadataRequest(ctx context.Context, querier QueryFormatter) (*http.Request, error) {
 	query, err := NewQueryColumnMetadataRequest(r.session, querier)
 	if err != nil {
 		return nil, err
 	}
 
-	request, err := http.NewRequest(http.MethodGet, r.session.InstanceURL()+query.URL(), nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, r.session.InstanceURL()+query.URL(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -201,13 +202,13 @@ func (r *Resource) queryColumnMetadataRequest(querier QueryFormatter) (*http.Req
 	return request, nil
 }
 
-func (r *Resource) queryRequest(querier QueryFormatter, all bool) (*http.Request, error) {
+func (r *Resource) queryRequest(ctx context.Context, querier QueryFormatter, all bool) (*http.Request, error) {
 	query, err := NewQueryRequest(r.session, querier, all)
 	if err != nil {
 		return nil, err
 	}
 
-	request, err := http.NewRequest(http.MethodGet, r.session.InstanceURL()+query.URL(), nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, r.session.InstanceURL()+query.URL(), nil)
 	if err != nil {
 		return nil, err
 	}

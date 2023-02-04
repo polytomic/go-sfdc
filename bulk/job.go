@@ -239,12 +239,12 @@ func NewJob(endpoint BulkEndpoint, session session.ServiceFormatter) *Job {
 	}
 }
 
-func (j *Job) create(options Options) error {
+func (j *Job) create(ctx context.Context, options Options) error {
 	err := j.formatOptions(&options)
 	if err != nil {
 		return err
 	}
-	j.info, err = j.createCallout(options)
+	j.info, err = j.createCallout(ctx, options)
 	if err != nil {
 		return err
 	}
@@ -282,13 +282,13 @@ func (j *Job) formatOptions(options *Options) error {
 	return nil
 }
 
-func (j *Job) createCallout(options Options) (Response, error) {
+func (j *Job) createCallout(ctx context.Context, options Options) (Response, error) {
 	url := j.session.DataServiceURL() + string(j.endpoint)
 	body, err := json.Marshal(options)
 	if err != nil {
 		return Response{}, err
 	}
-	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(body))
 	if err != nil {
 		return Response{}, err
 	}
@@ -321,13 +321,13 @@ func (j *Job) response(request *http.Request) (Response, error) {
 }
 
 // Info returns the current job information.
-func (j *Job) Info() (Info, error) {
-	return j.fetchInfo(j.info.ID)
+func (j *Job) Info(ctx context.Context) (Info, error) {
+	return j.fetchInfo(ctx, j.info.ID)
 }
 
-func (j *Job) fetchInfo(id string) (Info, error) {
+func (j *Job) fetchInfo(ctx context.Context, id string) (Info, error) {
 	url := j.session.DataServiceURL() + string(j.endpoint) + "/" + id
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return Info{}, err
 	}
@@ -359,7 +359,7 @@ func (j *Job) infoResponse(request *http.Request) (Info, error) {
 	return value, nil
 }
 
-func (j *Job) setState(state State) (Response, error) {
+func (j *Job) setState(ctx context.Context, state State) (Response, error) {
 	url := j.session.DataServiceURL() + string(j.endpoint) + "/" + j.info.ID
 	jobState := struct {
 		State string `json:"state"`
@@ -370,7 +370,7 @@ func (j *Job) setState(state State) (Response, error) {
 	if err != nil {
 		return Response{}, err
 	}
-	request, err := http.NewRequest(http.MethodPatch, url, bytes.NewReader(body))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPatch, url, bytes.NewReader(body))
 	if err != nil {
 		return Response{}, err
 	}
@@ -382,19 +382,19 @@ func (j *Job) setState(state State) (Response, error) {
 }
 
 // Close will close the current job.
-func (j *Job) Close() (Response, error) {
-	return j.setState(UpdateComplete)
+func (j *Job) Close(ctx context.Context) (Response, error) {
+	return j.setState(ctx, UpdateComplete)
 }
 
 // Abort will abort the current job.
-func (j *Job) Abort() (Response, error) {
-	return j.setState(Aborted)
+func (j *Job) Abort(ctx context.Context) (Response, error) {
+	return j.setState(ctx, Aborted)
 }
 
 // Delete will delete the current job.
-func (j *Job) Delete() error {
+func (j *Job) Delete(ctx context.Context) error {
 	url := j.session.DataServiceURL() + string(j.endpoint) + "/" + j.info.ID
-	request, err := http.NewRequest(http.MethodDelete, url, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, nil)
 	if err != nil {
 		return err
 	}
@@ -412,9 +412,9 @@ func (j *Job) Delete() error {
 }
 
 // Upload will upload data to processing.
-func (j *Job) Upload(body io.Reader) error {
+func (j *Job) Upload(ctx context.Context, body io.Reader) error {
 	url := j.session.DataServiceURL() + string(j.endpoint) + "/" + j.info.ID + "/batches"
-	request, err := http.NewRequest(http.MethodPut, url, body)
+	request, err := http.NewRequestWithContext(ctx, http.MethodPut, url, body)
 	if err != nil {
 		return err
 	}
@@ -448,7 +448,7 @@ func (j *Job) Wait(ctx context.Context) (Info, error) {
 				return
 			case <-time.After(bo.NextBackOff()):
 			}
-			status, err := j.Info()
+			status, err := j.Info(ctx)
 			if err != nil {
 				errs <- err
 				return
@@ -471,7 +471,7 @@ func (j *Job) Wait(ctx context.Context) (Info, error) {
 }
 
 // Results returns a page of results from a Query job.
-func (j *Job) Results(locator string, maxRecords int) (*ResultsPage, error) {
+func (j *Job) Results(ctx context.Context, locator string, maxRecords int) (*ResultsPage, error) {
 	if j.endpoint != V2QueryEndpoint {
 		return nil, errors.New("job error: results only available for query jobs")
 	}
@@ -486,7 +486,7 @@ func (j *Job) Results(locator string, maxRecords int) (*ResultsPage, error) {
 	if len(params) > 0 {
 		resultsURL += "?" + params.Encode()
 	}
-	request, err := http.NewRequest(http.MethodGet, resultsURL, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, resultsURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -532,9 +532,9 @@ func (j *Job) Results(locator string, maxRecords int) (*ResultsPage, error) {
 }
 
 // SuccessfulRecords returns the successful records for the job.
-func (j *Job) SuccessfulRecords() ([]SuccessfulRecord, error) {
+func (j *Job) SuccessfulRecords(ctx context.Context) ([]SuccessfulRecord, error) {
 	url := j.session.DataServiceURL() + string(j.endpoint) + "/" + j.info.ID + "/successfulResults/"
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -583,9 +583,9 @@ func (j *Job) SuccessfulRecords() ([]SuccessfulRecord, error) {
 }
 
 // FailedRecords returns the failed records for the job.
-func (j *Job) FailedRecords() ([]FailedRecord, error) {
+func (j *Job) FailedRecords(ctx context.Context) ([]FailedRecord, error) {
 	url := j.session.DataServiceURL() + string(j.endpoint) + "/" + j.info.ID + "/failedResults/"
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -630,9 +630,9 @@ func (j *Job) FailedRecords() ([]FailedRecord, error) {
 }
 
 // UnprocessedRecords returns the unprocessed records for the job.
-func (j *Job) UnprocessedRecords() ([]UnprocessedRecord, error) {
+func (j *Job) UnprocessedRecords(ctx context.Context) ([]UnprocessedRecord, error) {
 	url := j.session.DataServiceURL() + string(j.endpoint) + "/" + j.info.ID + "/unprocessedrecords/"
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
