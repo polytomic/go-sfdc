@@ -34,6 +34,10 @@ type Job struct {
 	info    bulk.Response
 }
 
+func (j *Job) ID() string {
+	return j.info.ID
+}
+
 func (j *Job) create(ctx context.Context, options Options) error {
 	err := j.formatOptions(&options)
 	if err != nil {

@@ -232,6 +232,10 @@ type Job struct {
 	info     Response
 }
 
+func (j *Job) ID() string {
+	return j.info.ID
+}
+
 func NewJob(endpoint BulkEndpoint, session session.ServiceFormatter) *Job {
 	return &Job{
 		endpoint: endpoint,
