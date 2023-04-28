@@ -461,11 +461,13 @@ func (j *Job) Wait(ctx context.Context) (Info, error) {
 				errs <- err
 				return
 			}
-			if status.State == JobComplete {
+			switch status.State {
+			case JobComplete,
+				Failed,
+				Aborted:
 				completed <- status
 				return
 			}
-
 		}
 	}()
 	select {
