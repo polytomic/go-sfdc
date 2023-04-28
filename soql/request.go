@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/namely/go-sfdc/v3/composite/batch"
 	"github.com/namely/go-sfdc/v3/session"
@@ -39,7 +40,10 @@ func NewQueryRequest(service session.ServiceFormatter, querier QueryFormatter, a
 	form.Add("q", query)
 
 	return &QueryRequest{
-		url: fmt.Sprintf("/services/data/v%d.0/%s/?%s", service.Version(), endpoint, form.Encode()),
+		url: strings.TrimPrefix(
+			fmt.Sprintf("%s/%s/?%s", service.DataServiceURL(), endpoint, form.Encode()),
+			service.InstanceURL(),
+		),
 	}, nil
 }
 
@@ -79,7 +83,10 @@ func NewQueryColumnMetadataRequest(service session.ServiceFormatter, querier Que
 
 	return &QueryColumnMetadataRequest{
 		QueryRequest: QueryRequest{
-			url: fmt.Sprintf("/services/data/v%d.0/%s/?%s", service.Version(), endpoint, form.Encode()),
+			url: strings.TrimPrefix(
+				fmt.Sprintf("%s/%s/?%s", service.DataServiceURL(), endpoint, form.Encode()),
+				service.InstanceURL(),
+			),
 		},
 	}, nil
 }
