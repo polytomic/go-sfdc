@@ -7,8 +7,13 @@ import (
 	"net/http"
 
 	"github.com/namely/go-sfdc/v3"
+	"github.com/namely/go-sfdc/v3/composite/batch"
 	"github.com/namely/go-sfdc/v3/session"
 	"github.com/pkg/errors"
+)
+
+var (
+	_ Subrequester = (*GetSubrequest)(nil)
 )
 
 // Subrequester provides the composite API requests.  The
@@ -27,10 +32,10 @@ type Value struct {
 	Response []Subvalue `json:"compositeResponse"`
 }
 
-// Subvalue is the subresponses to the composite API.  Using the
-// referende id, one will be able to match the response with the request.
+// Subvalue is the subresponses to the composite API.  Using the reference id,
+// one will be able to match the response with the request.
 type Subvalue struct {
-	Body           interface{}       `json:"body"`
+	Body           json.RawMessage   `json:"body"`
 	HTTPHeaders    map[string]string `json:"httpHeaders"`
 	HTTPStatusCode int               `json:"httpStatusCode"`
 	ReferenceID    string            `json:"referenceId"`
@@ -120,6 +125,7 @@ func (r *Resource) Retrieve(ctx context.Context, allOrNone bool, requesters []Su
 	}
 	return value, nil
 }
+
 func (r *Resource) validateSubrequests(requesters []Subrequester) error {
 	for _, requester := range requesters {
 		if requester.URL() == "" {
@@ -128,7 +134,7 @@ func (r *Resource) validateSubrequests(requesters []Subrequester) error {
 		if requester.ReferenceID() == "" {
 			return errors.New("composite subrequest: must contain a reference id")
 		}
-		if _, has := validMethods[requester.Method()]; has == false {
+		if _, has := validMethods[requester.Method()]; !has {
 			return errors.New("composite subrequest: empty or invalid method " + requester.Method())
 		}
 		if requester.HTTPHeaders() != nil {
@@ -166,4 +172,28 @@ func (r *Resource) payload(allOrNone bool, requesters []Subrequester) (*bytes.Re
 		return nil, err
 	}
 	return bytes.NewReader(jsonBody), nil
+}
+
+type GetSubrequest struct {
+	batch.Subrequester
+	refID string
+}
+
+func NewGetSubrequest(refID string, req batch.Subrequester) *GetSubrequest {
+	return &GetSubrequest{
+		Subrequester: req,
+		refID:        refID,
+	}
+}
+
+func (r *GetSubrequest) ReferenceID() string {
+	return r.refID
+}
+
+func (*GetSubrequest) HTTPHeaders() http.Header {
+	return nil
+}
+
+func (*GetSubrequest) Body() map[string]interface{} {
+	return nil
 }

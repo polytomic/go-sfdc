@@ -2,7 +2,9 @@ package composite
 
 import (
 	"context"
-	"io/ioutil"
+	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -58,7 +60,7 @@ func TestResource_validateSubrequests(t *testing.T) {
 						referenceID: "someID",
 						method:      http.MethodGet,
 						httpHeaders: http.Header(map[string][]string{
-							"Accept-Language": []string{"en-us,"},
+							"Accept-Language": {"en-us,"},
 						}),
 					},
 				},
@@ -75,7 +77,7 @@ func TestResource_validateSubrequests(t *testing.T) {
 						referenceID: "someID",
 						method:      http.MethodGet,
 						httpHeaders: http.Header(map[string][]string{
-							"Accept-Language": []string{"en-us,"},
+							"Accept-Language": {"en-us,"},
 						}),
 					},
 				},
@@ -92,7 +94,7 @@ func TestResource_validateSubrequests(t *testing.T) {
 						referenceID: "",
 						method:      http.MethodGet,
 						httpHeaders: http.Header(map[string][]string{
-							"Accept-Language": []string{"en-us,"},
+							"Accept-Language": {"en-us,"},
 						}),
 					},
 				},
@@ -109,7 +111,7 @@ func TestResource_validateSubrequests(t *testing.T) {
 						referenceID: "someID",
 						method:      http.MethodTrace,
 						httpHeaders: http.Header(map[string][]string{
-							"Accept-Language": []string{"en-us,"},
+							"Accept-Language": {"en-us,"},
 						}),
 					},
 				},
@@ -126,7 +128,7 @@ func TestResource_validateSubrequests(t *testing.T) {
 						referenceID: "someID",
 						method:      "",
 						httpHeaders: http.Header(map[string][]string{
-							"Accept-Language": []string{"en-us,"},
+							"Accept-Language": {"en-us,"},
 						}),
 					},
 				},
@@ -143,7 +145,7 @@ func TestResource_validateSubrequests(t *testing.T) {
 						referenceID: "someID",
 						method:      http.MethodGet,
 						httpHeaders: http.Header(map[string][]string{
-							"Accept": []string{"application/json"},
+							"Accept": {"application/json"},
 						}),
 					},
 				},
@@ -188,7 +190,7 @@ func TestResource_payload(t *testing.T) {
 						referenceID: "someID",
 						method:      http.MethodGet,
 						httpHeaders: http.Header(map[string][]string{
-							"Accept-Language": []string{"en-us,"},
+							"Accept-Language": {"en-us,"},
 						}),
 					},
 				},
@@ -278,7 +280,7 @@ func TestResource_Retrieve(t *testing.T) {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
-								Body:       ioutil.NopCloser(strings.NewReader(req.URL.String())),
+								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
 								Header:     make(http.Header),
 							}
 						}
@@ -345,7 +347,7 @@ func TestResource_Retrieve(t *testing.T) {
 						return &http.Response{
 							StatusCode: http.StatusOK,
 							Status:     "Good",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 
@@ -366,11 +368,12 @@ func TestResource_Retrieve(t *testing.T) {
 			want: Value{
 				Response: []Subvalue{
 					{
-						Body: map[string]interface{}{
-							"id":      "001R00000033JNuIAM",
-							"success": true,
-							"errors":  make([]interface{}, 0),
-						},
+						Body: marshal(t,
+							map[string]interface{}{
+								"id":      "001R00000033JNuIAM",
+								"success": true,
+								"errors":  make([]interface{}, 0),
+							}),
 						HTTPHeaders: map[string]string{
 							"Location": "/services/data/v38.0/sobjects/Account/001R00000033JNuIAM",
 						},
@@ -378,9 +381,10 @@ func TestResource_Retrieve(t *testing.T) {
 						ReferenceID:    "NewAccount",
 					},
 					{
-						Body: map[string]interface{}{
-							"what": "all the account data",
-						},
+						Body: marshal(t,
+							map[string]interface{}{
+								"what": "all the account data",
+							}),
 						HTTPHeaders: map[string]string{
 							"ETag":          "\"Jbjuzw7dbhaEG3fd90kJbx6A0ow=\"",
 							"Last-Modified": "Fri, 22 Jul 2016 20:19:37 GMT",
@@ -389,11 +393,12 @@ func TestResource_Retrieve(t *testing.T) {
 						ReferenceID:    "NewAccountInfo",
 					},
 					{
-						Body: map[string]interface{}{
-							"id":      "003R00000025REHIA2",
-							"success": true,
-							"errors":  make([]interface{}, 0),
-						},
+						Body: marshal(t,
+							map[string]interface{}{
+								"id":      "003R00000025REHIA2",
+								"success": true,
+								"errors":  make([]interface{}, 0),
+							}),
 						HTTPHeaders: map[string]string{
 							"Location": "/services/data/v38.0/sobjects/Contact/003R00000025REHIA2",
 						},
@@ -401,18 +406,19 @@ func TestResource_Retrieve(t *testing.T) {
 						ReferenceID:    "NewContact",
 					},
 					{
-						Body: map[string]interface{}{
-							"attributes": map[string]interface{}{
-								"type": "User",
-								"url":  "/services/data/v38.0/sobjects/User/005R0000000I90CIAS",
-							},
-							"Name":        "Jane Doe",
-							"CompanyName": "Salesforce",
-							"Title":       "Director",
-							"City":        "San Francisco",
-							"State":       "CA",
-							"Id":          "005R0000000I90CIAS",
-						},
+						Body: marshal(t,
+							map[string]interface{}{
+								"attributes": map[string]interface{}{
+									"type": "User",
+									"url":  "/services/data/v38.0/sobjects/User/005R0000000I90CIAS",
+								},
+								"Name":        "Jane Doe",
+								"CompanyName": "Salesforce",
+								"Title":       "Director",
+								"City":        "San Francisco",
+								"State":       "CA",
+								"Id":          "005R0000000I90CIAS",
+							}),
 						HTTPHeaders:    map[string]string{},
 						HTTPStatusCode: 200,
 						ReferenceID:    "NewAccountOwner",
@@ -440,7 +446,7 @@ func TestResource_Retrieve(t *testing.T) {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
-								Body:       ioutil.NopCloser(strings.NewReader(req.URL.String())),
+								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
 								Header:     make(http.Header),
 							}
 						}
@@ -455,7 +461,7 @@ func TestResource_Retrieve(t *testing.T) {
 						return &http.Response{
 							StatusCode: http.StatusBadRequest,
 							Status:     "Bad",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 
@@ -487,9 +493,52 @@ func TestResource_Retrieve(t *testing.T) {
 				t.Errorf("Resource.Retrieve() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Resource.Retrieve() = %v, want %v", got, tt.want)
+			for i := range got.Response {
+				if got.Response[i].ReferenceID != tt.want.Response[i].ReferenceID {
+					t.Errorf("Resource.Retrieve() ReferenceID = %v, want %v", got, tt.want)
+				}
+				if got.Response[i].HTTPStatusCode != tt.want.Response[i].HTTPStatusCode {
+					t.Errorf("Resource.Retrieve() Status Code = %v, want %v", got, tt.want)
+				}
+				if !reflect.DeepEqual(got.Response[i].HTTPHeaders, tt.want.Response[i].HTTPHeaders) {
+					t.Errorf("Resource.Retrieve() Headers = %v, want %v", got, tt.want)
+				}
+				if ok, err := equalJSON(got.Response[i].Body, tt.want.Response[i].Body); !ok || err != nil {
+					if err != nil {
+						fmt.Println(i)
+						panic(err)
+					}
+					t.Errorf("Resource.Retrieve() Body = %v, want %v", got, tt.want)
+				}
 			}
 		})
 	}
+}
+
+func marshal(t *testing.T, val any) json.RawMessage {
+	bytes, err := json.Marshal(val)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return bytes
+}
+
+func equalJSON(s1, s2 []byte) (bool, error) {
+	var o1 interface{}
+	var o2 interface{}
+
+	var err error
+	if len(s1) > 0 {
+		err = json.Unmarshal(s1, &o1)
+		if err != nil {
+			return false, fmt.Errorf("Error mashalling string 1 :: %s", err.Error())
+		}
+	}
+	if len(s2) > 2 {
+		err = json.Unmarshal(s2, &o2)
+		if err != nil {
+			return false, fmt.Errorf("Error mashalling string 2 :: %s", err.Error())
+		}
+	}
+	return reflect.DeepEqual(o1, o2), nil
 }
