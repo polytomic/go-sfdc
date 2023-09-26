@@ -488,8 +488,8 @@ func (j *Job) Wait(ctx context.Context) (Info, error) {
 	}
 }
 
-// Results returns a page of results from a Query job.
-func (j *Job) Results(ctx context.Context, locator string, maxRecords int) (*ResultsPage, error) {
+// results returns a page of results from a Query job.
+func (j *Job) results(ctx context.Context, locator string, maxRecords int) (*http.Response, error) {
 	if j.endpoint != V2QueryEndpoint {
 		return nil, errors.New("job error: results only available for query jobs")
 	}
@@ -515,11 +515,22 @@ func (j *Job) Results(ctx context.Context, locator string, maxRecords int) (*Res
 	if err != nil {
 		return nil, err
 	}
-	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
 		return nil, sfdc.HandleError(response)
 	}
+
+	return response, nil
+}
+
+// Results returns a page of results from a Query job.
+func (j *Job) Results(ctx context.Context, locator string, maxRecords int) (*ResultsPage, error) {
+
+	response, err := j.results(ctx, locator, maxRecords)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
 
 	reader := csv.NewReader(response.Body)
 	reader.LazyQuotes = true
@@ -547,6 +558,32 @@ func (j *Job) Results(ctx context.Context, locator string, maxRecords int) (*Res
 	}
 
 	return &result, nil
+}
+
+// Results returns a page of results from a Query job.
+// return n is total records
+func (j *Job) ResultsAll(ctx context.Context, writer io.Writer, maxRecords int) (int64, error) {
+	var n int64 = 0
+	for locator := ""; locator != "null"; {
+		response, err := j.results(ctx, locator, maxRecords)
+		if err != nil {
+			return 0, err
+		}
+		defer response.Body.Close()
+		_, err = io.Copy(writer, response.Body)
+		if err != nil {
+			return 0, err
+		}
+
+		count, err := strconv.Atoi(response.Header.Get(HeaderRecordCount))
+		if err != nil {
+			return n, err
+		}
+		n += int64(count)
+		locator = response.Header.Get(HeaderLocator)
+	}
+
+	return n, nil
 }
 
 // SuccessfulRecords returns the successful records for the job.
