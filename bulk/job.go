@@ -78,6 +78,14 @@ const (
 	Parallel ConcurrencyMode = "Parallel"
 )
 
+// Options returns the set of valid options for the ConcurrencyMode type.
+func (ConcurrencyMode) Options() []string {
+	return []string{
+		string(Serial),
+		string(Parallel),
+	}
+}
+
 // Operation is the processing operation for the job.
 type Operation string
 
