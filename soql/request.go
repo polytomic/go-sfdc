@@ -91,15 +91,15 @@ func NewQueryColumnMetadataRequest(service session.ServiceFormatter, querier Que
 	}, nil
 }
 
-func (q *QueryColumnMetadataRequest) UnmarshalResponse(result batch.Subvalue) (QueryColumnMetadataResposne, error) {
+func (q *QueryColumnMetadataRequest) UnmarshalResponse(result batch.Subvalue) (QueryColumnMetadataResponse, error) {
 	if result.StatusCode != http.StatusOK {
-		return QueryColumnMetadataResposne{}, batch.HandleSubrequestError(result)
+		return QueryColumnMetadataResponse{}, batch.HandleSubrequestError(result)
 	}
 
-	var resp QueryColumnMetadataResposne
+	var resp QueryColumnMetadataResponse
 	err := json.Unmarshal(result.Result, &resp)
 	if err != nil {
-		return QueryColumnMetadataResposne{}, err
+		return QueryColumnMetadataResponse{}, err
 	}
 
 	return resp, nil

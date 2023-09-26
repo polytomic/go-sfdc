@@ -355,7 +355,7 @@ func TestResource_Query(t *testing.T) {
 						"Name": "Test 2",
 					},
 				}),
-				columnMetadata: &QueryColumnMetadataResposne{
+				columnMetadata: &QueryColumnMetadataResponse{
 					EntityName: "Account",
 					GroupBy:    false,
 					IdSelected: false,

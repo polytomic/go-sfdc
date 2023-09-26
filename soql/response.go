@@ -72,7 +72,7 @@ type ColumnMetadata struct {
 	TextType       bool             `json:"textType"`
 	Updateable     bool             `json:"updateable"`
 }
-type QueryColumnMetadataResposne struct {
+type QueryColumnMetadataResponse struct {
 	EntityName     string           `json:"entityName"`
 	GroupBy        bool             `json:"groupBy"`
 	IdSelected     bool             `json:"idSelected"`
