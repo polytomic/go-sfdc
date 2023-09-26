@@ -3,7 +3,7 @@ package sobject
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -94,7 +94,7 @@ func Test_query_Query(t *testing.T) {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader("resp")),
+							Body:       io.NopCloser(strings.NewReader("resp")),
 							Header:     make(http.Header),
 						}
 					}),
@@ -130,7 +130,7 @@ func Test_query_Query(t *testing.T) {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -160,7 +160,7 @@ func Test_query_Query(t *testing.T) {
 
 						return &http.Response{
 							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -193,7 +193,7 @@ func Test_query_Query(t *testing.T) {
 
 						return &http.Response{
 							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -298,7 +298,7 @@ func Test_query_ExternalQuery(t *testing.T) {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader("resp")),
+							Body:       io.NopCloser(strings.NewReader("resp")),
 							Header:     make(http.Header),
 						}
 					}),
@@ -335,7 +335,7 @@ func Test_query_ExternalQuery(t *testing.T) {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -366,7 +366,7 @@ func Test_query_ExternalQuery(t *testing.T) {
 
 						return &http.Response{
 							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -400,7 +400,7 @@ func Test_query_ExternalQuery(t *testing.T) {
 
 						return &http.Response{
 							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -483,7 +483,7 @@ func Test_query_DeletedRecords(t *testing.T) {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader("resp")),
+							Body:       io.NopCloser(strings.NewReader("resp")),
 							Header:     make(http.Header),
 						}
 					}),
@@ -509,7 +509,7 @@ func Test_query_DeletedRecords(t *testing.T) {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader("resp")),
+							Body:       io.NopCloser(strings.NewReader("resp")),
 							Header:     make(http.Header),
 						}
 					}),
@@ -540,7 +540,7 @@ func Test_query_DeletedRecords(t *testing.T) {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -565,7 +565,7 @@ func Test_query_DeletedRecords(t *testing.T) {
 
 						return &http.Response{
 							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -600,7 +600,7 @@ func Test_query_DeletedRecords(t *testing.T) {
 
 						return &http.Response{
 							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -685,7 +685,7 @@ func Test_query_UpdatedRecords(t *testing.T) {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader("resp")),
+							Body:       io.NopCloser(strings.NewReader("resp")),
 							Header:     make(http.Header),
 						}
 					}),
@@ -712,7 +712,7 @@ func Test_query_UpdatedRecords(t *testing.T) {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader("resp")),
+							Body:       io.NopCloser(strings.NewReader("resp")),
 							Header:     make(http.Header),
 						}
 					}),
@@ -742,7 +742,7 @@ func Test_query_UpdatedRecords(t *testing.T) {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -767,7 +767,7 @@ func Test_query_UpdatedRecords(t *testing.T) {
 
 						return &http.Response{
 							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -800,7 +800,7 @@ func Test_query_UpdatedRecords(t *testing.T) {
 
 						return &http.Response{
 							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -878,7 +878,7 @@ func Test_query_GetContent(t *testing.T) {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader("resp")),
+							Body:       io.NopCloser(strings.NewReader("resp")),
 							Header:     make(http.Header),
 						}
 					}),
@@ -903,7 +903,7 @@ func Test_query_GetContent(t *testing.T) {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader("resp")),
+							Body:       io.NopCloser(strings.NewReader("resp")),
 							Header:     make(http.Header),
 						}
 					}),
@@ -928,7 +928,7 @@ func Test_query_GetContent(t *testing.T) {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader("resp")),
+							Body:       io.NopCloser(strings.NewReader("resp")),
 							Header:     make(http.Header),
 						}
 					}),
@@ -951,7 +951,7 @@ func Test_query_GetContent(t *testing.T) {
 
 						return &http.Response{
 							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),

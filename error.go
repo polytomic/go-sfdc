@@ -3,7 +3,7 @@ package sfdc
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -91,7 +91,7 @@ func HandleError(resp *http.Response) error {
 }
 
 func newErrorFromBody(resp *http.Response) error {
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return errors.Wrap(err, "could not read the body with error")
 	}

@@ -2,7 +2,7 @@ package sobject
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -56,7 +56,7 @@ func Test_metadata_Metadata(t *testing.T) {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -79,7 +79,7 @@ func Test_metadata_Metadata(t *testing.T) {
 
 						return &http.Response{
 							StatusCode: 200,
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -140,7 +140,7 @@ func Test_metadata_Metadata(t *testing.T) {
 
 						return &http.Response{
 							StatusCode: 200,
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),

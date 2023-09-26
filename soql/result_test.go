@@ -2,7 +2,7 @@ package soql
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -312,7 +312,7 @@ func TestQueryResult_Next(t *testing.T) {
 								return &http.Response{
 									StatusCode: 500,
 									Status:     "Some Status",
-									Body:       ioutil.NopCloser(strings.NewReader("Error")),
+									Body:       io.NopCloser(strings.NewReader("Error")),
 									Header:     make(http.Header),
 								}
 							}
@@ -343,7 +343,7 @@ func TestQueryResult_Next(t *testing.T) {
 
 							return &http.Response{
 								StatusCode: 200,
-								Body:       ioutil.NopCloser(strings.NewReader(resp)),
+								Body:       io.NopCloser(strings.NewReader(resp)),
 								Header:     make(http.Header),
 							}
 						}),

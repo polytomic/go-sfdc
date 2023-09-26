@@ -3,7 +3,7 @@ package sobject
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -68,7 +68,7 @@ func Test_dml_Insert(t *testing.T) {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader("resp")),
+							Body:       io.NopCloser(strings.NewReader("resp")),
 							Header:     make(http.Header),
 						}
 					}),
@@ -104,7 +104,7 @@ func Test_dml_Insert(t *testing.T) {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -133,7 +133,7 @@ func Test_dml_Insert(t *testing.T) {
 
 						return &http.Response{
 							StatusCode: http.StatusCreated,
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -166,7 +166,7 @@ func Test_dml_Insert(t *testing.T) {
 
 						return &http.Response{
 							StatusCode: http.StatusCreated,
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -271,7 +271,7 @@ func Test_dml_Update(t *testing.T) {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -398,7 +398,7 @@ func Test_dml_Upsert(t *testing.T) {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -436,7 +436,7 @@ func Test_dml_Upsert(t *testing.T) {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -467,7 +467,7 @@ func Test_dml_Upsert(t *testing.T) {
 
 						return &http.Response{
 							StatusCode: http.StatusCreated,
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -503,7 +503,7 @@ func Test_dml_Upsert(t *testing.T) {
 
 						return &http.Response{
 							StatusCode: http.StatusCreated,
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -545,7 +545,7 @@ func Test_dml_Upsert(t *testing.T) {
 
 						return &http.Response{
 							StatusCode: http.StatusOK,
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -581,7 +581,7 @@ func Test_dml_Upsert(t *testing.T) {
 						return &http.Response{
 							StatusCode: http.StatusNoContent,
 							Header:     make(http.Header),
-							Body:       ioutil.NopCloser(&bytes.Buffer{}),
+							Body:       io.NopCloser(&bytes.Buffer{}),
 						}
 					}),
 				},

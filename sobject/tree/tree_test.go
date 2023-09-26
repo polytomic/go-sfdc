@@ -2,7 +2,7 @@ package tree
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -89,7 +89,7 @@ func TestResource_Insert(t *testing.T) {
 						return &http.Response{
 							StatusCode: 500,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader("resp")),
+							Body:       io.NopCloser(strings.NewReader("resp")),
 							Header:     make(http.Header),
 						}
 					}),
@@ -129,7 +129,7 @@ func TestResource_Insert(t *testing.T) {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Bad URL: " + req.URL.String(),
-								Body:       ioutil.NopCloser(strings.NewReader("resp")),
+								Body:       io.NopCloser(strings.NewReader("resp")),
 								Header:     make(http.Header),
 							}
 						}
@@ -138,7 +138,7 @@ func TestResource_Insert(t *testing.T) {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Bad Method",
-								Body:       ioutil.NopCloser(strings.NewReader("resp")),
+								Body:       io.NopCloser(strings.NewReader("resp")),
 								Header:     make(http.Header),
 							}
 						}
@@ -155,7 +155,7 @@ func TestResource_Insert(t *testing.T) {
 						return &http.Response{
 							StatusCode: http.StatusCreated,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -203,7 +203,7 @@ func TestResource_Insert(t *testing.T) {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Bad URL: " + req.URL.String(),
-								Body:       ioutil.NopCloser(strings.NewReader("resp")),
+								Body:       io.NopCloser(strings.NewReader("resp")),
 								Header:     make(http.Header),
 							}
 						}
@@ -212,7 +212,7 @@ func TestResource_Insert(t *testing.T) {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Bad Method",
-								Body:       ioutil.NopCloser(strings.NewReader("resp")),
+								Body:       io.NopCloser(strings.NewReader("resp")),
 								Header:     make(http.Header),
 							}
 						}
@@ -233,7 +233,7 @@ func TestResource_Insert(t *testing.T) {
 						return &http.Response{
 							StatusCode: http.StatusCreated,
 							Status:     "Some Status",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
