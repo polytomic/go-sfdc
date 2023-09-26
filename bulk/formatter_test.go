@@ -83,7 +83,7 @@ func TestNewFormatter(t *testing.T) {
 			}
 
 			if tt.want != nil {
-				tt.want.sb.WriteString(strings.Join(tt.want.fields, string(tt.want.job.delimiter())))
+				tt.want.sb.WriteString(strings.Join(tt.want.fields, string(tt.want.job.Delimiter())))
 				tt.want.sb.WriteString("\n")
 
 				assert.Equalf(t, tt.want.job, got.job, "NewFormatter().job = %v, want %v", got.job, tt.want.job)

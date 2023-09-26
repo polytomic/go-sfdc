@@ -523,7 +523,7 @@ func (j *Job) Results(ctx context.Context, locator string, maxRecords int) (*Res
 
 	reader := csv.NewReader(response.Body)
 	reader.LazyQuotes = true
-	reader.Comma = j.delimiter()
+	reader.Comma = j.Delimiter()
 
 	count, _ := strconv.Atoi(response.Header.Get(HeaderRecordCount))
 	result := ResultsPage{
@@ -571,7 +571,7 @@ func (j *Job) SuccessfulRecords(ctx context.Context) ([]SuccessfulRecord, error)
 
 	reader := csv.NewReader(response.Body)
 	reader.LazyQuotes = true
-	reader.Comma = j.delimiter()
+	reader.Comma = j.Delimiter()
 
 	var records []SuccessfulRecord
 	fields, err := reader.Read()
@@ -622,7 +622,7 @@ func (j *Job) FailedRecords(ctx context.Context) ([]FailedRecord, error) {
 
 	reader := csv.NewReader(response.Body)
 	reader.LazyQuotes = true
-	reader.Comma = j.delimiter()
+	reader.Comma = j.Delimiter()
 
 	var records []FailedRecord
 	fields, err := reader.Read()
@@ -669,7 +669,7 @@ func (j *Job) UnprocessedRecords(ctx context.Context) ([]UnprocessedRecord, erro
 
 	reader := csv.NewReader(response.Body)
 	reader.LazyQuotes = true
-	reader.Comma = j.delimiter()
+	reader.Comma = j.Delimiter()
 
 	var records []UnprocessedRecord
 	fields, err := reader.Read()
@@ -715,7 +715,7 @@ func (j *Job) record(fields, values []string) map[string]interface{} {
 	return record
 }
 
-func (j *Job) delimiter() rune {
+func (j *Job) Delimiter() rune {
 	switch ColumnDelimiter(j.info.ColumnDelimiter) {
 	case Tab:
 		return '\t'

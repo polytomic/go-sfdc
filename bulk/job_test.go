@@ -235,7 +235,7 @@ func TestJob_delimiter(t *testing.T) {
 				session: tt.fields.session,
 				info:    tt.fields.info,
 			}
-			if got := j.delimiter(); got != tt.want {
+			if got := j.Delimiter(); got != tt.want {
 				t.Errorf("Job.delimiter() = %v, want %v", got, tt.want)
 			}
 		})
