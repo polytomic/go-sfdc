@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -205,7 +204,7 @@ func (b *Batch) Results(ctx context.Context) (BatchResult, error) {
 		return result, sfdc.HandleError(response)
 	}
 
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		return result, err
 	}

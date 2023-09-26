@@ -2,7 +2,7 @@ package bulkv1
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -168,7 +168,7 @@ func TestJob_response(t *testing.T) {
 						return &http.Response{
 							StatusCode: http.StatusOK,
 							Status:     "Good",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 
@@ -212,7 +212,7 @@ func TestJob_response(t *testing.T) {
 						return &http.Response{
 							StatusCode: http.StatusBadRequest,
 							Status:     "Bad",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -268,7 +268,7 @@ func TestJob_createCallout(t *testing.T) {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
-								Body:       ioutil.NopCloser(strings.NewReader(req.URL.String())),
+								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
 								Header:     make(http.Header),
 							}
 						}
@@ -293,7 +293,7 @@ func TestJob_createCallout(t *testing.T) {
 						return &http.Response{
 							StatusCode: http.StatusOK,
 							Status:     "Good",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 
@@ -369,7 +369,7 @@ func TestJob_create(t *testing.T) {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
-								Body:       ioutil.NopCloser(strings.NewReader(req.URL.String())),
+								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
 								Header:     make(http.Header),
 							}
 						}
@@ -394,7 +394,7 @@ func TestJob_create(t *testing.T) {
 						return &http.Response{
 							StatusCode: http.StatusOK,
 							Status:     "Good",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 
@@ -452,7 +452,7 @@ func TestJob_setState(t *testing.T) {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
-								Body:       ioutil.NopCloser(strings.NewReader(req.URL.String())),
+								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
 								Header:     make(http.Header),
 							}
 						}
@@ -461,7 +461,7 @@ func TestJob_setState(t *testing.T) {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid Method",
-								Body:       ioutil.NopCloser(strings.NewReader(req.Method)),
+								Body:       io.NopCloser(strings.NewReader(req.Method)),
 								Header:     make(http.Header),
 							}
 						}
@@ -485,7 +485,7 @@ func TestJob_setState(t *testing.T) {
 						return &http.Response{
 							StatusCode: http.StatusOK,
 							Status:     "Good",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 
@@ -527,7 +527,7 @@ func TestJob_setState(t *testing.T) {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
-								Body:       ioutil.NopCloser(strings.NewReader(req.URL.String())),
+								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
 								Header:     make(http.Header),
 							}
 						}
@@ -536,7 +536,7 @@ func TestJob_setState(t *testing.T) {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid Method",
-								Body:       ioutil.NopCloser(strings.NewReader(req.Method)),
+								Body:       io.NopCloser(strings.NewReader(req.Method)),
 								Header:     make(http.Header),
 							}
 						}
@@ -550,7 +550,7 @@ func TestJob_setState(t *testing.T) {
 						return &http.Response{
 							StatusCode: http.StatusBadRequest,
 							Status:     "Bad",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -628,7 +628,7 @@ func TestJob_infoResponse(t *testing.T) {
 						return &http.Response{
 							StatusCode: http.StatusOK,
 							Status:     "Good",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 
@@ -681,7 +681,7 @@ func TestJob_infoResponse(t *testing.T) {
 						return &http.Response{
 							StatusCode: http.StatusBadRequest,
 							Status:     "Bad",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -736,7 +736,7 @@ func TestJob_Info(t *testing.T) {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
-								Body:       ioutil.NopCloser(strings.NewReader(req.URL.String())),
+								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
 								Header:     make(http.Header),
 							}
 						}
@@ -745,7 +745,7 @@ func TestJob_Info(t *testing.T) {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid Method",
-								Body:       ioutil.NopCloser(strings.NewReader(req.Method)),
+								Body:       io.NopCloser(strings.NewReader(req.Method)),
 								Header:     make(http.Header),
 							}
 						}
@@ -777,7 +777,7 @@ func TestJob_Info(t *testing.T) {
 						return &http.Response{
 							StatusCode: http.StatusOK,
 							Status:     "Good",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 
@@ -855,7 +855,7 @@ func TestJob_Batches(t *testing.T) {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid URL",
-								Body:       ioutil.NopCloser(strings.NewReader(req.URL.String())),
+								Body:       io.NopCloser(strings.NewReader(req.URL.String())),
 								Header:     make(http.Header),
 							}
 						}
@@ -864,7 +864,7 @@ func TestJob_Batches(t *testing.T) {
 							return &http.Response{
 								StatusCode: 500,
 								Status:     "Invalid Method",
-								Body:       ioutil.NopCloser(strings.NewReader(req.Method)),
+								Body:       io.NopCloser(strings.NewReader(req.Method)),
 								Header:     make(http.Header),
 							}
 						}
@@ -900,7 +900,7 @@ func TestJob_Batches(t *testing.T) {
 						return &http.Response{
 							StatusCode: http.StatusOK,
 							Status:     "OK",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 

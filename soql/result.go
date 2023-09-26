@@ -15,7 +15,7 @@ type QueryResult interface {
 	MoreRecords() bool
 	Records() []*QueryRecord
 	Next(context.Context) (QueryResult, error)
-	ColumnMetadata() *QueryColumnMetadataResposne
+	ColumnMetadata() *QueryColumnMetadataResponse
 	Resource() *Resource
 }
 
@@ -26,7 +26,7 @@ type QueryResultImpl struct {
 	response       QueryResponse
 	records        []*QueryRecord
 	resource       *Resource
-	columnMetadata *QueryColumnMetadataResposne
+	columnMetadata *QueryColumnMetadataResponse
 }
 
 func NewQueryResult(response QueryResponse, resource *Resource) (*QueryResultImpl, error) {
@@ -76,7 +76,7 @@ func (result *QueryResultImpl) Next(ctx context.Context) (QueryResult, error) {
 	return result.resource.next(ctx, result.response.NextRecordsURL)
 }
 
-func (result *QueryResultImpl) ColumnMetadata() *QueryColumnMetadataResposne {
+func (result *QueryResultImpl) ColumnMetadata() *QueryColumnMetadataResponse {
 	return result.columnMetadata
 }
 

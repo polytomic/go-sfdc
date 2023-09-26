@@ -99,7 +99,7 @@ func (r *Resource) Query(ctx context.Context, querier QueryFormatter, qopts ...Q
 		opt(opts)
 	}
 
-	var columnMeta *QueryColumnMetadataResposne
+	var columnMeta *QueryColumnMetadataResponse
 	if opts.columnMetadata {
 		cmreq, err := r.queryColumnMetadataRequest(ctx, querier)
 		if err != nil {
@@ -241,24 +241,24 @@ func (r *Resource) queryResponse(request *http.Request) (QueryResponse, error) {
 	return resp, nil
 }
 
-func (r *Resource) queryColumnMetadataResponse(request *http.Request) (QueryColumnMetadataResposne, error) {
+func (r *Resource) queryColumnMetadataResponse(request *http.Request) (QueryColumnMetadataResponse, error) {
 	response, err := r.session.Client().Do(request)
 
 	if err != nil {
-		return QueryColumnMetadataResposne{}, err
+		return QueryColumnMetadataResponse{}, err
 	}
 
 	decoder := json.NewDecoder(response.Body)
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		return QueryColumnMetadataResposne{}, sfdc.HandleError(response)
+		return QueryColumnMetadataResponse{}, sfdc.HandleError(response)
 	}
 
-	var resp QueryColumnMetadataResposne
+	var resp QueryColumnMetadataResponse
 	err = decoder.Decode(&resp)
 	if err != nil {
-		return QueryColumnMetadataResposne{}, err
+		return QueryColumnMetadataResponse{}, err
 	}
 
 	return resp, nil

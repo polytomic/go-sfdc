@@ -2,7 +2,7 @@ package bulkv1
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 	"testing"
@@ -47,7 +47,7 @@ func TestBatch_response(t *testing.T) {
 							return &http.Response{
 								StatusCode: http.StatusOK,
 								Status:     "OK",
-								Body:       ioutil.NopCloser(strings.NewReader(resp)),
+								Body:       io.NopCloser(strings.NewReader(resp)),
 								Header:     make(http.Header),
 							}
 						},
@@ -81,7 +81,7 @@ func TestBatch_response(t *testing.T) {
 						return &http.Response{
 							StatusCode: http.StatusBadRequest,
 							Status:     "Bad",
-							Body:       ioutil.NopCloser(strings.NewReader(resp)),
+							Body:       io.NopCloser(strings.NewReader(resp)),
 							Header:     make(http.Header),
 						}
 					}),
@@ -147,7 +147,7 @@ func TestBatch_fetchInfo(t *testing.T) {
 							return &http.Response{
 								StatusCode: http.StatusOK,
 								Status:     "OK",
-								Body:       ioutil.NopCloser(strings.NewReader(resp)),
+								Body:       io.NopCloser(strings.NewReader(resp)),
 								Header:     make(http.Header),
 							}
 						},
@@ -224,7 +224,7 @@ func TestBatch_create(t *testing.T) {
 							return &http.Response{
 								StatusCode: http.StatusCreated,
 								Status:     "OK",
-								Body:       ioutil.NopCloser(strings.NewReader(resp)),
+								Body:       io.NopCloser(strings.NewReader(resp)),
 								Header:     make(http.Header),
 							}
 						},
@@ -300,7 +300,7 @@ func TestBatch_Results(t *testing.T) {
 							return &http.Response{
 								StatusCode: http.StatusOK,
 								Status:     "OK",
-								Body:       ioutil.NopCloser(strings.NewReader(resp)),
+								Body:       io.NopCloser(strings.NewReader(resp)),
 								Header:     make(http.Header),
 							}
 						},
@@ -363,7 +363,7 @@ func TestBatch_Results(t *testing.T) {
 							return &http.Response{
 								StatusCode: http.StatusOK,
 								Status:     "OK",
-								Body:       ioutil.NopCloser(strings.NewReader(resp)),
+								Body:       io.NopCloser(strings.NewReader(resp)),
 								Header:     make(http.Header),
 							}
 						},

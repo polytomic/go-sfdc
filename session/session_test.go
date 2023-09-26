@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -77,7 +77,7 @@ func Test_passwordSessionRequest(t *testing.T) {
 					t.Errorf("%s URL not matching %s :: %s", scenario.desc, scenario.creds.URL+oauthEndpoint, request.URL.String())
 				}
 
-				buf, err := ioutil.ReadAll(request.Body)
+				buf, err := io.ReadAll(request.Body)
 				request.Body.Close()
 				if err != nil {
 					t.Fatal(err.Error())
@@ -86,7 +86,7 @@ func Test_passwordSessionRequest(t *testing.T) {
 				if err != nil {
 					t.Fatal(err.Error())
 				}
-				body, err := ioutil.ReadAll(reader)
+				body, err := io.ReadAll(reader)
 				if err != nil {
 					t.Fatal(err.Error())
 				}
@@ -124,7 +124,7 @@ func Test_passwordSessionResponse(t *testing.T) {
 
 				return &http.Response{
 					StatusCode: 200,
-					Body:       ioutil.NopCloser(strings.NewReader(resp)),
+					Body:       io.NopCloser(strings.NewReader(resp)),
 					Header:     make(http.Header),
 				}
 			}),
@@ -144,7 +144,7 @@ func Test_passwordSessionResponse(t *testing.T) {
 			client: mockHTTPClient(func(req *http.Request) *http.Response {
 				return &http.Response{
 					Status: "400 Bad Request",
-					Body:   ioutil.NopCloser(strings.NewReader(`{"error":"invalid_grant","error_description":"authentication failure"}`)),
+					Body:   io.NopCloser(strings.NewReader(`{"error":"invalid_grant","error_description":"authentication failure"}`)),
 					Header: make(http.Header),
 				}
 			}),
@@ -166,7 +166,7 @@ func Test_passwordSessionResponse(t *testing.T) {
 
 				return &http.Response{
 					StatusCode: 200,
-					Body:       ioutil.NopCloser(strings.NewReader(resp)),
+					Body:       io.NopCloser(strings.NewReader(resp)),
 					Header:     make(http.Header),
 				}
 			}),
@@ -232,7 +232,7 @@ func TestNewPasswordSession(t *testing.T) {
 
 					return &http.Response{
 						StatusCode: 200,
-						Body:       ioutil.NopCloser(strings.NewReader(resp)),
+						Body:       io.NopCloser(strings.NewReader(resp)),
 						Header:     make(http.Header),
 					}
 				}),
@@ -284,7 +284,7 @@ func TestNewPasswordSession(t *testing.T) {
 				Client: mockHTTPClient(func(req *http.Request) *http.Response {
 					return &http.Response{
 						Status: "400 Bad Request",
-						Body:   ioutil.NopCloser(strings.NewReader(`{"error":"invalid_grant","error_description":"authentication failure"}`)),
+						Body:   io.NopCloser(strings.NewReader(`{"error":"invalid_grant","error_description":"authentication failure"}`)),
 						Header: make(http.Header),
 					}
 				}),
@@ -507,7 +507,7 @@ func TestSession_Refresh(t *testing.T) {
 		resp := `{"access_token":"nEw:ToKeN"}`
 		return &http.Response{
 			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(strings.NewReader(resp)),
+			Body:       io.NopCloser(strings.NewReader(resp)),
 		}
 	})
 	config := sfdc.Configuration{
@@ -546,7 +546,7 @@ func TestSession_Refresh(t *testing.T) {
 		client := mockHTTPClient(func(req *http.Request) *http.Response {
 			return &http.Response{
 				Status: "400 Bad Request",
-				Body:   ioutil.NopCloser(strings.NewReader(`{"error":"invalid_grant","error_description":"authentication failure"}`)),
+				Body:   io.NopCloser(strings.NewReader(`{"error":"invalid_grant","error_description":"authentication failure"}`)),
 				Header: make(http.Header),
 			}
 		})

@@ -3,7 +3,6 @@ package sfdc
 import (
 	"errors"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
@@ -101,7 +100,7 @@ func TestHandleError(t *testing.T) {
 		"single_error": {
 			resp: &http.Response{
 				Status: "400 " + http.StatusText(400),
-				Body:   ioutil.NopCloser(strings.NewReader(singleErrBody)),
+				Body:   io.NopCloser(strings.NewReader(singleErrBody)),
 			},
 			wantErr: `400 Bad Request: INVALID_ID_FIELD: invalid record id (id)`,
 			errors: Errors{
@@ -115,7 +114,7 @@ func TestHandleError(t *testing.T) {
 		"multiple_error": {
 			resp: &http.Response{
 				Status: "400 " + http.StatusText(400),
-				Body:   ioutil.NopCloser(strings.NewReader(multipleErrBody)),
+				Body:   io.NopCloser(strings.NewReader(multipleErrBody)),
 			},
 			wantErr: `400 Bad Request: INVALID_ID_FIELD: invalid record id (id), INVALID_ID_FIELD: invalid record id (id)`,
 			errors: Errors{
@@ -134,7 +133,7 @@ func TestHandleError(t *testing.T) {
 		"read_body_error": {
 			resp: &http.Response{
 				Status: "500 " + http.StatusText(500),
-				Body:   ioutil.NopCloser(alwaysError{}),
+				Body:   io.NopCloser(alwaysError{}),
 			},
 			wantErr: `500 Internal Server Error: could not read the body with error: unexpected EOF`,
 		},

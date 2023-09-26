@@ -22,7 +22,7 @@ func TestRecord_UnmarshalJSON(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:   "Successfull Decode",
+			name:   "Successful Decode",
 			fields: fields{},
 			args: args{
 				data: []byte(`

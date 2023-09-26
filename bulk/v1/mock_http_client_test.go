@@ -2,7 +2,7 @@ package bulkv1
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -21,7 +21,7 @@ func wantURL(url string) mockHTTPFilter {
 			return &http.Response{
 				StatusCode: 500,
 				Status:     fmt.Sprintf("Invalid URL; expected %s", url),
-				Body:       ioutil.NopCloser(strings.NewReader(req.URL.String())),
+				Body:       io.NopCloser(strings.NewReader(req.URL.String())),
 				Header:     make(http.Header),
 			}
 		}
@@ -35,7 +35,7 @@ func wantMethod(method string) mockHTTPFilter {
 			return &http.Response{
 				StatusCode: 500,
 				Status:     "Invalid Method",
-				Body:       ioutil.NopCloser(strings.NewReader(req.Method)),
+				Body:       io.NopCloser(strings.NewReader(req.Method)),
 				Header:     make(http.Header),
 			}
 		}
