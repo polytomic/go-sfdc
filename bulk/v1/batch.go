@@ -228,10 +228,8 @@ func (b *Batch) Results(ctx context.Context) (BatchResult, error) {
 		}
 		jobRecord := bulk.JobRecord{
 			ID: record.ID,
-			UnprocessedRecord: bulk.UnprocessedRecord{
-				Fields: fields,
-			},
 		}
+		jobRecord.Fields = fields
 		if record.Success {
 			result.Successful = append(result.Successful,
 				bulk.SuccessfulRecord{
@@ -240,12 +238,6 @@ func (b *Batch) Results(ctx context.Context) (BatchResult, error) {
 				},
 			)
 		} else {
-			if requestRecords == nil {
-				requestRecords, err = b.requestRecords(ctx)
-				if err != nil {
-					return result, fmt.Errorf("error retrieving request: %w", err)
-				}
-			}
 			messages := make([]string, len(record.Errors))
 			for i, e := range record.Errors {
 				messages[i] = fmt.Sprintf("%s (%s)", e.Message, e.StatusCode)
