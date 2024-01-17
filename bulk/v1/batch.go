@@ -217,41 +217,35 @@ func (b *Batch) Results(ctx context.Context) (BatchResult, error) {
 		return result, err
 	}
 	var requestRecords []map[string]interface{}
+	requestRecords, err = b.requestRecords(ctx)
+	if err != nil {
+		return result, fmt.Errorf("error retrieving request: %w", err)
+	}
 	for i, record := range records {
+		fields := map[string]interface{}{}
+		if i < len(requestRecords) {
+			fields = requestRecords[i]
+		}
+		jobRecord := bulk.JobRecord{
+			ID: record.ID,
+		}
+		jobRecord.Fields = fields
 		if record.Success {
 			result.Successful = append(result.Successful,
 				bulk.SuccessfulRecord{
-					Created: record.Created,
-					JobRecord: bulk.JobRecord{
-						ID: record.ID,
-					},
+					Created:   record.Created,
+					JobRecord: jobRecord,
 				},
 			)
 		} else {
-			if requestRecords == nil {
-				requestRecords, err = b.requestRecords(ctx)
-				if err != nil {
-					return result, fmt.Errorf("error retrieving request: %w", err)
-				}
-			}
 			messages := make([]string, len(record.Errors))
 			for i, e := range record.Errors {
 				messages[i] = fmt.Sprintf("%s (%s)", e.Message, e.StatusCode)
 			}
-
-			fields := map[string]interface{}{}
-			if i < len(requestRecords) {
-				fields = requestRecords[i]
-			}
 			result.Failed = append(result.Failed,
 				bulk.FailedRecord{
-					Error: strings.Join(messages, "\n"),
-					JobRecord: bulk.JobRecord{
-						ID: record.ID,
-						UnprocessedRecord: bulk.UnprocessedRecord{
-							Fields: fields,
-						},
-					},
+					Error:     strings.Join(messages, "\n"),
+					JobRecord: jobRecord,
 				},
 			)
 		}
