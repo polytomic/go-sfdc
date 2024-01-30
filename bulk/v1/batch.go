@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -198,28 +197,30 @@ func (b *Batch) Results(ctx context.Context) (BatchResult, error) {
 
 	response, err := b.session.Client().Do(request)
 	if err != nil {
-		return result, err
+		return result, bulk.NewJobRecordError(err)
 	}
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
 		return result, sfdc.HandleError(response)
 	}
 
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
-		return result, err
+		return result, bulk.NewJobRecordError(err)
 	}
 
 	records := []ResultRecord{}
 
 	err = json.Unmarshal(body, &records)
 	if err != nil {
-		return result, err
+		return result, bulk.NewJobRecordError(err)
 	}
 	var requestRecords []map[string]interface{}
 	requestRecords, err = b.requestRecords(ctx)
 	if err != nil {
-		return result, fmt.Errorf("error retrieving request: %w", err)
+		return result, bulk.NewJobRecordError(
+			fmt.Errorf("error retrieving request: %w", err),
+		)
 	}
 	for i, record := range records {
 		fields := map[string]interface{}{}

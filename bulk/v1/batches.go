@@ -30,8 +30,6 @@ func (b *JobBatches) fetchInfo(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
-	request.Header.Add("Accept", "application/json")
-	request.Header.Add("Content-Type", "application/json")
 	b.session.AuthorizationHeader(request)
 
 	b.info, err = b.infoResponse(request)

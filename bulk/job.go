@@ -612,12 +612,12 @@ func (j *Job) FailedRecords(ctx context.Context) ([]FailedRecord, error) {
 
 	response, err := j.session.Client().Do(request)
 	if err != nil {
-		return nil, err
+		return nil, NewJobRecordError(err)
 	}
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		return nil, sfdc.HandleError(response)
+		return nil, NewJobRecordError(sfdc.HandleError(response))
 	}
 
 	reader := csv.NewReader(response.Body)
@@ -627,7 +627,7 @@ func (j *Job) FailedRecords(ctx context.Context) ([]FailedRecord, error) {
 	var records []FailedRecord
 	fields, err := reader.Read()
 	if err != nil {
-		return nil, err
+		return nil, NewJobRecordError(err)
 	}
 	for {
 		values, err := reader.Read()
@@ -635,7 +635,7 @@ func (j *Job) FailedRecords(ctx context.Context) ([]FailedRecord, error) {
 			break
 		}
 		if err != nil {
-			return records, err
+			return records, NewJobRecordError(err)
 		}
 		var record FailedRecord
 		record.Error = values[j.headerPosition(sfError, fields)]
