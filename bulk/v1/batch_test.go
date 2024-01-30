@@ -281,31 +281,50 @@ func TestBatch_Results(t *testing.T) {
 			fields: fields{
 				session: &session.Mock{
 					URL: "https://test.salesforce.com",
-					HTTPClient: mockHTTPClient(
-						func(req *http.Request) *http.Response {
-							resp := `[
-								{
-								   "success" : true,
-								   "created" : true,
-								   "id" : "001xx000003DHP0AAO",
-								   "errors" : []
+					HTTPClient: multiMockHTTPClient(
+						map[string]mock{
+							"https://test.salesforce.com/services/async/42.0/job/1234/batch/abcd/result": {
+								fn: func(req *http.Request) *http.Response {
+									resp := `[
+		{
+		   "success" : true,
+		   "created" : true,
+		   "id" : "001xx000003DHP0AAO",
+		   "errors" : []
+		},
+		{
+		   "success" : true,
+		   "created" : true,
+		   "id" : "001xx000003DHP1AAO",
+		   "errors" : []
+		}
+	 ]`
+									return &http.Response{
+										StatusCode: http.StatusOK,
+										Status:     "OK",
+										Body:       ioutil.NopCloser(strings.NewReader(resp)),
+										Header:     make(http.Header),
+									}
 								},
-								{
-								   "success" : true,
-								   "created" : true,
-								   "id" : "001xx000003DHP1AAO",
-								   "errors" : []
-								}
-							 ]`
-							return &http.Response{
-								StatusCode: http.StatusOK,
-								Status:     "OK",
-								Body:       ioutil.NopCloser(strings.NewReader(resp)),
-								Header:     make(http.Header),
-							}
+								cond: []mockHTTPFilter{
+									wantMethod(http.MethodGet),
+								},
+							},
+							"https://test.salesforce.com/services/async/42.0/job/1234/batch/abcd/request": {
+								fn: func(req *http.Request) *http.Response {
+									resp := `[]`
+									return &http.Response{
+										StatusCode: http.StatusOK,
+										Status:     "OK",
+										Body:       ioutil.NopCloser(strings.NewReader(resp)),
+										Header:     make(http.Header),
+									}
+								},
+								cond: []mockHTTPFilter{
+									wantMethod(http.MethodGet),
+								},
+							},
 						},
-						wantMethod(http.MethodGet),
-						wantURL("https://test.salesforce.com/services/async/42.0/job/1234/batch/abcd/result"),
 					),
 				},
 			},
@@ -321,12 +340,18 @@ func TestBatch_Results(t *testing.T) {
 						Created: true,
 						JobRecord: bulk.JobRecord{
 							ID: "001xx000003DHP0AAO",
+							UnprocessedRecord: bulk.UnprocessedRecord{
+								Fields: map[string]interface{}{},
+							},
 						},
 					},
 					{
 						Created: true,
 						JobRecord: bulk.JobRecord{
 							ID: "001xx000003DHP1AAO",
+							UnprocessedRecord: bulk.UnprocessedRecord{
+								Fields: map[string]interface{}{},
+							},
 						},
 					},
 				},
@@ -383,6 +408,9 @@ func TestBatch_Results(t *testing.T) {
 						Created: true,
 						JobRecord: bulk.JobRecord{
 							ID: "001xx000003DHP0AAO",
+							UnprocessedRecord: bulk.UnprocessedRecord{
+								Fields: map[string]interface{}{},
+							},
 						},
 					},
 				},

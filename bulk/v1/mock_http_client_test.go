@@ -57,3 +57,31 @@ func mockHTTPClient(fn roundTripFunc, filters ...mockHTTPFilter) *http.Client {
 		),
 	}
 }
+
+type mock struct {
+	fn   roundTripFunc
+	cond []mockHTTPFilter
+}
+
+func multiMockHTTPClient(mocks map[string]mock) *http.Client {
+	return &http.Client{
+		Transport: roundTripFunc(
+			func(req *http.Request) *http.Response {
+				if mock, ok := mocks[req.URL.String()]; ok {
+					for _, f := range mock.cond {
+						if resp := f(req); resp != nil {
+							return resp
+						}
+					}
+					return mock.fn(req)
+				}
+				return &http.Response{
+					StatusCode: 500,
+					Status:     "Invalid URL",
+					Body:       ioutil.NopCloser(strings.NewReader(req.URL.String())),
+					Header:     make(http.Header),
+				}
+			},
+		),
+	}
+}
