@@ -4,6 +4,7 @@ package session
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"sync"
@@ -11,7 +12,6 @@ import (
 
 	"github.com/namely/go-sfdc/v3"
 	"github.com/namely/go-sfdc/v3/credentials"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -130,7 +130,7 @@ func passwordSessionResponse(request *http.Request, client *http.Client) (*sessi
 	defer response.Body.Close()
 
 	if response.StatusCode != http.StatusOK {
-		return nil, errors.Wrap(sfdc.HandleError(response), "session response")
+		return nil, fmt.Errorf("session response: %w", sfdc.HandleError(response))
 	}
 
 	var sessionResponse sessionPasswordResponse

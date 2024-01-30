@@ -2,9 +2,10 @@ package bulk
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/namely/go-sfdc/v3/session"
-	"github.com/pkg/errors"
 )
 
 type BulkEndpoint string
@@ -29,7 +30,7 @@ func NewResource(ctx context.Context, endpoint BulkEndpoint, session session.Ser
 
 	err := session.Refresh(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "session refresh")
+		return nil, fmt.Errorf("session refresh: %w", err)
 	}
 
 	return &Resource{

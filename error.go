@@ -2,12 +2,11 @@ package sfdc
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 // Error is the error structure defined by the Salesforce API.
@@ -87,13 +86,13 @@ func (e Errors) Error() string {
 // HandleError makes an error from http.Response.
 // It is the caller's responsibility to close resp.Body.
 func HandleError(resp *http.Response) error {
-	return errors.Wrap(newErrorFromBody(resp), resp.Status)
+	return fmt.Errorf("%s: %w", resp.Status, newErrorFromBody(resp))
 }
 
 func newErrorFromBody(resp *http.Response) error {
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return errors.Wrap(err, "could not read the body with error")
+		return fmt.Errorf("could not read the body with error: %w", err)
 	}
 
 	errs := Errors{}

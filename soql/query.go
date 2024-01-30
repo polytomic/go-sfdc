@@ -3,11 +3,12 @@ package soql
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/namely/go-sfdc/v3"
 	"github.com/namely/go-sfdc/v3/session"
-	"github.com/pkg/errors"
 )
 
 // Resource is the structure for the Salesforce
@@ -80,7 +81,7 @@ func NewResource(ctx context.Context, session session.ServiceFormatter) (*Resour
 
 	err := session.Refresh(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "session refresh")
+		return nil, fmt.Errorf("session refresh: %w", err)
 	}
 
 	return &Resource{

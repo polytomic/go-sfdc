@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,7 +15,6 @@ import (
 	"github.com/namely/go-sfdc/v3"
 	"github.com/namely/go-sfdc/v3/session"
 	"github.com/namely/go-sfdc/v3/sobject"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -53,7 +53,7 @@ func NewResources(ctx context.Context, session session.ServiceFormatter) (*Resou
 
 	err := session.Refresh(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "session refresh")
+		return nil, fmt.Errorf("session refresh: %w", err)
 	}
 
 	return &Resource{
@@ -123,7 +123,7 @@ func (r *Resource) Query(ctx context.Context, sobject string, records []sobject.
 		return nil, err
 	}
 
-	if matching == false {
+	if !matching {
 		return nil, fmt.Errorf("collection resource: %s is not a valid sobject", sobject)
 	}
 

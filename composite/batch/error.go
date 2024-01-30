@@ -2,9 +2,9 @@ package batch
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/namely/go-sfdc/v3"
-	"github.com/pkg/errors"
 )
 
 func HandleSubrequestError(result Subvalue) error {

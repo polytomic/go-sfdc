@@ -2,13 +2,13 @@ package sobject
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/namely/go-sfdc/v3"
 	"github.com/namely/go-sfdc/v3/session"
-	"github.com/pkg/errors"
 )
 
 func TestSalesforceAPI_Metadata(t *testing.T) {
