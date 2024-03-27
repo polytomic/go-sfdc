@@ -304,7 +304,7 @@ func (j *Job) createCallout(ctx context.Context, options Options) (Response, err
 	if err != nil {
 		return Response{}, err
 	}
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	request.Header.Add("Content-Type", "application/json")
 	j.session.AuthorizationHeader(request)
 
@@ -343,7 +343,7 @@ func (j *Job) fetchInfo(ctx context.Context, id string) (Info, error) {
 	if err != nil {
 		return Info{}, err
 	}
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	request.Header.Add("Content-Type", "application/json")
 	j.session.AuthorizationHeader(request)
 
@@ -386,7 +386,7 @@ func (j *Job) setState(ctx context.Context, state State) (Response, error) {
 	if err != nil {
 		return Response{}, err
 	}
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	request.Header.Add("Content-Type", "application/json")
 	j.session.AuthorizationHeader(request)
 
@@ -508,7 +508,7 @@ func (j *Job) Results(ctx context.Context, locator string, maxRecords int) (*Res
 	if err != nil {
 		return nil, err
 	}
-	request.Header.Add("Accept", "text/csv")
+	request.Header.Add("Accept", "text/csv, */*")
 	j.session.AuthorizationHeader(request)
 
 	response, err := j.session.Client().Do(request)
@@ -556,7 +556,7 @@ func (j *Job) SuccessfulRecords(ctx context.Context) ([]SuccessfulRecord, error)
 	if err != nil {
 		return nil, err
 	}
-	request.Header.Add("Accept", "text/csv")
+	request.Header.Add("Accept", "text/csv, */*")
 	j.session.AuthorizationHeader(request)
 
 	response, err := j.session.Client().Do(request)
@@ -607,7 +607,7 @@ func (j *Job) FailedRecords(ctx context.Context) ([]FailedRecord, error) {
 	if err != nil {
 		return nil, err
 	}
-	request.Header.Add("Accept", "text/csv")
+	request.Header.Add("Accept", "text/csv, */*")
 	j.session.AuthorizationHeader(request)
 
 	response, err := j.session.Client().Do(request)
@@ -654,7 +654,7 @@ func (j *Job) UnprocessedRecords(ctx context.Context) ([]UnprocessedRecord, erro
 	if err != nil {
 		return nil, err
 	}
-	request.Header.Add("Accept", "text/csv")
+	request.Header.Add("Accept", "text/csv, */*")
 	j.session.AuthorizationHeader(request)
 
 	response, err := j.session.Client().Do(request)

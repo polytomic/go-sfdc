@@ -140,7 +140,7 @@ func (c *collection) send(ctx context.Context, session session.ServiceFormatter,
 		return err
 	}
 
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	if c.contentType != "" {
 		request.Header.Add("Content-Type", c.contentType)
 	}

@@ -74,7 +74,7 @@ func (md *metadata) request(ctx context.Context, sobject string) (*http.Request,
 		return nil, err
 	}
 
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	md.session.AuthorizationHeader(request)
 	return request, nil
 

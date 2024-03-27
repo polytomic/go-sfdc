@@ -196,7 +196,7 @@ func (d *describe) request(ctx context.Context, sobject string) (*http.Request, 
 		return nil, err
 	}
 
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	d.session.AuthorizationHeader(request)
 	return request, nil
 

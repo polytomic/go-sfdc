@@ -93,7 +93,7 @@ func (r *Resource) Retrieve(ctx context.Context, haltOnError bool, requesters []
 		return Value{}, err
 	}
 
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	request.Header.Add("Content-Type", "application/json")
 	r.session.AuthorizationHeader(request)
 

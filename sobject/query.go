@@ -117,7 +117,7 @@ func (q *query) queryRequest(ctx context.Context, querier Querier) (*http.Reques
 		return nil, err
 	}
 
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	q.session.AuthorizationHeader(request)
 	return request, nil
 
@@ -179,7 +179,7 @@ func (q *query) externalQueryRequest(ctx context.Context, querier ExternalQuerie
 		return nil, err
 	}
 
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	q.session.AuthorizationHeader(request)
 	return request, nil
 
@@ -302,7 +302,7 @@ func (q *query) operationRequest(ctx context.Context, sobject, operation string,
 		return nil, err
 	}
 
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	q.session.AuthorizationHeader(request)
 	return request, nil
 
