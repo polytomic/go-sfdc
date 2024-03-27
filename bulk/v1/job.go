@@ -83,7 +83,7 @@ func (j *Job) createCallout(ctx context.Context, options Options) (bulk.Response
 	if err != nil {
 		return bulk.Response{}, err
 	}
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	request.Header.Add("Content-Type", "application/json")
 	j.session.AuthorizationHeader(request)
 
@@ -123,7 +123,7 @@ func (j *Job) fetchInfo(ctx context.Context, id string) (bulk.Info, error) {
 	if err != nil {
 		return bulk.Info{}, err
 	}
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	request.Header.Add("Content-Type", "application/json")
 	j.session.AuthorizationHeader(request)
 
@@ -166,7 +166,7 @@ func (j *Job) setState(ctx context.Context, state bulk.State) (bulk.Response, er
 	if err != nil {
 		return bulk.Response{}, err
 	}
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	request.Header.Add("Content-Type", "application/json")
 	j.session.AuthorizationHeader(request)
 

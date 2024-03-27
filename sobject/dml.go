@@ -113,7 +113,7 @@ func (d *dml) insertRequest(ctx context.Context, inserter Inserter) (*http.Reque
 		return nil, err
 	}
 
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	request.Header.Add("Content-Type", "application/json")
 	d.session.AuthorizationHeader(request)
 	return request, nil
@@ -168,7 +168,7 @@ func (d *dml) updateRequest(ctx context.Context, updater Updater) (*http.Request
 		return nil, err
 	}
 
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	request.Header.Add("Content-Type", "application/json")
 	d.session.AuthorizationHeader(request)
 	return request, nil
@@ -219,7 +219,7 @@ func (d *dml) upsertRequest(ctx context.Context, upserter Upserter) (*http.Reque
 		return nil, err
 	}
 
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	request.Header.Add("Content-Type", "application/json")
 	d.session.AuthorizationHeader(request)
 	return request, nil

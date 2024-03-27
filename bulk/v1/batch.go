@@ -126,7 +126,7 @@ func (b *Batch) fetchInfo(ctx context.Context, jobID, ID string) error {
 	if err != nil {
 		return err
 	}
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	request.Header.Add("Content-Type", "application/json")
 	b.session.AuthorizationHeader(request)
 

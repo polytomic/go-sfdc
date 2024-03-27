@@ -40,7 +40,7 @@ func (l *list) request(ctx context.Context) (*http.Request, error) {
 		return nil, err
 	}
 
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	l.session.AuthorizationHeader(request)
 	return request, nil
 }

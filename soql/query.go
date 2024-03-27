@@ -171,7 +171,7 @@ func (r *Resource) next(ctx context.Context, recordURL string) (QueryResult, err
 		return nil, err
 	}
 
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	r.session.AuthorizationHeader(request)
 
 	response, err := r.queryResponse(request)
@@ -198,7 +198,7 @@ func (r *Resource) queryColumnMetadataRequest(ctx context.Context, querier Query
 		return nil, err
 	}
 
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	r.session.AuthorizationHeader(request)
 	return request, nil
 }
@@ -214,7 +214,7 @@ func (r *Resource) queryRequest(ctx context.Context, querier QueryFormatter, all
 		return nil, err
 	}
 
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	r.session.AuthorizationHeader(request)
 	return request, nil
 }

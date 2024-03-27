@@ -118,7 +118,7 @@ func passwordSessionRequest(ctx context.Context, creds *credentials.Credentials)
 	}
 
 	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	return request, nil
 }
 

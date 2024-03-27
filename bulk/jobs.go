@@ -89,7 +89,7 @@ func (j *Jobs) request(ctx context.Context, url string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
-	request.Header.Add("Accept", "application/json")
+	request.Header.Add("Accept", "application/json, */*")
 	j.session.AuthorizationHeader(request)
 	return request, nil
 }
