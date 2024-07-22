@@ -1272,7 +1272,7 @@ func TestJob_Results(t *testing.T) {
 					HTTPClient: mockHTTPClient(
 						expectURL("https://test.salesforce.com/services/data/v42.0/jobs/query/1234/results?maxRecords=10000"),
 						expectMethod(http.MethodGet),
-						expectHeader("Accept", "text/csv"),
+						expectHeader("Accept", "text/csv, */*"),
 						returnStatus(http.StatusOK),
 						returnBody("sf__Created|sf__Id|FirstName|LastName|DOB\ntrue|2345|John|Doe|1/1/1970\ntrue|9876|Jane|Doe|1/1/1980\n"),
 						returnHeader("Sforce-Locator", "next"),
