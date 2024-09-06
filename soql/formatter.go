@@ -186,8 +186,10 @@ func WhereGreaterThan(field string, value interface{}, equals bool) (*WhereClaus
 	}
 	var v string
 	switch val := value.(type) {
-	case string, bool:
-		return nil, errors.New("where greater than: value can not be a string or bool")
+	case string:
+		v = fmt.Sprintf("'%s'", escapeString.Replace(val))
+	case bool:
+		return nil, errors.New("where greater than: value can not be a bool")
 	case time.Time:
 		v = val.Format(time.RFC3339)
 	default:
@@ -215,8 +217,10 @@ func WhereLessThan(field string, value interface{}, equals bool) (*WhereClause, 
 	}
 	var v string
 	switch val := value.(type) {
-	case string, bool:
-		return nil, errors.New("where less than: value can not be a string")
+	case string:
+		v = fmt.Sprintf("'%s'", escapeString.Replace(val))
+	case bool:
+		return nil, errors.New("where less than: value can not be a bool")
 	case time.Time:
 		v = val.Format(time.RFC3339)
 	default:

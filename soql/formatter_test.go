@@ -323,8 +323,9 @@ func TestWhereGreaterThan(t *testing.T) {
 				field: "Name",
 				value: "some string",
 			},
-			want:    nil,
-			wantErr: true,
+			want: &WhereClause{
+				expression: "Name > 'some string'",
+			},
 		},
 		{
 			name: "value is boolean",
@@ -400,10 +401,11 @@ func TestWhereLessThan(t *testing.T) {
 			name: "value is string",
 			args: args{
 				field: "Name",
-				value: "some string",
+				value: "someone's string",
 			},
-			want:    nil,
-			wantErr: true,
+			want: &WhereClause{
+				expression: `Name < 'someone\'s string'`,
+			},
 		},
 		{
 			name: "value is boolean",
