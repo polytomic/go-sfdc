@@ -7,53 +7,49 @@ import (
 )
 
 func TestNewOrderBy(t *testing.T) {
-	type args struct {
-		result OrderResult
-	}
 	tests := []struct {
 		name    string
-		args    args
-		want    *OrderBy
+		args    []OrderByOpt
+		want    string
 		wantErr bool
 	}{
 		{
-			name: "No Ordering Result",
-			args: args{
-				result: OrderResult(""),
+			name: "No Args",
+		},
+		{
+			name: "No Fields",
+			args: []OrderByOpt{
+				WithResultOrdering(OrderAsc),
 			},
-			want:    nil,
 			wantErr: true,
 		},
 		{
 			name: "Asc Ordering Result",
-			args: args{
-				result: OrderAsc,
+			args: []OrderByOpt{
+				ByFields("CreatedDate"),
+				WithResultOrdering(OrderAsc),
 			},
-			want: &OrderBy{
-				result: OrderAsc,
-			},
-			wantErr: false,
+			want: "ORDER BY CreatedDate ASC",
 		},
 		{
 			name: "Desc Ordering Result",
-			args: args{
-				result: OrderDesc,
+			args: []OrderByOpt{
+				ByFields("CreatedDate"),
+				WithResultOrdering(OrderDesc),
 			},
-			want: &OrderBy{
-				result: OrderDesc,
-			},
-			wantErr: false,
+			want: "ORDER BY CreatedDate DESC",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewOrderBy(tt.args.result)
+			order := NewOrderBy(tt.args...)
+			soql, err := order.Order()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewOrderBy() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewOrderBy() = %v, want %v", got, tt.want)
+			if soql != tt.want {
+				t.Errorf("NewOrderBy() = %v, want %v", soql, tt.want)
 			}
 		})
 	}
@@ -100,7 +96,7 @@ func TestOrderBy_FieldOrder(t *testing.T) {
 				result:     tt.fields.result,
 				nulls:      tt.fields.nulls,
 			}
-			o.FieldOrder(tt.args.fields...)
+			o.AddFields(tt.args.fields...)
 			if !reflect.DeepEqual(o, tt.want) {
 				t.Errorf("OrderBy.FieldOrder() = %v, want %v", o, tt.want)
 			}
@@ -163,7 +159,7 @@ func TestOrderBy_NullOrdering(t *testing.T) {
 				result:     tt.fields.result,
 				nulls:      tt.fields.nulls,
 			}
-			if err := o.NullOrdering(tt.args.nulls); (err != nil) != tt.wantErr {
+			if err := o.SetNullOrdering(tt.args.nulls); (err != nil) != tt.wantErr {
 				t.Errorf("OrderBy.NullOrdering() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if !reflect.DeepEqual(o, tt.want) {

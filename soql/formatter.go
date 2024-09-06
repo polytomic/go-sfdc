@@ -375,6 +375,10 @@ const (
 	OrderDesc OrderResult = "DESC"
 )
 
+func (o OrderResult) IsValid() bool {
+	return o == OrderAsc || o == OrderDesc
+}
+
 // OrderNulls is where the null values are placed in the ordering.
 type OrderNulls string
 
@@ -385,6 +389,12 @@ const (
 	OrderNullsFirst OrderNulls = "NULLS FIRST"
 )
 
+// Orderer is the interface for returning the SOQL ordering.
+type Orderer interface {
+	// Order returns the order by SOQL string.
+	Order() (string, error)
+}
+
 // OrderBy is the ordering structure of the SOQL query.
 type OrderBy struct {
 	fieldOrder []string
@@ -392,33 +402,46 @@ type OrderBy struct {
 	nulls      OrderNulls
 }
 
-// Orderer is the interface for returning the SOQL ordering.
-type Orderer interface {
-	Order() (string, error)
-}
+// OrderByOpt is a function that can be used to modify the OrderBy.
+type OrderByOpt func(*OrderBy)
 
-// NewOrderBy creates an OrderBy structure.  If the order results is not ASC or DESC, an
-// error will be returned.
-func NewOrderBy(result OrderResult) (*OrderBy, error) {
-	switch result {
-	case OrderAsc, OrderDesc:
-	default:
-		return nil, fmt.Errorf("order by: %s is not a valid result ordering type", string(result))
+func WithResultOrdering(result OrderResult) OrderByOpt {
+	return func(o *OrderBy) {
+		if result.IsValid() {
+			o.result = result
+		}
 	}
-
-	return &OrderBy{
-		result: result,
-	}, nil
-
 }
 
-// FieldOrder is a list of fields in the ordering.
-func (o *OrderBy) FieldOrder(fields ...string) {
+func WithNullOrdering(nulls OrderNulls) OrderByOpt {
+	return func(o *OrderBy) {
+		o.nulls = nulls
+	}
+}
+
+func ByFields(fields ...string) OrderByOpt {
+	return func(o *OrderBy) {
+		o.fieldOrder = fields
+	}
+}
+
+// NewOrderBy creates an OrderBy structure configuring using the provided
+// options.
+func NewOrderBy(opts ...OrderByOpt) *OrderBy {
+	o := &OrderBy{}
+	for _, opt := range opts {
+		opt(o)
+	}
+	return o
+}
+
+// AddFields appends fields to the existing ordering.
+func (o *OrderBy) AddFields(fields ...string) {
 	o.fieldOrder = append(o.fieldOrder, fields...)
 }
 
-// NullOrdering sets the ordering, first or last, of the null values.
-func (o *OrderBy) NullOrdering(nulls OrderNulls) error {
+// SetNullOrdering sets the ordering, first or last, of the null values.
+func (o *OrderBy) SetNullOrdering(nulls OrderNulls) error {
 	switch nulls {
 	case OrderNullsLast, OrderNullsFirst:
 	default:
@@ -430,10 +453,19 @@ func (o *OrderBy) NullOrdering(nulls OrderNulls) error {
 
 // Order returns the order by SOQL string.
 func (o *OrderBy) Order() (string, error) {
+	if len(o.fieldOrder) == 0 && o.result == "" && o.nulls == "" {
+		// zero value, nothing to do
+		return "", nil
+	}
+
 	switch o.result {
 	case OrderAsc, OrderDesc:
 	default:
 		return "", fmt.Errorf("order by: %s is not a valid result ordering type", string(o.result))
+	}
+
+	if len(o.fieldOrder) == 0 {
+		return "", errors.New("order by: field order can not be empty")
 	}
 
 	orderBy := "ORDER BY " + strings.Join(o.fieldOrder, ",") + " " + string(o.result)
