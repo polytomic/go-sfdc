@@ -181,19 +181,10 @@ func WhereGreaterThan(field string, value interface{}, equals bool) (*WhereClaus
 	if field == "" {
 		return nil, errors.New("soql where: field can not be empty")
 	}
-	if value == nil {
-		return nil, errors.New("soql where: value can not be nil")
-	}
-	var v string
-	switch val := value.(type) {
-	case string:
-		v = fmt.Sprintf("'%s'", escapeString.Replace(val))
-	case bool:
-		return nil, errors.New("where greater than: value can not be a bool")
-	case time.Time:
-		v = val.Format(time.RFC3339)
-	default:
-		v = fmt.Sprintf("%v", value)
+
+	v, err := formatValue(value)
+	if err != nil {
+		return nil, fmt.Errorf("where greater than: %w", err)
 	}
 
 	operator := ">"
@@ -212,19 +203,10 @@ func WhereLessThan(field string, value interface{}, equals bool) (*WhereClause, 
 	if field == "" {
 		return nil, errors.New("soql where: field can not be empty")
 	}
-	if value == nil {
-		return nil, errors.New("soql where: value can not be nil")
-	}
-	var v string
-	switch val := value.(type) {
-	case string:
-		v = fmt.Sprintf("'%s'", escapeString.Replace(val))
-	case bool:
-		return nil, errors.New("where less than: value can not be a bool")
-	case time.Time:
-		v = val.Format(time.RFC3339)
-	default:
-		v = fmt.Sprintf("%v", value)
+
+	v, err := formatValue(value)
+	if err != nil {
+		return nil, fmt.Errorf("where less than: %w", err)
 	}
 
 	operator := "<"
@@ -242,18 +224,9 @@ func WhereEquals(field string, value interface{}) (*WhereClause, error) {
 	if field == "" {
 		return nil, errors.New("soql where: field can not be empty")
 	}
-	var v string
-	if value != nil {
-		switch val := value.(type) {
-		case string:
-			v = fmt.Sprintf("'%s'", escapeString.Replace(val))
-		case time.Time:
-			v = val.Format(time.RFC3339)
-		default:
-			v = fmt.Sprintf("%v", value)
-		}
-	} else {
-		v = "null"
+	v, err := formatValue(value, AllowBool(), AllowNil())
+	if err != nil {
+		return nil, fmt.Errorf("where equal: %w", err)
 	}
 
 	return &WhereClause{
@@ -266,18 +239,9 @@ func WhereNotEquals(field string, value interface{}) (*WhereClause, error) {
 	if field == "" {
 		return nil, errors.New("soql where: field can not be empty")
 	}
-	var v string
-	if value != nil {
-		switch val := value.(type) {
-		case string:
-			v = fmt.Sprintf("'%s'", escapeString.Replace(val))
-		case time.Time:
-			v = val.Format(time.RFC3339)
-		default:
-			v = fmt.Sprintf("%v", value)
-		}
-	} else {
-		v = "null"
+	v, err := formatValue(value, AllowBool(), AllowNil())
+	if err != nil {
+		return nil, fmt.Errorf("where not equal: %w", err)
 	}
 
 	return &WhereClause{
@@ -295,16 +259,11 @@ func WhereIn(field string, values []interface{}) (*WhereClause, error) {
 	}
 	set := make([]string, len(values))
 	for idx, value := range values {
-		switch val := value.(type) {
-		case string:
-			set[idx] = fmt.Sprintf("'%s'", escapeString.Replace(val))
-		case bool:
-			return nil, errors.New("where in: boolean is not a value set value")
-		case time.Time:
-			set[idx] = val.Format(time.RFC3339)
-		default:
-			set[idx] = fmt.Sprintf("%v", value)
+		v, err := formatValue(value, AllowNil())
+		if err != nil {
+			return nil, fmt.Errorf("where in: %w", err)
 		}
+		set[idx] = v
 	}
 
 	return &WhereClause{
@@ -322,16 +281,11 @@ func WhereNotIn(field string, values []interface{}) (*WhereClause, error) {
 	}
 	set := make([]string, len(values))
 	for idx, value := range values {
-		switch val := value.(type) {
-		case string:
-			set[idx] = fmt.Sprintf("'%s'", escapeString.Replace(val))
-		case bool:
-			return nil, errors.New("where not in: boolean is not a value set value")
-		case time.Time:
-			set[idx] = val.Format(time.RFC3339)
-		default:
-			set[idx] = fmt.Sprintf("%v", value)
+		v, err := formatValue(value, AllowNil())
+		if err != nil {
+			return nil, fmt.Errorf("where in: %w", err)
 		}
+		set[idx] = v
 	}
 
 	return &WhereClause{
@@ -477,4 +431,57 @@ func (o *OrderBy) Order() (string, error) {
 		orderBy += " " + string(o.nulls)
 	}
 	return orderBy, nil
+}
+
+type formatSettings struct {
+	allowEmpty bool
+	allowBool  bool
+	allowNil   bool
+}
+
+type formatOption func(*formatSettings)
+
+func AllowEmpty() formatOption {
+	return func(s *formatSettings) {
+		s.allowEmpty = true
+	}
+}
+
+func AllowBool() formatOption {
+	return func(s *formatSettings) {
+		s.allowBool = true
+	}
+}
+
+func AllowNil() formatOption {
+	return func(s *formatSettings) {
+		s.allowNil = true
+	}
+}
+
+// formatValue formats an argument value for use in a SOQL query.
+func formatValue(value any, opts ...formatOption) (string, error) {
+	settings := formatSettings{}
+	for _, opt := range opts {
+		opt(&settings)
+	}
+
+	if value == nil {
+		if settings.allowNil {
+			return "null", nil
+		}
+		return "", errors.New("value can not be nil")
+	}
+
+	switch val := value.(type) {
+	case string:
+		return fmt.Sprintf("'%s'", escapeString.Replace(val)), nil
+	case bool:
+		if !settings.allowBool {
+			return "", errors.New("boolean is not a value set value")
+		}
+	case time.Time:
+		return val.Format(time.RFC3339), nil
+	}
+	return fmt.Sprintf("%v", value), nil
 }
