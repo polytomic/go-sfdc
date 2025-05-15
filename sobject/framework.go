@@ -71,12 +71,16 @@ func NewResources(ctx context.Context, session session.ServiceFormatter) (*Resou
 }
 
 // List returns the list of sObjects available
-func (r *Resources) List(ctx context.Context) (ListValue, error) {
+func (r *Resources) List(ctx context.Context, opts ...DescribeOption) (ListValue, error) {
 	if r.list == nil {
 		return ListValue{}, errors.New("salesforce api is not initialized properly")
 	}
+	options := DescribeOptions{}
+	for _, opt := range opts {
+		opt(&options)
+	}
 
-	return r.list.callout(ctx)
+	return r.list.callout(ctx, options)
 }
 
 // Metadata retrieves the SObject's metadata.
@@ -90,7 +94,7 @@ func (r *Resources) Metadata(ctx context.Context, sobject string) (MetadataValue
 		return MetadataValue{}, err
 	}
 
-	if matching == false {
+	if !matching {
 		return MetadataValue{}, fmt.Errorf("sobject salesforce api: %s is not a valid sobject", sobject)
 	}
 
@@ -98,9 +102,13 @@ func (r *Resources) Metadata(ctx context.Context, sobject string) (MetadataValue
 }
 
 // Describe retrieves the SObject's describe.
-func (r *Resources) Describe(ctx context.Context, sobject string) (DescribeValue, error) {
+func (r *Resources) Describe(ctx context.Context, sobject string, opts ...DescribeOption) (DescribeValue, error) {
 	if r.describe == nil {
 		return DescribeValue{}, errors.New("salesforce api is not initialized properly")
+	}
+	options := DescribeOptions{}
+	for _, opt := range opts {
+		opt(&options)
 	}
 
 	matching, err := regexp.MatchString(`\w`, sobject)
@@ -108,11 +116,11 @@ func (r *Resources) Describe(ctx context.Context, sobject string) (DescribeValue
 		return DescribeValue{}, err
 	}
 
-	if matching == false {
+	if !matching {
 		return DescribeValue{}, fmt.Errorf("sobject salesforce api: %s is not a valid sobject", sobject)
 	}
 
-	return r.describe.callout(ctx, sobject)
+	return r.describe.callout(ctx, sobject, options)
 }
 
 // Insert will create a new Salesforce record.

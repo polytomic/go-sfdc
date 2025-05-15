@@ -388,7 +388,7 @@ func Test_describe_Describe(t *testing.T) {
 			d := &describe{
 				session: tt.fields.session,
 			}
-			got, err := d.callout(context.Background(), tt.args.sobject)
+			got, err := d.callout(context.Background(), tt.args.sobject, DescribeOptions{})
 			if (err != nil) != tt.wantErr {
 				t.Errorf("describe.Describe() error = %v, wantErr %v", err, tt.wantErr)
 				return

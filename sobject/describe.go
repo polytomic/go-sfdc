@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/namely/go-sfdc/v3"
 	"github.com/namely/go-sfdc/v3/session"
@@ -166,22 +167,38 @@ type SupportedScope struct {
 	Name  string `json:"name"`
 }
 
+var ErrNotModified = fmt.Errorf("sobject describe: not modified")
+
+type DescribeOptions struct {
+	IfModifiedSince time.Time
+}
+
+type DescribeOption func(*DescribeOptions)
+
+// IfModifiedSince sets the If-Modified-Since header for the describe request.
+func IfModifiedSince(t time.Time) DescribeOption {
+	return func(opts *DescribeOptions) {
+		opts.IfModifiedSince = t
+	}
+}
+
 const describeEndpoint = "/describe"
 
 type describe struct {
 	session session.ServiceFormatter
 }
 
-func (d *describe) callout(ctx context.Context, sobject string) (DescribeValue, error) {
+func (d *describe) callout(ctx context.Context, sobject string, opts DescribeOptions) (DescribeValue, error) {
 
 	request, err := d.request(ctx, sobject)
-
 	if err != nil {
 		return DescribeValue{}, err
 	}
+	if !opts.IfModifiedSince.IsZero() {
+		request.Header.Add("If-Modified-Since", opts.IfModifiedSince.Format(time.RFC1123))
+	}
 
 	value, err := d.response(request)
-
 	if err != nil {
 		return DescribeValue{}, err
 	}
@@ -214,6 +231,9 @@ func (d *describe) response(request *http.Request) (DescribeValue, error) {
 	decoder := json.NewDecoder(response.Body)
 	defer response.Body.Close()
 
+	if response.StatusCode == http.StatusNotModified {
+		return DescribeValue{}, ErrNotModified
+	}
 	if response.StatusCode != http.StatusOK {
 		var respErrs []sfdc.Error
 		err = decoder.Decode(&respErrs)

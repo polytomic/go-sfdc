@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/namely/go-sfdc/v3"
 	"github.com/namely/go-sfdc/v3/session"
@@ -18,14 +19,16 @@ type list struct {
 	session session.ServiceFormatter
 }
 
-func (l *list) callout(ctx context.Context) (ListValue, error) {
+func (l *list) callout(ctx context.Context, opts DescribeOptions) (ListValue, error) {
 	request, err := l.request(ctx)
 	if err != nil {
 		return ListValue{}, err
 	}
+	if !opts.IfModifiedSince.IsZero() {
+		request.Header.Add("If-Modified-Since", opts.IfModifiedSince.Format(time.RFC1123))
+	}
 
 	value, err := l.response(request)
-
 	if err != nil {
 		return ListValue{}, err
 	}
@@ -54,6 +57,9 @@ func (l *list) response(request *http.Request) (ListValue, error) {
 	decoder := json.NewDecoder(response.Body)
 	defer response.Body.Close()
 
+	if response.StatusCode == http.StatusNotModified {
+		return ListValue{}, ErrNotModified
+	}
 	if response.StatusCode != http.StatusOK {
 		return ListValue{}, sfdc.HandleError(response)
 	}
