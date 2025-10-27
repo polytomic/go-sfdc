@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/namely/go-sfdc/v3/session"
@@ -67,9 +68,16 @@ func Do(ctx context.Context, session session.ServiceFormatter, graph Request) (*
 	}
 	defer resp.Body.Close()
 
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading Salesforce response: %w", err)
+	}
 	graphResp := &Response{}
-	err = json.NewDecoder(resp.Body).Decode(graphResp)
-	return graphResp, err
+	err = json.Unmarshal(respBody, graphResp)
+	if err != nil {
+		return nil, fmt.Errorf("unexpected Salesforce response (%d): %s", resp.StatusCode, string(respBody))
+	}
+	return graphResp, nil
 }
 
 // SuccessResponseBody defines the structure of the composite response body when
