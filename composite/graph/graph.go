@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/namely/go-sfdc/v3/session"
 )
@@ -75,6 +77,14 @@ func Do(ctx context.Context, session session.ServiceFormatter, graph Request) (*
 	graphResp := &Response{}
 	err = json.Unmarshal(respBody, graphResp)
 	if err != nil {
+		if strings.Contains(err.Error(), "unmarshal array") {
+			trimLength := 1000
+			if trimLength > len(respBody)-1 {
+				trimLength = len(respBody) - 1
+			}
+			trimmed := string(respBody[0:trimLength])
+			return nil, errors.New("SFDC Produced an unexpected array response: " + trimmed)
+		}
 		return nil, fmt.Errorf("unexpected Salesforce response (%d): %s", resp.StatusCode, string(respBody))
 	}
 	return graphResp, nil
