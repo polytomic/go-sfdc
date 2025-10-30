@@ -107,6 +107,43 @@ func TestRecord_UnmarshalJSON(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name:   "Successfull Decode address",
+			fields: fields{},
+			args: args{
+				data: []byte(`
+				{
+					"AccountNumber" : "CD656092",
+					"BillingAddress": {
+						"city": "Springfield",
+						"country": "USA",
+						"geocodeAccuracy": null,
+						"latitude": null,
+						"longitude": null,
+						"postalCode": "00001",
+						"state": "CA",
+						"street": "742 Evergreen Terrace"
+					}
+				}`),
+			},
+			want: &Record{
+				fields: map[string]interface{}{
+					"AccountNumber": "CD656092",
+					"BillingAddress": map[string]interface{}{
+						"city":            "Springfield",
+						"country":         "USA",
+						"geocodeAccuracy": nil,
+						"latitude":        nil,
+						"longitude":       nil,
+						"postalCode":      "00001",
+						"state":           "CA",
+						"street":          "742 Evergreen Terrace",
+					},
+				},
+				lookUps: map[string]*Record{},
+			},
+			wantErr: false,
+		},
+		{
 			name:   "Error Decode",
 			fields: fields{},
 			args: args{
@@ -339,6 +376,16 @@ func TestRecordFromJSONMap(t *testing.T) {
 							},
 						},
 					},
+					"BillingAddress": map[string]interface{}{
+						"city":            "Springfield",
+						"country":         "USA",
+						"geocodeAccuracy": nil,
+						"latitude":        nil,
+						"longitude":       nil,
+						"postalCode":      "00001",
+						"state":           "CA",
+						"street":          "742 Evergreen Terrace",
+					},
 				},
 			},
 			want: &Record{
@@ -346,6 +393,16 @@ func TestRecordFromJSONMap(t *testing.T) {
 				url:     "/services/data/v20.0/sobjects/Account/001D000000IRFmaIAH",
 				fields: map[string]interface{}{
 					"Name": "Test 1",
+					"BillingAddress": map[string]interface{}{
+						"city":            "Springfield",
+						"country":         "USA",
+						"geocodeAccuracy": nil,
+						"latitude":        nil,
+						"longitude":       nil,
+						"postalCode":      "00001",
+						"state":           "CA",
+						"street":          "742 Evergreen Terrace",
+					},
 				},
 				lookUps: map[string]*Record{},
 			},

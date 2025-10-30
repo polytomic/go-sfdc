@@ -7,9 +7,10 @@ import (
 
 const (
 	// RecordAttributes is the attribute map from the record JSON
-	RecordAttributes = "attributes"
-	recordAttrType   = "type"
-	recordAttrURL    = "url"
+	RecordAttributes  = "attributes"
+	recordAttrType    = "type"
+	recordAttrURL     = "url"
+	recordAttrRecords = "records"
 )
 
 // Record is a representation of a Salesforce
@@ -76,6 +77,8 @@ func (r *Record) fromJSONMap(jsonMap map[string]interface{}) {
 					if rec, err := RecordFromJSONMap(obj); err == nil {
 						r.lookUps[k] = rec
 					}
+				} else if !r.isSubQueryResult(obj) {
+					r.fields[k] = v
 				}
 			}
 		}
@@ -84,6 +87,11 @@ func (r *Record) fromJSONMap(jsonMap map[string]interface{}) {
 
 func (r *Record) isLookUp(jsonMap map[string]interface{}) bool {
 	_, has := jsonMap[RecordAttributes]
+	return has
+}
+
+func (r *Record) isSubQueryResult(jsonMap map[string]interface{}) bool {
+	_, has := jsonMap[recordAttrRecords]
 	return has
 }
 
