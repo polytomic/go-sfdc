@@ -83,10 +83,32 @@ func (e Errors) Error() string {
 	return strings.Join(msgs, ", ")
 }
 
-// HandleError makes an error from http.Response.
-// It is the caller's responsibility to close resp.Body.
+type APIError struct {
+	Status     string
+	StatusCode int
+	inner      error
+}
+
+func (e APIError) Error() string {
+	return fmt.Sprintf("%s: %s", e.Status, e.inner)
+}
+
+func (e APIError) Unwrap() error {
+	return e.inner
+}
+
+func NewAPIError(status string, code int, inner error) error {
+	return APIError{
+		Status:     status,
+		StatusCode: code,
+		inner:      inner,
+	}
+}
+
+// HandleError makes an error from http.Response. It is the caller's
+// responsibility to close resp.Body.
 func HandleError(resp *http.Response) error {
-	return fmt.Errorf("%s: %w", resp.Status, newErrorFromBody(resp))
+	return NewAPIError(resp.Status, resp.StatusCode, newErrorFromBody(resp))
 }
 
 func newErrorFromBody(resp *http.Response) error {
